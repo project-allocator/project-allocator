@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "projecta-allocator3"
+version = "0.1.0"
+description = ""
+authors = ["Taichi Maeda <taichi.maeda.up@gmail.com>"]
+readme = "README.md"
+packages = [{include = "app"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = {extras = ["all"], version = "^0.99.1"}
+uvicorn = "^0.22.0"
+sqlalchemy = "^2.0.17"
+alembic = "^1.11.1"
+psycopg2 = "^2.9.6"
+sqlalchemy-utils = "^0.41.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
