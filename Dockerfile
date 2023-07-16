@@ -1,5 +1,6 @@
 FROM python:3.11
 
+RUN apt-get update && apt-get install -y zsh
 RUN pip install poetry==1.5.1
 WORKDIR /app
 
