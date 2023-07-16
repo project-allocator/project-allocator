@@ -2,8 +2,9 @@ from polyfactory.factories.pydantic_factory import ModelFactory
 from faker import Faker
 from .models import Shortlist, User, Project
 
-# TODO: Add faker providers
-# https://faker.readthedocs.io/en/master/providers.html
+################################################################################
+#                                User Factory                                  #
+################################################################################
 
 
 class UserFactory(ModelFactory):
@@ -29,6 +30,11 @@ class UserFactory(ModelFactory):
         return cls.__faker__.random_element(elements=("staff", "student"))
 
 
+################################################################################
+#                             Project Factory                                  #
+################################################################################
+
+
 class ProjectFactory(ModelFactory):
     __model__ = Project
     __faker__ = Faker(locale="en_GB")
@@ -49,10 +55,17 @@ class ProjectFactory(ModelFactory):
         return cls.__faker__.paragraph()
 
 
+################################################################################
+#                            Shortlist Factory                                 #
+################################################################################
+
+
 class ShortlistFactory(ModelFactory):
     __model__ = Shortlist
     __faker__ = Faker(locale="en_GB")
 
+    # Ignore optional fields
+    # otherwise they also get seeded by polyfactory.
     user_id = None
     project_id = None
     created_at = None
