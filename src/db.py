@@ -1,12 +1,14 @@
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+import os
+from dotenv import load_dotenv
+from sqlmodel import create_engine
 
-SQLALCHEMY_DATABASE_URL = "postgresql://postgres:postgres@db/alembic"
+# Must be imported before calling
+# SQLModel.metadata.create_all() and SQLModel.metadata.drop_all()
+from . import models
 
-engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+# TODO: Load database url from environment
+load_dotenv()
+database_url = os.environ.get("DATABASE_URL")
 
-Base = declarative_base()
+# TODO: Set echo to true for debugging
+engine = create_engine(database_url)
