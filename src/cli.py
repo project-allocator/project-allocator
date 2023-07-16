@@ -2,7 +2,7 @@
 # https://typer.tiangolo.com/
 import random
 from typing import List
-from typer import Typer
+import typer
 from rich import print
 from rich.progress import track
 from sqlmodel import SQLModel, Session
@@ -11,7 +11,7 @@ from .db import engine
 from .models import Project, Shortlist, User
 from .factories import ShortlistFactory, UserFactory, ProjectFactory
 
-app = Typer()
+app = typer.Typer()
 
 
 @app.callback()
@@ -23,6 +23,9 @@ def callback():
 # TODO: Use alembic in the future
 @app.command()
 def create():
+    print("❗[red]This command should not be run in production.")
+    if not typer.confirm("Are you sure to create all tables in the database?"):
+        return
     SQLModel.metadata.create_all(engine)
     print("✨[green]Successfully created all tables in the database.")
 
@@ -31,12 +34,18 @@ def create():
 # TODO: Use alembic in the future
 @app.command()
 def drop():
+    print("❗[red]This command should not be run in production.")
+    if not typer.confirm("Are you sure to delete all tables in the database?"):
+        return
     SQLModel.metadata.drop_all(engine)
     print("✨[green]Successfully dropped all tables in the database.")
 
 
 @app.command()
 def reset():
+    print("❗[red]This command should not be run in production.")
+    if not typer.confirm("Are you sure to reset the database?"):
+        return
     SQLModel.metadata.drop_all(engine)
     SQLModel.metadata.create_all(engine)
     print("✨[green]Successfully reset the database.")
@@ -44,6 +53,7 @@ def reset():
 
 @app.command()
 def seed():
+    print("❗[red]This command should not be run in production.")
     projects: List[Project] = []
     for _ in track(range(10), description="Seeding staff..."):
         # Nest session inside for loop  so the progress can be checked.
