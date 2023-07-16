@@ -9,5 +9,7 @@ RUN poetry install --no-root
 RUN poetry self add uvicorn
 
 COPY . /app
+# Install the CLI commands
+RUN poetry install
 EXPOSE 8000
 CMD poetry run uvicorn src.main:app --reload --port 8000 --host 0.0.0.0
