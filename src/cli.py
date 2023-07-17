@@ -62,7 +62,7 @@ def seed():
             for _ in range(5):
                 project = ProjectFactory.build()
                 projects.append(project)
-                staff.projects.append(project)
+                staff.proposed.append(project)
                 session.add(project)
             session.add(staff)
             session.commit()

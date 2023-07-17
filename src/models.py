@@ -18,7 +18,7 @@ class User(UserBase, table=True):
     created_at: datetime = Field(default=datetime.utcnow())
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
-    projects: List["Project"] = Relationship(back_populates="user")
+    proposed: List["Project"] = Relationship(back_populates="proposer")
     shortlists: List["Shortlist"] = Relationship(back_populates="user")
 
 
@@ -35,14 +35,16 @@ class ProjectBase(SQLModel):
     title: str
     description: str
 
+    user_id: Optional[int] = Field(default=None, foreign_key="user.id")
+
 
 class Project(ProjectBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     created_at: datetime = Field(default=datetime.utcnow())
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
-    user_id: Optional[int] = Field(default=None, foreign_key="user.id")
-    user: User = Relationship(back_populates="projects")
+    proposer: User = Relationship(back_populates="proposed")
+    details: List["ProjectDetail"] = Relationship(back_populates="project")
     shortlists: List["Shortlist"] = Relationship(back_populates="project")
 
 
@@ -57,6 +59,39 @@ class ProjectRead(ProjectBase):
 class ProjectUpdate(SQLModel):
     title: Optional[str] = None
     description: Optional[str] = None
+
+
+################################################################################
+#                            Project Detail Models                             #
+################################################################################
+
+
+class ProjectDetailBase(SQLModel):
+    key: str
+    value: str
+
+    project_id: Optional[int] = Field(default=None, foreign_key="project.id")
+
+
+class ProjectDetail(ProjectDetailBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default=datetime.utcnow())
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    project: Project = Relationship(back_populates="details")
+
+
+class ProjectDetailCreate(ProjectDetailBase):
+    pass
+
+
+class ProjectDetailRead(ProjectDetailBase):
+    id: int
+
+
+class ProjectDetailUpdate(SQLModel):
+    key: Optional[str] = None
+    value: Optional[str] = None
 
 
 ################################################################################
