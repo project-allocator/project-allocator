@@ -19,6 +19,7 @@ python-dotenv = "^1.0.0"
 sqlmodel = "^0.0.8"
 polyfactory = "^2.6.2"
 typer = {extras = ["all"], version = "^0.9.0"}
+pyyaml = "^6.0"
 
 
 [build-system]

@@ -10,9 +10,8 @@ router = APIRouter(prefix="/")
 
 @router.get("/users/{user_id}/shortlisted", response_model=List[ProjectRead])
 async def read_shortlisted(user_id: int, session: Session = Depends(get_session)):
-    shortlists = session.exec(
-        select(Shortlist).where(Shortlist.user_id == user_id)
-    ).all()
+    # fmt: off
+    shortlists = session.exec(select(Shortlist).where(Shortlist.user_id == user_id)).all()
     shortlists.sort(key=lambda shortlist: shortlist.preference)
     projects = []
     for shortlist in shortlists:
