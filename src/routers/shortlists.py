@@ -2,14 +2,13 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
-from ..models import Project, Shortlist, User, UserRead
+from ..models import Project, ProjectRead, Shortlist, User, UserRead
 from ..dependencies import get_session
 
 router = APIRouter(prefix="/")
 
 
-# TODO: Adjust output
-@router.get("/users/{user_id}/shortlisted")
+@router.get("/users/{user_id}/shortlisted", response_model=List[ProjectRead])
 async def read_shortlisted(user_id: int, session: Session = Depends(get_session)):
     shortlists = session.exec(
         select(Shortlist).where(Shortlist.user_id == user_id)
@@ -22,7 +21,6 @@ async def read_shortlisted(user_id: int, session: Session = Depends(get_session)
     return projects
 
 
-# TODO: Add input
 @router.post("/users/{user_id}/shortlisted")
 async def create_shortlisted(
     user_id: int,
@@ -42,7 +40,6 @@ async def delete_shortlisted(
     project_id: int,
     session: Session = Depends(get_session),
 ):
-    # TODO: May be wrong primary keys
     shortlist = session.get(Shortlist, (user_id, project_id))
     if not shortlist:
         raise HTTPException(status_code=404, detail="Shortlist not found")
@@ -51,16 +48,14 @@ async def delete_shortlisted(
     return {"ok": True}
 
 
-# TODO: Add input
 @router.put("/users/{user_id}/shortlisted")
 async def reorder_shortlisted(
     user_id: int,
     preferences: List[int],
     session: Session = Depends(get_session),
 ):
-    shortlists = session.exec(
-        select(Shortlist).where(Shortlist.user_id == user_id)
-    ).all()
+    # fmt: off
+    shortlists = session.exec(select(Shortlist).where(Shortlist.user_id == user_id)).all()
     if len(preferences) != len(shortlists):
         raise HTTPException(status_code=400, detail="Invalid shortlist preferences")
     for shortlist, preference in zip(shortlists, preferences):
@@ -70,7 +65,6 @@ async def reorder_shortlisted(
     return {"ok": True}
 
 
-# TODO: Adjust output
 @router.get("/projects/{project_id}/shortlisters", response_model=List[UserRead])
 async def read_shortlisters(project_id: int, session: Session = Depends(get_session)):
     shortlists = session.exec(

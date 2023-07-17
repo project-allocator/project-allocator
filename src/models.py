@@ -41,14 +41,13 @@ class ProjectBase(SQLModel):
     title: str
     description: str
 
-    user_id: Optional[int] = Field(default=None, foreign_key="user.id")
-
 
 class Project(ProjectBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     created_at: datetime = Field(default=datetime.utcnow())
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
+    proposer_id: Optional[int] = Field(default=None, foreign_key="user.id")
     proposer: User = Relationship(back_populates="proposed")
     details: List["ProjectDetail"] = Relationship(
         back_populates="project",
@@ -73,10 +72,6 @@ class ProjectUpdate(SQLModel):
     description: Optional[str] = None
 
 
-class ProjectReadWithDetails(ProjectRead):
-    details: List["ProjectDetailRead"]
-
-
 ################################################################################
 #                            Project Detail Models                             #
 ################################################################################
@@ -86,14 +81,13 @@ class ProjectDetailBase(SQLModel):
     key: str
     value: str
 
-    project_id: Optional[int] = Field(default=None, foreign_key="project.id")
-
 
 class ProjectDetail(ProjectDetailBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     created_at: datetime = Field(default=datetime.utcnow())
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
+    project_id: Optional[int] = Field(default=None, foreign_key="project.id")
     project: Project = Relationship(back_populates="details")
 
 
@@ -108,6 +102,18 @@ class ProjectDetailRead(ProjectDetailBase):
 class ProjectDetailUpdate(SQLModel):
     key: Optional[str] = None
     value: Optional[str] = None
+
+
+class ProjectCreateWithDetails(ProjectCreate):
+    details: List[ProjectDetailCreate]
+
+
+class ProjectReadWithDetails(ProjectRead):
+    details: List[ProjectDetailRead]
+
+
+class ProjectUpdateWithDetails(ProjectUpdate):
+    details: List[ProjectDetailUpdate]
 
 
 ################################################################################
