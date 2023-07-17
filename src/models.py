@@ -18,8 +18,14 @@ class User(UserBase, table=True):
     created_at: datetime = Field(default=datetime.utcnow())
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
-    proposed: List["Project"] = Relationship(back_populates="proposer")
-    shortlists: List["Shortlist"] = Relationship(back_populates="user")
+    proposed: List["Project"] = Relationship(
+        back_populates="proposer",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    )
+    shortlists: List["Shortlist"] = Relationship(
+        back_populates="user",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    )
 
 
 class UserRead(UserBase):
@@ -44,8 +50,14 @@ class Project(ProjectBase, table=True):
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
     proposer: User = Relationship(back_populates="proposed")
-    details: List["ProjectDetail"] = Relationship(back_populates="project")
-    shortlists: List["Shortlist"] = Relationship(back_populates="project")
+    details: List["ProjectDetail"] = Relationship(
+        back_populates="project",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    )
+    shortlists: List["Shortlist"] = Relationship(
+        back_populates="project",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    )
 
 
 class ProjectCreate(ProjectBase):
@@ -59,6 +71,10 @@ class ProjectRead(ProjectBase):
 class ProjectUpdate(SQLModel):
     title: Optional[str] = None
     description: Optional[str] = None
+
+
+class ProjectReadWithDetails(ProjectRead):
+    details: List["ProjectDetailRead"]
 
 
 ################################################################################
