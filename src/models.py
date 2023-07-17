@@ -1,3 +1,8 @@
+# TODO: Split models in separate files
+# SQLModel suffers from circular import issues, which does not work well with polyfactory.
+# In the future, consider using SQLAlchemy and pydantic individually to solve this issue.
+# https://sqlmodel.tiangolo.com/tutorial/code-structure/
+# https://fastapi.tiangolo.com/tutorial/sql-databases/
 from typing import List, Optional
 from datetime import datetime
 from sqlmodel import Field, Relationship, SQLModel
