@@ -1,6 +1,6 @@
 import Loading from "@/components/Loading";
 import MessageContext from "@/contexts/message";
-import { getData } from "@/services/api";
+import { getData } from "@/services/client";
 import { Project } from "@/services/projects";
 import { showErrorMessage } from "@/utils";
 import { HeartOutlined } from "@ant-design/icons";
