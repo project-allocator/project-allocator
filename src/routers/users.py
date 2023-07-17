@@ -1,13 +1,12 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlmodel import Session, select
+
+from ..models import User, UserRead
+from ..dependencies import get_session
 
 router = APIRouter(prefix="/users")
 
 
-@router.get("/")
-async def read_users():
-    return [{"username": "Rick"}, {"username": "Morty"}]
-
-
-@router.get("/:id")
-async def read_user(id: int):
-    return {"username": "Rick"}
+@router.get("/{id}", response_model=UserRead)
+async def read_user(id: int, session: Session = Depends(get_session)):
+    return session.exec(select(User).where(User.id == id)).one()
