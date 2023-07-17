@@ -1,5 +1,7 @@
 import Loading from "@/components/Loading";
 import MessageContext from "@/contexts/message";
+import { getData } from "@/services/api";
+import { Project } from "@/services/projects";
 import { showErrorMessage } from "@/utils";
 import { DeleteOutlined, HolderOutlined } from '@ant-design/icons';
 import { Button, Divider, List, Space, Tooltip, Typography } from "antd";
@@ -10,7 +12,7 @@ const { Title } = Typography;
 
 export default function ShortlistedProjects() {
   // Call the internal Graph QL API
-  const { data, loading, error } = useQuery(GetProjectsDocument);
+  const { data, loading, error } = getData();
   const projects = data?.projects;
 
   // Framer Motion's Reorder component only works with primitive values
@@ -18,7 +20,7 @@ export default function ShortlistedProjects() {
   const [projectIds, setProjectIds] = useState<number[]>([]);
 
   useEffect(() => {
-    setProjectIds(projects?.map((project) => project.id) || []);
+    setProjectIds(projects?.map((project: Project) => project.id) || []);
   }, [projects]);
 
   const message = useContext(MessageContext)!;
@@ -43,7 +45,7 @@ export default function ShortlistedProjects() {
           rowKey={(projectId: number) => projectId}
           renderItem={(projectId: number) => {
             const project = projects?.find(
-              (project) => project.id === projectId
+              (project: Project) => project.id === projectId
             ) as Project;
             return <ProjectItem project={project} />;
           }}

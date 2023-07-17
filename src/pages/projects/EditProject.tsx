@@ -1,5 +1,7 @@
 import Loading from '@/components/Loading';
 import MessageContext from '@/contexts/message';
+import { getData } from '@/services/api';
+import { Project } from '@/services/projects';
 import { showErrorMessage, showSuccessMessage } from '@/utils';
 import { useContext } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -9,10 +11,10 @@ export default function EditProject() {
   const [params] = useSearchParams();
   const id = parseInt(params.get('id')!);
 
-  const { data: initData, loading: initLoading, error: initError } = useQuery(GetProjectDocument, { variables: { id } });
+  const { data: initData, loading: initLoading, error: initError } = getData();
   const initProject = initData?.project;
 
-  const [editProject, { loading: submitLoading, error: submitError }] = useMutation(EditProjectDocument);
+  const [editProject, { loading: submitLoading, error: submitError }] = getData();
   async function handleFinish(values: Project) {
     await editProject({ variables: { id, data: values } });
     showSuccessMessage(message, `Successfully edited project #${id}`);

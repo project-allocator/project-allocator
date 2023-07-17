@@ -1,5 +1,7 @@
 import Loading from '@/components/Loading';
 import MessageContext from '@/contexts/message';
+import { getData } from '@/services/api';
+import { Project } from '@/services/projects';
 import { showErrorMessage } from '@/utils';
 import { Divider, Space, Table, Tag, Typography } from 'antd';
 import { useContext } from 'react';
@@ -27,13 +29,13 @@ const columns = [
 
 export default function ProposedProjects() {
   // Call the internal Graph QL API
-  const { data, loading, error } = useQuery(GetProjectsDocument);
+  const { data, loading, error } = getData();
 
   const message = useContext(MessageContext)!;
   if (loading) return <Loading />;
   if (error) showErrorMessage(message, error);
 
-  const projects = data!.projects?.map((project) => ({
+  const projects = data!.projects?.map((project: Project) => ({
     ...project,
     key: project.id,
   }))

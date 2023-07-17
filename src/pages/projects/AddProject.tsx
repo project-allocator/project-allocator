@@ -1,5 +1,7 @@
 import Loading from '@/components/Loading';
 import MessageContext from '@/contexts/message';
+import { getData } from '@/services/api';
+import { Project } from '@/services/projects';
 import { showErrorMessage, showSuccessMessage } from '@/utils';
 import { PlusOutlined } from '@ant-design/icons';
 import type { InputRef } from 'antd';
@@ -11,7 +13,7 @@ const { TextArea } = Input;
 const { useForm, useFormInstance } = Form;
 
 export default function AddProject() {
-  const [addProject, { loading, error }] = useMutation(AddProjectDocument);
+  const [addProject, { loading, error }] = getData();
   async function handleFinish(values: Project) {
     await addProject({ variables: { data: values } });
     showSuccessMessage(message, "Successfully add a new project");
