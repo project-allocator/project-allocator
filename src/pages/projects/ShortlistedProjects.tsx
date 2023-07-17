@@ -1,6 +1,6 @@
 import Loading from "@/components/Loading";
 import MessageContext from "@/contexts/message";
-import { showErrorMessage } from "@/utils/message";
+import { showErrorMessage } from "@/utils";
 import { DeleteOutlined, HolderOutlined } from '@ant-design/icons';
 import { Button, Divider, List, Space, Tooltip, Typography } from "antd";
 import { Reorder, useDragControls } from "framer-motion";

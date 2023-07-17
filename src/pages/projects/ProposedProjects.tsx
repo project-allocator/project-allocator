@@ -1,6 +1,6 @@
 import Loading from '@/components/Loading';
 import MessageContext from '@/contexts/message';
-import { showErrorMessage } from '@/utils/message';
+import { showErrorMessage } from '@/utils';
 import { Divider, Space, Table, Tag, Typography } from 'antd';
 import { useContext } from 'react';
 

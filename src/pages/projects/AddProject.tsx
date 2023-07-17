@@ -1,6 +1,6 @@
 import Loading from '@/components/Loading';
 import MessageContext from '@/contexts/message';
-import { showErrorMessage, showSuccessMessage } from '@/utils/message';
+import { showErrorMessage, showSuccessMessage } from '@/utils';
 import { PlusOutlined } from '@ant-design/icons';
 import type { InputRef } from 'antd';
 import { Button, Divider, Form, Input, Space, Tag, Typography } from 'antd';

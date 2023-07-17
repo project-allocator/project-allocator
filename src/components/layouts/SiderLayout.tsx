@@ -1,4 +1,4 @@
-import { toCapitalCase } from '@/utils/case';
+import { toCapitalCase } from '@/utils';
 import { FileAddOutlined, FileDoneOutlined, FileTextOutlined, HomeOutlined } from '@ant-design/icons';
 import { Breadcrumb, BreadcrumbProps, Layout, Menu, MenuProps } from 'antd';
 import React from 'react';

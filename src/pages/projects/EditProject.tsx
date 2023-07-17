@@ -1,6 +1,6 @@
 import Loading from '@/components/Loading';
 import MessageContext from '@/contexts/message';
-import { showErrorMessage, showSuccessMessage } from '@/utils/message';
+import { showErrorMessage, showSuccessMessage } from '@/utils';
 import { useContext } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ProjectForm } from './AddProject';

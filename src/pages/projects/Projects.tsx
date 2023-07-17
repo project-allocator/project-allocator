@@ -1,6 +1,6 @@
 import Loading from "@/components/Loading";
 import MessageContext from "@/contexts/message";
-import { showErrorMessage } from "@/utils/message";
+import { showErrorMessage } from "@/utils";
 import { HeartOutlined } from "@ant-design/icons";
 import { Button, Divider, Space, Table, Tag, Tooltip, Typography } from "antd";
 import { useContext } from "react";
