@@ -9,4 +9,4 @@ router = APIRouter(prefix="/users")
 
 @router.get("/{id}", response_model=UserRead)
 async def read_user(id: int, session: Session = Depends(get_session)):
-    return session.exec(select(User).where(User.id == id)).one()
+    return session.get(User, id)

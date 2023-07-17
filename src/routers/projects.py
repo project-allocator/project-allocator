@@ -15,7 +15,7 @@ async def read_projects(session: Session = Depends(get_session)):
 
 @router.get("/{id}", response_model=ProjectRead)
 async def read_project(id: int, session: Session = Depends(get_session)):
-    return session.exec(select(Project).where(Project.id == id)).one()
+    return session.get(Project, id)
 
 
 @router.post("/", response_model=ProjectRead)
