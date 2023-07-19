@@ -4,9 +4,9 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
 import App from './App';
+import CenterLayout from './components/layouts/CenterLayout';
 import HeaderLayout from './components/layouts/HeaderLayout';
 import SiderLayout from './components/layouts/SiderLayout';
-import './index.css';
 import Error from './pages/Error';
 import AddProject from './pages/projects/AddProject';
 import EditProject from './pages/projects/EditProject';
@@ -22,22 +22,42 @@ import User, { loader as userLoader } from './pages/users/User';
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <App />,
-    errorElement: <Error />,
+    element: (
+      <HeaderLayout>
+        <Outlet />
+      </HeaderLayout>
+    ),
+    errorElement: (
+      <HeaderLayout>
+        <Error />
+      </HeaderLayout>
+    ),
     children: [
       {
         element: (
-          <HeaderLayout>
-            <SiderLayout>
-              <Outlet />
-            </SiderLayout>
-          </HeaderLayout>
+          <CenterLayout>
+            <Outlet />
+          </CenterLayout>
         ),
         children: [
           {
             index: true,
-            element: <div>Hello, World!</div>,
+            element: <div />,
           },
+          {
+            path: "signin",
+            element: <SignIn />,
+            action: undefined,
+          },
+        ]
+      },
+      {
+        element: (
+          <SiderLayout>
+            <Outlet />
+          </SiderLayout>
+        ),
+        children: [
           {
             path: "projects",
             element: <Projects />,
@@ -78,26 +98,14 @@ const router = createBrowserRouter([
           },
         ],
       },
-      {
-        element: (
-          <HeaderLayout>
-            <Outlet />
-          </HeaderLayout>
-        ),
-        children: [
-          {
-            path: "/signin",
-            element: <SignIn />,
-            action: undefined,
-          },
-        ],
-      },
     ],
   },
 ]);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <App>
+      <RouterProvider router={router} />
+    </App>
   </React.StrictMode>,
 )

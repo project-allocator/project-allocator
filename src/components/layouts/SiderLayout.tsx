@@ -36,8 +36,8 @@ const dropdownItems: MenuProps['items'] = [
   },
 ];
 
-type Props = {
-  children: React.ReactNode
+interface Props {
+  children: React.ReactNode;
 };
 
 export default function SiderLayout({ children }: Props) {

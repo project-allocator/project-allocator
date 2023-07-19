@@ -1,7 +1,7 @@
 import { UserRead, readUser } from "@/services/users";
 import { toCapitalCase } from "@/utils";
 import { UserOutlined } from "@ant-design/icons";
-import { Avatar, Divider, Space, Typography } from "antd";
+import { Avatar, Divider, Typography } from "antd";
 import { LoaderFunction, useLoaderData } from 'react-router-dom';
 
 const { Title, Paragraph } = Typography;
@@ -16,7 +16,10 @@ export default function User() {
 
   return (
     <>
-      <Title level={3}>Profile</Title>
+      <Title level={3} className="flex justify-between items-center">
+        Profile
+        <Avatar shape="square" icon={<UserOutlined />} />
+      </Title>
       <Divider />
       <Title level={4}>Name</Title>
       <Paragraph>{user.name}</Paragraph>
@@ -24,9 +27,6 @@ export default function User() {
       <Paragraph>{user.email}</Paragraph>
       <Title level={4}>Role</Title>
       <Paragraph>{toCapitalCase(user.role)}</Paragraph>
-      <Space wrap size={16}>
-        <Avatar shape="square" size={64} icon={<UserOutlined />} />
-      </Space>
     </>
   );
 }

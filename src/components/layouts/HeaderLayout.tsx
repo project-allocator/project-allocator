@@ -29,7 +29,7 @@ const menuItems: MenuProps["items"] = [
   },
 ];
 
-type Props = {
+interface Props {
   children: React.ReactNode;
 };
 
@@ -56,7 +56,9 @@ export default function HeaderLayout({ children }: Props) {
           </Dropdown>
         )}
       </Header>
-      <Content className="grid">{children}</Content>
+      <Content className="grid">
+        {children}
+      </Content>
     </Layout>
   );
 }

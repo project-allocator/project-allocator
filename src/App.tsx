@@ -1,10 +1,14 @@
 import MessageContext from '@/contexts/message';
 import { message } from 'antd';
-import { Outlet } from 'react-router-dom';
 
 const { useMessage } = message;
 
-export default function App() {
+
+interface Props {
+  children: React.ReactNode;
+};
+
+export default function App({ children }: Props) {
   // Setup Ant Design message API
   const [message, contextHolder] = useMessage();
 
@@ -14,7 +18,7 @@ export default function App() {
   return (
     <MessageContext.Provider value={message}>
       {contextHolder}
-      <Outlet />
+      {children}
     </MessageContext.Provider>
   );
 }
