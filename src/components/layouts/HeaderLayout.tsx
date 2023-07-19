@@ -44,7 +44,7 @@ export default function HeaderLayout({ children }: Props) {
     <Layout className="min-h-screen">
       <Header className="flex items-center justify-between">
         <h1 className="text-xl text-white">Project Allocator</h1>
-        {!session && (
+        {session && (
           <Dropdown
             menu={{ items: menuItems }}
             className="bg-transparent text-white"

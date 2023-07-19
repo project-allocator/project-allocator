@@ -13,7 +13,7 @@ import Projects from './pages/projects/Projects';
 import ProposedProjects from './pages/projects/ProposedProjects';
 import ShortlistedProjects from './pages/projects/ShortlistedProjects';
 import SignIn from './pages/SignIn';
-import User from './pages/users/User';
+import User, { loader as userLoader } from './pages/users/User';
 
 
 const router = createBrowserRouter([
@@ -56,16 +56,9 @@ const router = createBrowserRouter([
         ]
       },
       {
-        path: "users",
-        element: <div>Not yet implemented</div>,
-        loader: undefined,
-        children: [
-          {
-            path: ":id",
-            element: <User />,
-            loader: undefined
-          }
-        ]
+        path: "users/:id",
+        element: <User />,
+        loader: userLoader,
       }
     ],
   },

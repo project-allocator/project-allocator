@@ -1,7 +1,7 @@
 import Loading from '@/components/Loading';
 import MessageContext from '@/contexts/message';
 import { getData } from '@/services/client';
-import { Project } from '@/services/projects';
+import { ProjectRead } from '@/services/projects';
 import { showErrorMessage } from '@/utils';
 import { Divider, Space, Table, Tag, Typography } from 'antd';
 import { useContext } from 'react';
@@ -11,15 +11,15 @@ const { Title } = Typography;
 const columns = [
   {
     title: 'Title',
-    render: (project: Project) => <a href={`/projects/${project.id}`}>{project.title}</a>,
+    render: (project: ProjectRead) => <a href={`/projects/${project.id}`}>{project.title}</a>,
   },
   {
     title: 'Description',
-    render: (project: Project) => project.description.slice(0, 500) + '...'
+    render: (project: ProjectRead) => project.description.slice(0, 500) + '...'
   },
   {
     title: 'Categories',
-    render: (project: Project) => (
+    render: (project: ProjectRead) => (
       <Space className='flex-wrap min-w-xl'>
         {project.categories.map((category: string) => <Tag key={category}>{category}</Tag>)}
       </Space>
@@ -35,7 +35,7 @@ export default function ProposedProjects() {
   if (loading) return <Loading />;
   if (error) showErrorMessage(message, error);
 
-  const projects = data!.projects?.map((project: Project) => ({
+  const projects = data!.projects?.map((project: ProjectRead) => ({
     ...project,
     key: project.id,
   }))

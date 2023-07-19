@@ -1,7 +1,7 @@
 import Loading from '@/components/Loading';
 import MessageContext from '@/contexts/message';
 import { getData } from '@/services/client';
-import { Project } from '@/services/projects';
+import { ProjectRead } from '@/services/projects';
 import { showErrorMessage, showSuccessMessage } from '@/utils';
 import { PlusOutlined } from '@ant-design/icons';
 import type { InputRef } from 'antd';
@@ -14,7 +14,7 @@ const { useForm, useFormInstance } = Form;
 
 export default function AddProject() {
   const [addProject, { loading, error }] = getData();
-  async function handleFinish(values: Project) {
+  async function handleFinish(values: ProjectRead) {
     await addProject({ variables: { data: values } });
     showSuccessMessage(message, "Successfully add a new project");
   }
@@ -29,7 +29,7 @@ export default function AddProject() {
 interface Props {
   title: string,
   handleFinish: (values: any) => void
-  initProject?: Project,
+  initProject?: ProjectRead,
 }
 
 export function ProjectForm({ title, handleFinish, initProject }: Props) {

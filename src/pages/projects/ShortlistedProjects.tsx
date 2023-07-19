@@ -1,7 +1,7 @@
 import Loading from "@/components/Loading";
 import MessageContext from "@/contexts/message";
 import { getData } from "@/services/client";
-import { Project } from "@/services/projects";
+import { ProjectRead } from "@/services/projects";
 import { showErrorMessage } from "@/utils";
 import { DeleteOutlined, HolderOutlined } from '@ant-design/icons';
 import { Button, Divider, List, Space, Tooltip, Typography } from "antd";
@@ -20,7 +20,7 @@ export default function ShortlistedProjects() {
   const [projectIds, setProjectIds] = useState<number[]>([]);
 
   useEffect(() => {
-    setProjectIds(projects?.map((project: Project) => project.id) || []);
+    setProjectIds(projects?.map((project: ProjectRead) => project.id) || []);
   }, [projects]);
 
   const message = useContext(MessageContext)!;
@@ -45,8 +45,8 @@ export default function ShortlistedProjects() {
           rowKey={(projectId: number) => projectId}
           renderItem={(projectId: number) => {
             const project = projects?.find(
-              (project: Project) => project.id === projectId
-            ) as Project;
+              (project: ProjectRead) => project.id === projectId
+            ) as ProjectRead;
             return <ProjectItem project={project} />;
           }}
         />
@@ -56,7 +56,7 @@ export default function ShortlistedProjects() {
 }
 
 interface Props {
-  project: Project;
+  project: ProjectRead;
 }
 
 function ProjectItem({ project }: Props) {

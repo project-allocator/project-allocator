@@ -1,7 +1,7 @@
 import Loading from '@/components/Loading';
 import MessageContext from '@/contexts/message';
 import { getData } from '@/services/client';
-import { Project } from '@/services/projects';
+import { ProjectRead } from '@/services/projects';
 import { showErrorMessage, showSuccessMessage } from '@/utils';
 import { useContext } from 'react';
 import { useSearchParams } from 'react-router-dom';
@@ -15,7 +15,7 @@ export default function EditProject() {
   const initProject = initData?.project;
 
   const [editProject, { loading: submitLoading, error: submitError }] = getData();
-  async function handleFinish(values: Project) {
+  async function handleFinish(values: ProjectRead) {
     await editProject({ variables: { id, data: values } });
     showSuccessMessage(message, `Successfully edited project #${id}`);
     // TODO: Redirect using router actions
@@ -27,5 +27,5 @@ export default function EditProject() {
   if (initLoading || submitLoading) return <Loading />;
   if (initError || submitError) showErrorMessage(message, initError || submitError);
 
-  return <ProjectForm title={`Edit Project #${id}`} handleFinish={handleFinish} initProject={initProject as Project} />
+  return <ProjectForm title={`Edit Project #${id}`} handleFinish={handleFinish} initProject={initProject as ProjectRead} />
 }

@@ -10,12 +10,14 @@ export default function App() {
   // Setup Ant Design message API
   const [message, contextHolder] = useMessage();
 
+  // TODO: Instead of useNavigation() and errorElement,
+  // we can catch all errors and useNavigation() to show loading/submitting
+  // https://reactrouter.com/en/main/guides/deferred#using-defer
   return (
     <MessageContext.Provider value={message}>
       {contextHolder}
       <HeaderLayout>
         <SiderLayout>
-          <div className='text-pink-900'> hello, world!</div>
           <Outlet />
         </SiderLayout>
       </HeaderLayout>

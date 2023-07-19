@@ -1,13 +1,18 @@
 import Loading from "@/components/Loading";
 import MessageContext from "@/contexts/message";
 import { getData } from "@/services/client";
+import { readProject } from "@/services/projects";
 import { showErrorMessage } from "@/utils";
 import { DeleteOutlined, EditOutlined, HeartOutlined } from '@ant-design/icons';
 import { Button, Divider, Space, Tag, Tooltip, Typography } from "antd";
 import { useContext } from "react";
-import { useSearchParams } from 'react-router-dom';
+import { LoaderFunction, useSearchParams } from 'react-router-dom';
 
 const { Title, Paragraph } = Typography;
+
+export const loader: LoaderFunction = ({ params }) => {
+  return readProject(parseInt(params.id!));
+}
 
 export default function Project() {
   const [params] = useSearchParams();
