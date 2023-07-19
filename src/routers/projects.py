@@ -13,7 +13,7 @@ from ..models import (
 from ..dependencies import get_session
 from ..config import config
 
-router = APIRouter(prefix="/projects")
+router = APIRouter(prefix="/projects", tags=["project"])
 
 
 def check_project_detail(detail: ProjectDetail):
