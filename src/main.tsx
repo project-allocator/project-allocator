@@ -2,8 +2,10 @@ import './index.css';
 
 import * as React from 'react';
 import * as ReactDOM from 'react-dom/client';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
 import App from './App';
+import HeaderLayout from './components/layouts/HeaderLayout';
+import SiderLayout from './components/layouts/SiderLayout';
 import './index.css';
 import Error from './pages/Error';
 import AddProject from './pages/projects/AddProject';
@@ -15,7 +17,8 @@ import ShortlistedProjects from './pages/projects/ShortlistedProjects';
 import SignIn from './pages/SignIn';
 import User, { loader as userLoader } from './pages/users/User';
 
-
+// TODO: Split the route object into separet files
+// https://reactrouter.com/en/main/routers/create-browser-router
 const router = createBrowserRouter([
   {
     path: "/",
@@ -23,50 +26,74 @@ const router = createBrowserRouter([
     errorElement: <Error />,
     children: [
       {
-        path: "projects",
-        element: <Projects />,
-        loader: undefined,
+        element: (
+          <HeaderLayout>
+            <SiderLayout>
+              <Outlet />
+            </SiderLayout>
+          </HeaderLayout>
+        ),
         children: [
           {
-            path: "proposed",
-            element: <ProposedProjects />,
-            loader: undefined,
+            index: true,
+            element: <div>Hello, World!</div>,
           },
           {
-            path: "shortlisted",
-            element: <ShortlistedProjects />,
+            path: "projects",
+            element: <Projects />,
             loader: undefined,
+            children: [
+              {
+                path: "proposed",
+                element: <ProposedProjects />,
+                loader: undefined,
+              },
+              {
+                path: "shortlisted",
+                element: <ShortlistedProjects />,
+                loader: undefined,
+              },
+              {
+                path: "add",
+                element: <AddProject />,
+                action: undefined,
+              },
+              {
+                path: ":id",
+                element: <Project />,
+                loader: undefined,
+              },
+              {
+                path: ":id/edit",
+                element: <EditProject />,
+                loader: undefined,
+                action: undefined,
+              },
+            ]
           },
           {
-            path: "add",
-            element: <AddProject />,
-            action: undefined,
+            path: "users/:id",
+            element: <User />,
+            loader: userLoader,
           },
-          {
-            path: ":id",
-            element: <Project />,
-            loader: undefined,
-          },
-          {
-            path: ":id/edit",
-            element: <EditProject />,
-            loader: undefined,
-            action: undefined,
-          },
-        ]
+        ],
       },
       {
-        path: "users/:id",
-        element: <User />,
-        loader: userLoader,
-      }
+        element: (
+          <HeaderLayout>
+            <Outlet />
+          </HeaderLayout>
+        ),
+        children: [
+          {
+            path: "/signin",
+            element: <SignIn />,
+            action: undefined,
+          },
+        ],
+      },
     ],
   },
-  {
-    path: "/signin",
-    element: <SignIn />,
-    action: undefined,
-  }
 ]);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

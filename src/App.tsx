@@ -1,5 +1,3 @@
-import HeaderLayout from '@/components/layouts/HeaderLayout';
-import SiderLayout from '@/components/layouts/SiderLayout';
 import MessageContext from '@/contexts/message';
 import { message } from 'antd';
 import { Outlet } from 'react-router-dom';
@@ -16,11 +14,7 @@ export default function App() {
   return (
     <MessageContext.Provider value={message}>
       {contextHolder}
-      <HeaderLayout>
-        <SiderLayout>
-          <Outlet />
-        </SiderLayout>
-      </HeaderLayout>
+      <Outlet />
     </MessageContext.Provider>
   );
 }

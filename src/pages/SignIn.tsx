@@ -1,4 +1,3 @@
-import HeaderLayout from "@/components/layouts/HeaderLayout";
 import { WindowsOutlined } from '@ant-design/icons';
 import { Button, Card, Layout, Space, Typography } from "antd";
 
@@ -28,12 +27,4 @@ export default function SignIn() {
       </Card>
     </Layout>
   );
-}
-
-SignIn.getLayout = function getLayout(page: React.ReactNode) {
-  return (
-    <HeaderLayout>
-      {page}
-    </HeaderLayout>
-  )
 }
