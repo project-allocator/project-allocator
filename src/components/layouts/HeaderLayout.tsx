@@ -33,8 +33,6 @@ type Props = {
   children: React.ReactNode;
 };
 
-// TODO: Check type annotations available in Next.js
-// https://nextjs.org/docs/pages/building-your-application/configuring/typescript#minimum-typescript-version
 export default function HeaderLayout({ children }: Props) {
   // Get session from Next Auth
   // const { data: session } = useSession();
