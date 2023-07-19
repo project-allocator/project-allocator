@@ -1,5 +1,3 @@
-# TODO: Create CLI for seeding the database
-# https://typer.tiangolo.com/
 import random
 from typing import List
 import typer
@@ -19,8 +17,6 @@ def callback():
     pass
 
 
-# TODO: Create all tables based on models
-# TODO: Use alembic in the future
 @app.command()
 def create():
     print("❗[red]This command should not be run in production.")
@@ -30,8 +26,6 @@ def create():
     print("✨[green]Successfully created all tables in the database.")
 
 
-# TODO: Drop all tables based on models
-# TODO: Use alembic in the future
 @app.command()
 def drop():
     print("❗[red]This command should not be run in production.")

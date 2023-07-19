@@ -19,7 +19,7 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# TODO: Load database url from environment
+# Load database url from environment
 load_dotenv()
 config.set_main_option("sqlalchemy.url", os.environ.get("DATABASE_URL"))
 
