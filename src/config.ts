@@ -1,3 +1,3 @@
-import config from '../../config.yaml';
+import config from '@/../config.yaml';
 
 export default config;

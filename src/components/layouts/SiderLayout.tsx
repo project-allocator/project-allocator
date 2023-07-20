@@ -2,13 +2,13 @@ import { toCapitalCase } from '@/utils';
 import { FileAddOutlined, FileDoneOutlined, FileTextOutlined, HomeOutlined } from '@ant-design/icons';
 import { Breadcrumb, BreadcrumbProps, Layout, Menu, MenuProps } from 'antd';
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 const { Content, Sider } = Layout;
 
 const dropdownItems: MenuProps['items'] = [
   {
-    key: 'all',
+    key: 'projects',
     icon: <FileTextOutlined />,
     label: (
       <Link to="/projects">
@@ -20,7 +20,7 @@ const dropdownItems: MenuProps['items'] = [
     key: 'proposed',
     icon: <FileAddOutlined />,
     label: (
-      <Link to="/projects/proposed">
+      <Link to="/proposed">
         Proposed Projects
       </Link>
     )
@@ -29,22 +29,20 @@ const dropdownItems: MenuProps['items'] = [
     key: 'shortlisted',
     icon: <FileDoneOutlined />,
     label: (
-      <Link to="/projects/shortlisted">
+      <Link to="/shortlisted">
         Shortlisted Projects
       </Link>
     )
   },
 ];
 
-interface Props {
+interface SiderLayoutProps {
   children: React.ReactNode;
 };
 
-export default function SiderLayout({ children }: Props) {
-  // TODO: Setup react router
-  // const { asPath } = useRouter();
-  const asPath = '';
-  const dirnames: string[] = asPath.split('/').slice(1);
+export default function SiderLayout({ children }: SiderLayoutProps) {
+  const { pathname } = useLocation();
+  const dirnames: string[] = pathname.split('/').slice(1);
   const pathnames: string[] = dirnames.reduce((pathname: string[], dirname: string) =>
     [...pathname, `${pathname.at(-1) || ''}/${dirname}`], []);
   const breadcrumbItems: BreadcrumbProps['items'] = dirnames.map((dirname, index) => ({
@@ -58,10 +56,7 @@ export default function SiderLayout({ children }: Props) {
         <Menu
           mode="inline"
           items={dropdownItems}
-          // TODO: Refine logic to show default selected item
-          defaultSelectedKeys={
-            dirnames[0] === 'projects'
-              ? [dirnames.length === 1 ? 'all' : dirnames[2]] : []}
+          defaultSelectedKeys={[dirnames[0]]}
           className='h-full'
         />
       </Sider>

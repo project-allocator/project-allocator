@@ -1,7 +1,7 @@
-import client from "@/services/api";
+import client from '@/services/api';
 import type { Project } from "@/types";
-import { Divider, Table, Typography } from "antd";
-import { useLoaderData } from "react-router-dom";
+import { Divider, Table, Typography } from 'antd';
+import { useLoaderData } from 'react-router-dom';
 
 const { Title } = Typography;
 
@@ -36,20 +36,18 @@ export async function loader() {
   return data;
 }
 
-export default function Projects() {
+export default function Proposed() {
   const projects = useLoaderData() as Project[];
 
   return (
     <>
-      <Title level={3}>
-        List of All Projects
-      </Title>
+      <Title level={3}>List of Proposed Projects</Title>
       <Divider />
       <Table
-        rowSelection={{ type: "checkbox" }}
+        rowSelection={{ type: 'checkbox' }}
         columns={columns}
         dataSource={
-          projects.map((project: Project) => ({
+          projects?.map((project: Project) => ({
             ...project,
             key: project.id,
           }))
@@ -57,4 +55,4 @@ export default function Projects() {
       />
     </>
   );
-}
+};

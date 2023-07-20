@@ -1,35 +1,25 @@
-import Loading from "@/components/Loading";
-import MessageContext from "@/contexts/message";
-import { getData } from "@/services/client";
-import { readProject } from "@/services/projects";
-import { showErrorMessage } from "@/utils";
+import client from "@/services/api";
+import type { Project } from "@/types";
 import { DeleteOutlined, EditOutlined, HeartOutlined } from '@ant-design/icons';
-import { Button, Divider, Space, Tag, Tooltip, Typography } from "antd";
-import { useContext } from "react";
-import { LoaderFunction, useSearchParams } from 'react-router-dom';
+import { Button, Divider, Space, Tooltip, Typography } from "antd";
+import { useLoaderData, useSearchParams, type LoaderFunctionArgs } from 'react-router-dom';
 
 const { Title, Paragraph } = Typography;
 
-export const loader: LoaderFunction = ({ params }) => {
-  return readProject(parseInt(params.id!));
+export async function loader({ params }: LoaderFunctionArgs) {
+  const { data } = await client.get(`/projects/${params.id}`);
+  return data;
 }
 
 export default function Project() {
+  const project = useLoaderData() as Project;
   const [params] = useSearchParams();
-  const id = parseInt(params.get('id')!);
-  const isStudent = Math.random() < 0.5;
-
-  const { data, loading, error } = getData();
-  const project = data?.project;
-
-  const message = useContext(MessageContext)!;
-  if (loading) return <Loading />;
-  if (error) showErrorMessage(message, error);
+  const isStudent = params.get('student') !== null;
 
   return (
     <>
       <Title level={3} className="flex justify-between items-center">
-        Project #{id}
+        Project #{project.id}
         {isStudent ? (
           <Tooltip title="Shortlist">
             <Button shape="circle" icon={<HeartOutlined />} />
@@ -37,7 +27,7 @@ export default function Project() {
         ) : (
           <Space>
             <Tooltip title="Edit">
-              <Button href="./edit" shape="circle" icon={<EditOutlined />} />
+              <Button href={`./${project.id}/edit`} shape="circle" icon={<EditOutlined />} />
             </Tooltip>
             <Tooltip title="Delete">
               <Button shape="circle" icon={<DeleteOutlined />} />
@@ -47,17 +37,16 @@ export default function Project() {
       </Title>
       <Divider />
       <Title level={4}>Title</Title>
-      <Paragraph>{project?.title}</Paragraph>
+      <Paragraph>{project.title}</Paragraph>
       <Title level={4}>Description</Title>
-      <Paragraph>{project?.description}</Paragraph>
-      {/* <Title level={4}>Supervisor</Title>
-      <Paragraph>Sheldon Cooper</Paragraph> */}
+      <Paragraph>{project.description}</Paragraph>
       <Title level={4}>Categories</Title>
-      <Space className="flex-wrap min-w-xl">
-        {project?.categories.map((category: string) => (
+      {/* TODO: Bring back categories view */}
+      {/* <Space className="flex-wrap min-w-xl">
+        {project.categories.map((category: string) => (
           <Tag key={category}>{category}</Tag>
         ))}
-      </Space>
+      </Space> */}
     </>
   );
 }

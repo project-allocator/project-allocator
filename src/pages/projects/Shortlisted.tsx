@@ -1,35 +1,34 @@
-import Loading from "@/components/Loading";
-import MessageContext from "@/contexts/message";
-import { getData } from "@/services/client";
-import { ProjectRead } from "@/services/projects";
-import { showErrorMessage } from "@/utils";
+import client from "@/services/api";
+import type { Project } from "@/types";
 import { DeleteOutlined, HolderOutlined } from '@ant-design/icons';
 import { Button, Divider, List, Space, Tooltip, Typography } from "antd";
 import { Reorder, useDragControls } from "framer-motion";
-import { useContext, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { useLoaderData } from "react-router-dom";
 
 const { Title } = Typography;
 
-export default function ShortlistedProjects() {
-  // Call the internal Graph QL API
-  const { data, loading, error } = getData();
-  const projects = data?.projects;
+export async function loader() {
+  const { data } = await client.get('/projects/');
+  return data;
+}
+
+export default function Shortlisted() {
+  const projects = useLoaderData() as Project[];
 
   // Framer Motion's Reorder component only works with primitive values
   // so we use project ids as state.
   const [projectIds, setProjectIds] = useState<number[]>([]);
 
   useEffect(() => {
-    setProjectIds(projects?.map((project: ProjectRead) => project.id) || []);
+    setProjectIds(projects.map((project: Project) => project.id) || []);
   }, [projects]);
-
-  const message = useContext(MessageContext)!;
-  if (loading) return <Loading />;
-  if (error) showErrorMessage(message, error);
 
   return (
     <>
-      <Title level={3}>Shortlisted Projects</Title>
+      <Title level={3}>
+        List of Shortlisted Projects
+      </Title>
       <Divider />
       <Reorder.Group
         as="div"
@@ -38,15 +37,15 @@ export default function ShortlistedProjects() {
         onReorder={setProjectIds}
       >
         <List
-          // header={<div>Header</div>}
-          // footer={<div>Footer</div>}
+          header={<div>Header</div>}
+          footer={<div>Footer</div>}
           bordered
           dataSource={projectIds}
           rowKey={(projectId: number) => projectId}
           renderItem={(projectId: number) => {
             const project = projects?.find(
-              (project: ProjectRead) => project.id === projectId
-            ) as ProjectRead;
+              (project: Project) => project.id === projectId
+            ) as Project;
             return <ProjectItem project={project} />;
           }}
         />
@@ -55,11 +54,11 @@ export default function ShortlistedProjects() {
   );
 }
 
-interface Props {
-  project: ProjectRead;
+interface ProjectItemProps {
+  project: Project;
 }
 
-function ProjectItem({ project }: Props) {
+function ProjectItem({ project }: ProjectItemProps) {
   // Drag controls for Framer Motion's Reorder component
   const controls = useDragControls();
 

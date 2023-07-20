@@ -1,39 +1,35 @@
-import Loading from '@/components/Loading';
-import MessageContext from '@/contexts/message';
-import { getData } from '@/services/client';
-import { ProjectRead } from '@/services/projects';
-import { showErrorMessage, showSuccessMessage } from '@/utils';
+import client from '@/services/api';
+import type { Project } from "@/types";
 import { PlusOutlined } from '@ant-design/icons';
 import type { InputRef } from 'antd';
 import { Button, Divider, Form, Input, Space, Tag, Typography } from 'antd';
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useSubmit, type ActionFunctionArgs } from 'react-router-dom';
 
 const { Title } = Typography;
 const { TextArea } = Input;
 const { useForm, useFormInstance } = Form;
 
-export default function AddProject() {
-  const [addProject, { loading, error }] = getData();
-  async function handleFinish(values: ProjectRead) {
-    await addProject({ variables: { data: values } });
-    showSuccessMessage(message, "Successfully add a new project");
-  }
-
-  const message = useContext(MessageContext)!;
-  if (loading) return <Loading />;
-  if (error) showErrorMessage(message, error);
-
-  return <ProjectForm title="Add a New Project" handleFinish={handleFinish} />
+export async function action({ request }: ActionFunctionArgs) {
+  const data = await request.json();
+  // TODO: Implement custom project details support
+  data.details = [];
+  await client.post('/projects/', data);
+  return null;
 }
 
-interface Props {
+export default function ProjectAdd() {
+  return <ProjectForm title="Add a New Project" />
+}
+
+interface ProjectFormProps {
   title: string,
-  handleFinish: (values: any) => void
-  initProject?: ProjectRead,
+  initProject?: Project,
 }
 
-export function ProjectForm({ title, handleFinish, initProject }: Props) {
+export function ProjectForm({ title, initProject }: ProjectFormProps) {
   const [form] = useForm();
+  const submit = useSubmit();
 
   return (
     <>
@@ -41,9 +37,15 @@ export function ProjectForm({ title, handleFinish, initProject }: Props) {
       <Divider />
       <Form
         form={form}
+        method="post"
         layout="vertical"
         autoComplete="off"
-        onFinish={handleFinish}
+        onFinish={(values) =>
+          submit(values, {
+            method: 'post',
+            encType: "application/json"
+          })
+        }
         initialValues={initProject}
         className='ml-6 max-w-xl'
       >

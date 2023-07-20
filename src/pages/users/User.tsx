@@ -1,18 +1,19 @@
-import { UserRead, readUser } from "@/services/users";
+import client from "@/services/api";
+import type { User } from '@/types';
 import { toCapitalCase } from "@/utils";
 import { UserOutlined } from "@ant-design/icons";
 import { Avatar, Divider, Typography } from "antd";
-import { LoaderFunction, useLoaderData } from 'react-router-dom';
+import { LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
 
 const { Title, Paragraph } = Typography;
 
-export const loader: LoaderFunction = async ({ params }) => {
-  const { data } = await readUser(parseInt(params.id!));
+export async function loader({ params }: LoaderFunctionArgs) {
+  const { data } = await client.get(`/users/${params.id}`);
   return data
 }
 
 export default function User() {
-  const user = useLoaderData() as UserRead;
+  const user = useLoaderData() as User;
 
   return (
     <>

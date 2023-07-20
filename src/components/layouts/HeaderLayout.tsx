@@ -29,11 +29,11 @@ const menuItems: MenuProps["items"] = [
   },
 ];
 
-interface Props {
+interface HeaderLayoutProps {
   children: React.ReactNode;
 };
 
-export default function HeaderLayout({ children }: Props) {
+export default function HeaderLayout({ children }: HeaderLayoutProps) {
   // Get session from Next Auth
   // const { data: session } = useSession();
   const session = {};
