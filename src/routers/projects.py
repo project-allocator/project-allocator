@@ -62,7 +62,7 @@ async def update_project(
     # Update project
     for key, value in project_data.dict(
         exclude_unset=True,
-        exclude=["details"],
+        exclude=set("details"),
     ).items():
         setattr(project, key, value)
     # Update project details

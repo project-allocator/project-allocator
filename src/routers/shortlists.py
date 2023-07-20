@@ -8,7 +8,7 @@ from ..dependencies import get_session
 router = APIRouter(prefix="/")
 
 
-@router.get("/users/{user_id}/shortlisted", response_model=List[ProjectRead])
+@router.get("/users/{user_id}/shortlisted/", response_model=List[ProjectRead])
 async def read_shortlisted(user_id: int, session: Session = Depends(get_session)):
     # fmt: off
     shortlists = session.exec(select(Shortlist).where(Shortlist.user_id == user_id)).all()
@@ -20,7 +20,7 @@ async def read_shortlisted(user_id: int, session: Session = Depends(get_session)
     return projects
 
 
-@router.post("/users/{user_id}/shortlisted")
+@router.post("/users/{user_id}/shortlisted/")
 async def create_shortlisted(
     user_id: int,
     project_id: int,
@@ -47,7 +47,7 @@ async def delete_shortlisted(
     return {"ok": True}
 
 
-@router.put("/users/{user_id}/shortlisted")
+@router.put("/users/{user_id}/shortlisted/")
 async def reorder_shortlisted(
     user_id: int,
     preferences: List[int],
@@ -64,7 +64,7 @@ async def reorder_shortlisted(
     return {"ok": True}
 
 
-@router.get("/projects/{project_id}/shortlisters", response_model=List[UserRead])
+@router.get("/projects/{project_id}/shortlisters/", response_model=List[UserRead])
 async def read_shortlisters(project_id: int, session: Session = Depends(get_session)):
     shortlists = session.exec(
         select(Shortlist).where(Shortlist.project_id == project_id)
