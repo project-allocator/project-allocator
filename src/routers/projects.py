@@ -9,11 +9,12 @@ from ..models import (
     ProjectReadWithDetails,
     ProjectReadWithDetails,
     ProjectUpdateWithDetails,
+    User,
 )
 from ..dependencies import get_session
 from ..config import config
 
-router = APIRouter(prefix="/projects", tags=["project"])
+router = APIRouter(tags=["project"])
 
 
 def check_project_detail(detail: ProjectDetail):
@@ -22,24 +23,27 @@ def check_project_detail(detail: ProjectDetail):
         raise HTTPException(status_code=400, detail="Invalid project details")
 
 
-@router.get("/", response_model=List[ProjectReadWithDetails])
+@router.get("/projects", response_model=List[ProjectReadWithDetails])
 async def read_projects(session: Session = Depends(get_session)):
     return session.exec(select(Project)).all()
 
 
-@router.get("/{id}", response_model=ProjectReadWithDetails)
+@router.get("/projects/{id}", response_model=ProjectReadWithDetails)
 async def read_project(id: int, session: Session = Depends(get_session)):
     return session.get(Project, id)
 
 
-@router.post("/", response_model=ProjectReadWithDetails)
+@router.post("/projects", response_model=ProjectReadWithDetails)
 async def create_project(
     project_data: ProjectCreateWithDetails,
     session: Session = Depends(get_session),
 ):
     # Create project
     project = Project.from_orm(project_data)
-    session.add()
+    # TODO: Read from session
+    user_id = 1
+    project.user = session.get(User, user_id)
+    session.add(project)
     # Create project details
     for detail_data in project_data.details:
         check_project_detail(detail_data)
@@ -50,7 +54,7 @@ async def create_project(
     return project
 
 
-@router.put("/{id}", response_model=ProjectReadWithDetails)
+@router.put("/projects/{id}", response_model=ProjectReadWithDetails)
 async def update_project(
     id: int,
     project_data: ProjectUpdateWithDetails,
