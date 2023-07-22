@@ -1,3 +1,4 @@
+from typing import List
 from polyfactory.factories.pydantic_factory import ModelFactory
 from faker import Faker
 from .models import Shortlist, User, Project
@@ -53,6 +54,15 @@ class ProjectFactory(ModelFactory):
     @classmethod
     def description(cls) -> str:
         return cls.__faker__.paragraph()
+
+    @classmethod
+    def categories(cls) -> List[str]:
+        categories = []
+        while len(categories) < 5:
+            word = cls.__faker__.word()
+            if word not in categories:
+                categories.append(word)
+        return categories
 
 
 ################################################################################

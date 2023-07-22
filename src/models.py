@@ -5,7 +5,7 @@
 # https://fastapi.tiangolo.com/tutorial/sql-databases/
 from typing import List, Optional
 from datetime import datetime
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import JSON, Column, Field, Relationship, SQLModel
 
 ################################################################################
 #                                 User Models                                  #
@@ -45,6 +45,7 @@ class UserRead(UserBase):
 class ProjectBase(SQLModel):
     title: str
     description: str
+    categories: List[str] = Field(sa_column=Column(JSON))
 
 
 class Project(ProjectBase, table=True):
