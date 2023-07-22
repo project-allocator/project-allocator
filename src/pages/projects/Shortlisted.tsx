@@ -9,7 +9,7 @@ import { useLoaderData } from "react-router-dom";
 const { Title } = Typography;
 
 export async function loader() {
-  const { data } = await client.get('/projects/');
+  const { data } = await client.get('/users/me/shortlisted');
   return data;
 }
 

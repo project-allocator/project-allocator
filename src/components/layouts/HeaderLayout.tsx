@@ -8,7 +8,7 @@ const menuItems: MenuProps["items"] = [
   {
     key: "profile",
     // TODO: Setup correct link to individual user profile
-    label: <Link to="/users/1">Profile</Link>,
+    label: <Link to="/profile">Profile</Link>,
     icon: <UserOutlined />,
   },
   {

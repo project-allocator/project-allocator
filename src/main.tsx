@@ -14,7 +14,7 @@ import Projects, { loader as projectsLoader } from './pages/projects/Projects';
 import Proposed, { loader as proposedLoader } from './pages/projects/Proposed';
 import Shortlisted, { loader as shortlistedLoader } from './pages/projects/Shortlisted';
 import SignIn from './pages/SignIn';
-import User, { loader as userViewLoader } from './pages/users/User';
+import Profile, { loader as userViewLoader } from './pages/users/User';
 
 // TODO: Split the route object into separet files
 // https://reactrouter.com/en/main/routers/create-browser-router
@@ -94,8 +94,8 @@ const router = createBrowserRouter([
             loader: shortlistedLoader,
           },
           {
-            path: "users/:id",
-            element: <User />,
+            path: "profile",
+            element: <Profile />,
             loader: userViewLoader,
           },
         ],
