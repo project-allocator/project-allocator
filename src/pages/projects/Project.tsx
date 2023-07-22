@@ -1,7 +1,7 @@
 import client from "@/services/api";
 import type { Project } from "@/types";
 import { DeleteOutlined, EditOutlined, HeartOutlined } from '@ant-design/icons';
-import { Button, Divider, Space, Tooltip, Typography } from "antd";
+import { Button, Divider, Space, Tag, Tooltip, Typography } from "antd";
 import { useLoaderData, useSearchParams, type LoaderFunctionArgs } from 'react-router-dom';
 
 const { Title, Paragraph } = Typography;
@@ -41,12 +41,11 @@ export default function Project() {
       <Title level={4}>Description</Title>
       <Paragraph>{project.description}</Paragraph>
       <Title level={4}>Categories</Title>
-      {/* TODO: Bring back categories view */}
-      {/* <Space className="flex-wrap min-w-xl">
+      <Space className="flex-wrap min-w-xl">
         {project.categories.map((category: string) => (
           <Tag key={category}>{category}</Tag>
         ))}
-      </Space> */}
+      </Space>
     </>
   );
 }

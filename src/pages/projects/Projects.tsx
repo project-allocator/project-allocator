@@ -1,6 +1,6 @@
 import client from "@/services/api";
 import type { Project } from "@/types";
-import { Divider, Table, Typography } from "antd";
+import { Divider, Space, Table, Tag, Typography } from "antd";
 import { useLoaderData } from "react-router-dom";
 
 const { Title } = Typography;
@@ -18,17 +18,16 @@ const columns = [
       ? project.description
       : project.description.slice(0, 500) + "...",
   },
-  // TODO: Bring back categories view
-  // {
-  //   title: "Categories",
-  //   render: (project: ProjectRead) => (
-  //     <Space className="flex-wrap min-w-xl">
-  //       {project.categories.map((category: string) => (
-  //         <Tag key={category}>{category}</Tag>
-  //       ))}
-  //     </Space>
-  //   ),
-  // },
+  {
+    title: "Categories",
+    render: (project: Project) => (
+      <Space className="flex-wrap min-w-xl">
+        {project.categories.map((category: string) => (
+          <Tag key={category}>{category}</Tag>
+        ))}
+      </Space>
+    ),
+  },
 ];
 
 export async function loader() {
