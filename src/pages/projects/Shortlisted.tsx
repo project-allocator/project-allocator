@@ -1,5 +1,4 @@
-import client from "@/services/api";
-import type { Project } from "@/types";
+import { ProjectRead, ShortlistService } from "@/services/api";
 import { DeleteOutlined, HolderOutlined } from '@ant-design/icons';
 import { Button, Divider, List, Space, Tooltip, Typography } from "antd";
 import { Reorder, useDragControls } from "framer-motion";
@@ -9,21 +8,20 @@ import { Link, useLoaderData, useRevalidator } from "react-router-dom";
 const { Title, Text } = Typography;
 
 export async function shortlistedLoader() {
-  const { data } = await client.get('/users/me/shortlisted');
-  return data;
+  return await ShortlistService.readShortlisted();
 }
 
 // TODO: Re-implement list items with dnd kit
 // https://ant.design/components/table#components-table-demo-drag-sorting-handler
 export default function Shortlisted() {
-  const projects = useLoaderData() as Project[];
+  const projects = useLoaderData() as ProjectRead[];
 
   // Framer Motion's Reorder component only works with primitive values
   // so we use project ids as state.
   const [projectIds, setProjectIds] = useState<number[]>([]);
 
   useEffect(() => {
-    setProjectIds(projects.map((project: Project) => project.id) || []);
+    setProjectIds(projects.map((project: ProjectRead) => project.id) || []);
   }, [projects]);
 
   return (
@@ -37,8 +35,8 @@ export default function Shortlisted() {
         axis="y"
         values={projectIds}
         onReorder={async (projectIds) => {
-          await setProjectIds(projectIds);
-          await client.put('/users/me/shortlisted', projectIds);
+          await ShortlistService.reorderShortlisted(projectIds);
+          setProjectIds(projectIds);
         }}
       >
         <List
@@ -48,9 +46,9 @@ export default function Shortlisted() {
           dataSource={projectIds}
           rowKey={(projectId: number) => projectId}
           renderItem={(projectId: number) => {
-            const project = projects?.find((project: Project) => project.id === projectId);
+            const project = projects?.find((project: ProjectRead) => project.id === projectId);
             if (project) {
-              return <ProjectItem project={project as Project} />;
+              return <ProjectItem project={project as ProjectRead} />;
             }
           }}
         />
@@ -60,7 +58,7 @@ export default function Shortlisted() {
 }
 
 interface ProjectItemProps {
-  project: Project;
+  project: ProjectRead;
 }
 
 function ProjectItem({ project }: ProjectItemProps) {
@@ -87,7 +85,7 @@ function ProjectItem({ project }: ProjectItemProps) {
               className="border-none"
               icon={<DeleteOutlined />}
               onClick={async () => {
-                await client.delete(`/users/me/shortlisted/${project.id}`);
+                await ShortlistService.unsetShortlisted(project.id);
                 revalidator.revalidate();
               }}
             />

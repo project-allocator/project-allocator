@@ -1,7 +1,56 @@
 project:
   details:
-    note:
-      title: "Note"
-      description: "Lorem ipsum"
-      type: text
+    - name: lorem1
+      title: Lorem ipsum
+      description: >
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit, 
+        sed do eiusmod tempor incididunt ut labore et dolore magna aliqua
+      message: Lorem ipsum dolor sit amet
+      type: textfield
+      required: true
+    - name: lorem2
+      title: Lorem ipsum
+      description:
+      message: Lorem ipsum dolor sit amet
+      type: textarea
+      required: true
+    - name: lorem3
+      title: Lorem ipsum
+      description:
+      type: number
+      required: true
+    - name: lorem4
+      title: Lorem ipsum
+      description:
+      type: slider
+      required: true
+    - name: lorem5
+      title: Lorem ipsum
+      description:
+      type: date
+      required: true
+    - name: lorem6
+      title: Lorem ipsum
+      description:
+      type: time
+      required: true
+    - name: lorem7
+      title: Lorem ipsum
+      description:
+      type: switch
+      required: true
+    - name: lorem8
+      title: Lorem ipsum
+      description:
+      type: select
+      required: true
+    - name: lorem9
+      title: Lorem ipsum
+      description:
+      type: checkbox
+      required: true
+    - name: lorem10
+      title: Lorem ipsum
+      description:
+      type: radio
       required: true

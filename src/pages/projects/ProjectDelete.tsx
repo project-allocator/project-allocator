@@ -1,7 +1,7 @@
-import client from "@/services/api";
+import { ProjectService } from "@/services/api";
 import { ActionFunctionArgs, redirect } from "react-router-dom";
 
 export async function projectDeleteAction({ params }: ActionFunctionArgs) {
-    await client.delete(`/projects/${params.id}`);
+    await ProjectService.deleteProject(parseInt(params.id!));
     return redirect('/projects');
 }

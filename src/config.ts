@@ -1,16 +1,4 @@
-export interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: "staff" | "student";
-}
-
-export interface Project {
-  id: number;
-  title: string;
-  description: string;
-  categories: string[];
-}
+import config from '../config.yaml';
 
 export interface Config {
   project: {
@@ -24,3 +12,5 @@ export interface Config {
     }[];
   };
 }
+
+export default config as Config;

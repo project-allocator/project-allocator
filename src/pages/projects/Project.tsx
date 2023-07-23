@@ -1,5 +1,4 @@
-import client from "@/services/api";
-import type { Project, User } from "@/types";
+import { ProjectRead, ProjectService, ShortlistService, UserRead } from "@/services/api";
 import { getInitialLetters } from "@/utils";
 import { DeleteOutlined, EditOutlined, HeartOutlined } from '@ant-design/icons';
 import { Avatar, Button, Divider, List, Space, Tag, Tooltip, Typography } from "antd";
@@ -8,14 +7,14 @@ import { Link, useLoaderData, useRevalidator, useSubmit, type LoaderFunctionArgs
 const { Title, Paragraph } = Typography;
 
 export async function projectLoader({ params }: LoaderFunctionArgs) {
-  const { data } = await client.get(`/projects/${params.id}`);
-  const { data: shortlisters } = await client.get(`/projects/${params.id}/shortlisters`);
-  const { data: isShortlisted } = await client.get(`/users/me/shortlisted/${params.id}`);
-  return [data, shortlisters, isShortlisted];
+  const project = await ProjectService.readProject(parseInt(params.id!));
+  const shortlisters = await ShortlistService.readShortlisters(parseInt(params.id!));
+  const isShortlisted = await ShortlistService.isShortlisted(parseInt(params.id!));
+  return [project, shortlisters, isShortlisted];
 }
 
 export default function Project() {
-  const [project, shortlisters, isShortlisted] = useLoaderData() as [Project, User[], boolean];
+  const [project, shortlisters, isShortlisted] = useLoaderData() as [ProjectRead, UserRead[], boolean];
   const isStudent = false;
   const submit = useSubmit();
   const revalidator = useRevalidator();
@@ -32,8 +31,8 @@ export default function Project() {
               type={isShortlisted ? "primary" : "default"}
               onClick={async () => {
                 await !isShortlisted
-                  ? client.post(`/users/me/shortlisted/${project.id}`)
-                  : client.delete(`/users/me/shortlisted/${project.id}`);
+                  ? ShortlistService.setShortlisted(project.id)
+                  : ShortlistService.unsetShortlisted(project.id);
                 revalidator.revalidate();
               }}
             />

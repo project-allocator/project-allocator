@@ -1,8 +1,8 @@
-import client from '@/services/api';
-import type { Project } from "@/types";
+import config from '@/config';
+import { ProjectRead, ProjectService } from '@/services/api';
 import { PlusOutlined } from '@ant-design/icons';
 import type { InputRef } from 'antd';
-import { Button, Divider, Form, Input, Space, Tag, Typography } from 'antd';
+import { Button, Checkbox, DatePicker, Divider, Form, Input, InputNumber, Radio, Select, Slider, Space, Switch, Tag, TimePicker, Typography } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import { useSubmit, type ActionFunctionArgs } from 'react-router-dom';
 
@@ -12,9 +12,7 @@ const { useForm, useFormInstance } = Form;
 
 export async function projectAddAction({ request }: ActionFunctionArgs) {
   const data = await request.json();
-  // TODO: Implement custom project details support
-  data.details = [];
-  await client.post('/projects/', data);
+  await ProjectService.createProject(data);
   return null;
 }
 
@@ -24,7 +22,7 @@ export default function ProjectAdd() {
 
 interface ProjectFormProps {
   title: string,
-  initProject?: Project,
+  initProject?: ProjectRead,
 }
 
 export function ProjectForm({ title, initProject }: ProjectFormProps) {
@@ -61,18 +59,10 @@ export function ProjectForm({ title, initProject }: ProjectFormProps) {
           name="description"
           rules={[{ required: true, message: 'Please enter your project description!' }]}
         >
-          <TextArea
-            showCount
-            rows={5}
-            maxLength={500}
-          />
+          <TextArea rows={5} maxLength={500} showCount />
         </Form.Item>
-        <Form.Item
-          label="Categories"
-          name="categories"
-        >
-          <ProjectCategoriesForm />
-        </Form.Item>
+        <ProjectCategoriesForm />
+        <ProjectDetailsForm />
         <Form.Item>
           <Button type="primary" htmlType="submit">
             Submit
@@ -144,61 +134,132 @@ function ProjectCategoriesForm() {
   }
 
   return (
-    <Space size="small" wrap>
-      {/* Edit the existing categories */}
+    <Form.Item
+      label="Categories"
+      name="categories"
+    >
       <Space size="small" wrap>
-        {categories.map((category, index) =>
-          <div key={category} className='w-32'>
-            {editInputIndex === index ?
-              (
-                <Input
-                  ref={editInputRef}
-                  size="small"
-                  value={editInputValue}
-                  onChange={handleEditInputChange}
-                  onBlur={handleEditInputConfirm}
-                  onPressEnter={handleEditInputConfirm}
-                  className='w-full'
-                />
-              ) : (
-                <Tag
-                  closable
-                  onDoubleClick={(event) => {
-                    setEditInputIndex(index);
-                    setEditInputValue(category);
-                    event.preventDefault();
-                  }}
-                  onClose={() => handleClose(category)}
-                  className='w-full flex justify-between items-center'
-                >
-                  {category}
-                </Tag>
-              )}
-          </div>
-        )}
+        {/* Edit the existing categories */}
+        <Space size="small" wrap>
+          {categories.map((category, index) =>
+            <div key={category} className='w-32'>
+              {editInputIndex === index ?
+                (
+                  <Input
+                    ref={editInputRef}
+                    size="small"
+                    value={editInputValue}
+                    onChange={handleEditInputChange}
+                    onBlur={handleEditInputConfirm}
+                    onPressEnter={handleEditInputConfirm}
+                    className='w-full'
+                  />
+                ) : (
+                  <Tag
+                    closable
+                    onDoubleClick={(event) => {
+                      setEditInputIndex(index);
+                      setEditInputValue(category);
+                      event.preventDefault();
+                    }}
+                    onClose={() => handleClose(category)}
+                    className='w-full flex justify-between items-center'
+                  >
+                    {category}
+                  </Tag>
+                )}
+            </div>
+          )}
+        </Space>
+        {/* Add a new category */}
+        <div className='w-32'>
+          {addInputVisible ? (
+            <Input
+              ref={addInputRef}
+              type="text"
+              size="small"
+              value={addInputValue}
+              onChange={handleAddInputChange}
+              onBlur={handleAddInputConfirm}
+              onPressEnter={handleAddInputConfirm}
+              className='w-full'
+            />
+          ) : (
+            <Tag
+              onClick={showAddInput}
+              className='w-full border-dashed text-center'
+            >
+              <PlusOutlined /> New Category
+            </Tag>
+          )}
+        </div>
       </Space>
-      {/* Add a new category */}
-      <div className='w-32'>
-        {addInputVisible ? (
-          <Input
-            ref={addInputRef}
-            type="text"
-            size="small"
-            value={addInputValue}
-            onChange={handleAddInputChange}
-            onBlur={handleAddInputConfirm}
-            onPressEnter={handleAddInputConfirm}
-            className='w-full'
-          />
-        ) : (
-          <Tag
-            onClick={showAddInput}
-            className='w-full border-dashed text-center'
-          >
-            <PlusOutlined /> New Category
-          </Tag>
-        )}
-      </div>
-    </Space>
+    </Form.Item>
   );
 };
+
+function ProjectDetailsForm() {
+  return (
+    config.project.details.map((detail) => (
+      <Form.Item
+        key={detail.name}
+        name={detail.name}
+        label={detail.title}
+        tooltip={detail.description}
+        rules={[{ required: detail.required, message: detail.message }]}
+      >
+        {(() => {
+          switch (detail.type) {
+            case 'textfield':
+              return <Input />;
+            case 'textarea':
+              return <TextArea rows={5} maxLength={500} showCount />;
+            case 'number':
+              return <InputNumber className='w-48' />;
+            case 'slider':
+              return <Slider />;
+            case 'date':
+              return <DatePicker className='w-48' />;
+            case 'time':
+              return <TimePicker className='w-48' />;
+            case 'switch':
+              return <Switch />;
+            case 'select':
+              return (
+                <Select
+                  className='w-48'
+                  options={[
+                    { value: 'jack', label: 'Jack' },
+                    { value: 'lucy', label: 'Lucy' },
+                    { value: 'Yiminghe', label: 'yiminghe' },
+                    { value: 'disabled', label: 'Disabled' },
+                  ]}
+                />
+              );
+            case 'checkbox':
+              return (
+                <Checkbox.Group
+                  options={[
+                    { label: 'Apple', value: 'Apple' },
+                    { label: 'Pear', value: 'Pear' },
+                    { label: 'Orange', value: 'Orange' },
+                  ]}
+                />
+              );
+            case 'radio':
+              return (
+                <Radio.Group>
+                  <Radio value={1}>A</Radio>
+                  <Radio value={2}>B</Radio>
+                  <Radio value={3}>C</Radio>
+                  <Radio value={4}>D</Radio>
+                </Radio.Group>
+              );
+            default:
+              throw new Error("Unknown project detail type");
+          }
+        })()}
+      </Form.Item>
+    ))
+  );
+}

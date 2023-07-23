@@ -1,5 +1,4 @@
-import client from "@/services/api";
-import type { User } from '@/types';
+import { UserRead, UserService } from "@/services/api";
 import { getInitialLetters, toCapitalCase } from "@/utils";
 import { Avatar, Divider, Typography } from "antd";
 import { LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
@@ -7,17 +6,15 @@ import { LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
 const { Title, Paragraph } = Typography;
 
 export async function userLoader({ params }: LoaderFunctionArgs) {
-  const { data } = await client.get(`/users/${params.id}`);
-  return data;
+  return await UserService.readUser(parseInt(params.id!));
 }
 
 export async function currentUserLoader() {
-  const { data } = await client.get('/users/me');
-  return data;
+  return await UserService.readCurrentUser();
 }
 
 export default function User() {
-  const user = useLoaderData() as User;
+  const user = useLoaderData() as UserRead;
 
   return (
     <>

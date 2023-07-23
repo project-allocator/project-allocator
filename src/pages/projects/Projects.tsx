@@ -1,5 +1,4 @@
-import client from "@/services/api";
-import type { Project } from "@/types";
+import { ProjectRead, ProjectService } from "@/services/api";
 import { Divider, Input, Space, Table, Tag, Typography } from "antd";
 import { useState } from "react";
 import Highlighter from 'react-highlight-words';
@@ -9,8 +8,7 @@ const { Title } = Typography;
 const { Search } = Input;
 
 export async function projectsLoader() {
-  const { data } = await client.get('/projects');
-  return data;
+  return await ProjectService.readProjects();
 }
 
 export default function Projects() {
@@ -22,13 +20,13 @@ interface ProjectsTableProps {
 }
 
 export function ProjectsTable({ title }: ProjectsTableProps) {
-  const projects = useLoaderData() as Project[];
+  const projects = useLoaderData() as ProjectRead[];
   const [searchText, setSearchText] = useState('');
 
   const columns = [
     {
       title: "Title",
-      render: (project: Project) => (
+      render: (project: ProjectRead) => (
         <Link to={`/projects/${project.id}`}>
           <Highlighter
             searchWords={[searchText]}
@@ -39,7 +37,7 @@ export function ProjectsTable({ title }: ProjectsTableProps) {
     },
     {
       title: "Description",
-      render: (project: Project) => (
+      render: (project: ProjectRead) => (
         <Highlighter
           searchWords={[searchText]}
           textToHighlight={
@@ -52,7 +50,7 @@ export function ProjectsTable({ title }: ProjectsTableProps) {
     },
     {
       title: "Categories",
-      render: (project: Project) => (
+      render: (project: ProjectRead) => (
         <Space className="flex-wrap min-w-xl">
           {project.categories.map((category: string) => (
             <Tag key={category}>
@@ -88,7 +86,7 @@ export function ProjectsTable({ title }: ProjectsTableProps) {
               project.description,
               ...project.categories
             ].some((text) => text.includes(searchText)))
-            .map((project: Project) => ({
+            .map((project: ProjectRead) => ({
               ...project,
               key: project.id,
             }))
