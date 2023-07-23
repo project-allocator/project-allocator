@@ -26,10 +26,6 @@ class UserFactory(ModelFactory):
     def name(cls) -> str:
         return cls.__faker__.name()
 
-    @classmethod
-    def role(cls) -> str:
-        return cls.__faker__.random_element(elements=("staff", "student"))
-
 
 ################################################################################
 #                             Project Factory                                  #

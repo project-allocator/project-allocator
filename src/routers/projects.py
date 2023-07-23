@@ -85,8 +85,8 @@ async def update_project(
     return project
 
 
-@router.delete("/{id}")
-async def delete_project(session: Session = Depends(get_session)):
+@router.delete("/projects/{id}")
+async def delete_project(id: int, session: Session = Depends(get_session)):
     project = session.get(Project, id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")

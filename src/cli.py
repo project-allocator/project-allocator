@@ -53,6 +53,7 @@ def seed():
         # Nest session inside for loop  so the progress can be checked.
         with Session(engine) as session:
             staff: User = UserFactory.build()
+            staff.role = "staff"
             for _ in range(5):
                 project = ProjectFactory.build()
                 projects.append(project)
@@ -64,12 +65,13 @@ def seed():
         # Nest session inside for loop so the progress can be checked.
         with Session(engine) as session:
             student: User = UserFactory.build()
+            student.role = "student"
             for project in random.sample(projects, 5):
                 shortlist: Shortlist = ShortlistFactory.build()
                 shortlist.user = student
                 shortlist.project = project
-                student.shortlists.append(shortlist)
                 session.add(shortlist)
+                session.add(project)
             session.add(student)
             session.commit()
     print("✨[green]Successfully seeded the database.")
