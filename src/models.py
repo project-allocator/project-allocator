@@ -5,6 +5,7 @@
 # https://fastapi.tiangolo.com/tutorial/sql-databases/
 from typing import List, Optional
 from datetime import datetime
+from pydantic import Extra
 from sqlmodel import JSON, Column, Field, Relationship, SQLModel
 
 ################################################################################
@@ -65,11 +66,11 @@ class Project(ProjectBase, table=True):
     )
 
 
-class ProjectCreate(ProjectBase):
+class ProjectCreate(ProjectBase, extra=Extra.allow):
     pass
 
 
-class ProjectRead(ProjectBase):
+class ProjectRead(ProjectBase, extra=Extra.allow):
     id: int
 
 
@@ -95,31 +96,6 @@ class ProjectDetail(ProjectDetailBase, table=True):
 
     project_id: Optional[int] = Field(default=None, foreign_key="project.id")
     project: Project = Relationship(back_populates="details")
-
-
-class ProjectDetailCreate(ProjectDetailBase):
-    pass
-
-
-class ProjectDetailRead(ProjectDetailBase):
-    id: int
-
-
-class ProjectDetailUpdate(SQLModel):
-    key: Optional[str] = None
-    value: Optional[str] = None
-
-
-class ProjectCreateWithDetails(ProjectCreate):
-    details: List[ProjectDetailCreate]
-
-
-class ProjectReadWithDetails(ProjectRead):
-    details: List[ProjectDetailRead]
-
-
-class ProjectUpdateWithDetails(ProjectUpdate):
-    details: List[ProjectDetailUpdate]
 
 
 ################################################################################

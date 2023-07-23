@@ -3,12 +3,12 @@ from fastapi import APIRouter, Depends
 from sqlmodel import Session, select
 
 from ..dependencies import get_session
-from ..models import Project, ProjectReadWithDetails, User
+from ..models import Project, ProjectRead
 
 router = APIRouter(tags=["proposal"])
 
 
-@router.get("/users/me/proposed", response_model=List[ProjectReadWithDetails])
+@router.get("/users/me/proposed", response_model=List[ProjectRead])
 async def read_projects(session: Session = Depends(get_session)):
     # TODO: Read from session
     user_id = 1

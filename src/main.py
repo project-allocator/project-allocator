@@ -20,6 +20,7 @@ class Settings(BaseSettings):
 settings = Settings()
 
 app = FastAPI(
+    # For Open API authentication
     swagger_ui_oauth2_redirect_url="/oauth2-redirect",
     swagger_ui_init_oauth={
         "usePkceWithAuthorizationCodeGrant": True,
@@ -27,6 +28,7 @@ app = FastAPI(
     },
 )
 
+# For Open API authentication
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:8000"],
@@ -35,6 +37,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# For frontend authentiation
 azure_scheme = SingleTenantAzureAuthorizationCodeBearer(
     app_client_id=settings.APP_CLIENT_ID,
     tenant_id=settings.TENANT_ID,
@@ -43,18 +46,20 @@ azure_scheme = SingleTenantAzureAuthorizationCodeBearer(
     },
 )
 
-router = APIRouter(prefix="/api")
+router = APIRouter(
+    prefix="/api",
+    # For generating frontend client
+    generate_unique_id_function=lambda route: route.name,
+)
 router.include_router(projects.router)
 router.include_router(users.router)
 router.include_router(proposals.router)
 router.include_router(shortlists.router)
 
 
+# Load config for Open API
 @app.on_event("startup")
 async def load_config() -> None:
-    """
-    Load OpenID config on startup.
-    """
     await azure_scheme.openid_config.load_config()
 
 
