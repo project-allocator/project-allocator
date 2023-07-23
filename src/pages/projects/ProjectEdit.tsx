@@ -1,6 +1,6 @@
+import { ProjectForm } from '@/components/ProjectForm';
 import { ProjectRead, ProjectService } from '@/services/api';
 import { redirect, useLoaderData, type ActionFunctionArgs, type LoaderFunctionArgs } from 'react-router-dom';
-import { ProjectForm } from './ProjectAdd';
 
 export async function projectEditLoader({ params }: LoaderFunctionArgs) {
   return await ProjectService.readProject(parseInt(params.id!));
