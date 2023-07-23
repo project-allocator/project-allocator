@@ -31,7 +31,6 @@ export function ProjectsTable({ title }: ProjectsTableProps) {
       render: (project: Project) => (
         <Link to={`/projects/${project.id}`}>
           <Highlighter
-            highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
             searchWords={[searchText]}
             textToHighlight={project.title}
           />
@@ -42,7 +41,6 @@ export function ProjectsTable({ title }: ProjectsTableProps) {
       title: "Description",
       render: (project: Project) => (
         <Highlighter
-          highlightStyle={{ backgroundColor: '#ffc069', padding: 0 }}
           searchWords={[searchText]}
           textToHighlight={
             project.description.length < 500
@@ -57,7 +55,12 @@ export function ProjectsTable({ title }: ProjectsTableProps) {
       render: (project: Project) => (
         <Space className="flex-wrap min-w-xl">
           {project.categories.map((category: string) => (
-            <Tag key={category}>{category}</Tag>
+            <Tag key={category}>
+              <Highlighter
+                searchWords={[searchText]}
+                textToHighlight={category}
+              />
+            </Tag>
           ))}
         </Space>
       ),
@@ -71,6 +74,7 @@ export function ProjectsTable({ title }: ProjectsTableProps) {
         <Search
           className="w-64"
           placeholder="Enter search text"
+          onChange={(event) => setSearchText(event.target.value)}
           onSearch={(searchText) => setSearchText(searchText)}
         />
       </Title>
@@ -79,7 +83,11 @@ export function ProjectsTable({ title }: ProjectsTableProps) {
         columns={columns}
         dataSource={
           projects
-            .filter((project) => project.title.includes(searchText) || project.description.includes(searchText))
+            .filter((project) => [
+              project.title,
+              project.description,
+              ...project.categories
+            ].some((text) => text.includes(searchText)))
             .map((project: Project) => ({
               ...project,
               key: project.id,
