@@ -1,5 +1,6 @@
 import './index.css';
 
+import { MsalProvider } from '@azure/msal-react';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom/client';
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
@@ -16,6 +17,7 @@ import Proposed, { proposedLoader } from './pages/projects/Proposed';
 import Shortlisted, { shortlistedLoader } from './pages/projects/Shortlisted';
 import SignIn from './pages/SignIn';
 import User, { currentUserLoader, userLoader } from './pages/users/User';
+import { msalInstance } from './services/auth';
 
 // TODO: Split the route object into separet files
 // https://reactrouter.com/en/main/routers/create-browser-router
@@ -116,6 +118,8 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <MsalProvider instance={msalInstance}>
+      <RouterProvider router={router} />
+    </MsalProvider>
   </React.StrictMode>,
-)
+);
