@@ -1,14 +1,18 @@
 import client from "@/services/api";
 import type { User } from '@/types';
-import { toCapitalCase } from "@/utils";
-import { UserOutlined } from "@ant-design/icons";
+import { getInitialLetters, toCapitalCase } from "@/utils";
 import { Avatar, Divider, Typography } from "antd";
-import { useLoaderData } from 'react-router-dom';
+import { LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
 
 const { Title, Paragraph } = Typography;
 
-export async function loader() {
-  const { data } = await client.get(`/users/me`);
+export async function userLoader({ params }: LoaderFunctionArgs) {
+  const { data } = await client.get(`/users/${params.id}`);
+  return data;
+}
+
+export async function currentUserLoader() {
+  const { data } = await client.get('/users/me');
   return data;
 }
 
@@ -19,7 +23,7 @@ export default function User() {
     <>
       <Title level={3} className="flex justify-between items-center">
         Profile
-        <Avatar shape="square" icon={<UserOutlined />} />
+        <Avatar>{getInitialLetters(user.name)}</Avatar>
       </Title>
       <Divider />
       <Title level={4}>Name</Title>

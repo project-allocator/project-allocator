@@ -4,15 +4,17 @@ import { DeleteOutlined, HolderOutlined } from '@ant-design/icons';
 import { Button, Divider, List, Space, Tooltip, Typography } from "antd";
 import { Reorder, useDragControls } from "framer-motion";
 import { useEffect, useState } from "react";
-import { useLoaderData } from "react-router-dom";
+import { Link, useLoaderData, useRevalidator } from "react-router-dom";
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
-export async function loader() {
+export async function shortlistedLoader() {
   const { data } = await client.get('/users/me/shortlisted');
   return data;
 }
 
+// TODO: Re-implement list items with dnd kit
+// https://ant.design/components/table#components-table-demo-drag-sorting-handler
 export default function Shortlisted() {
   const projects = useLoaderData() as Project[];
 
@@ -34,19 +36,22 @@ export default function Shortlisted() {
         as="div"
         axis="y"
         values={projectIds}
-        onReorder={setProjectIds}
+        onReorder={async (projectIds) => {
+          await setProjectIds(projectIds);
+          await client.put('/users/me/shortlisted', projectIds);
+        }}
       >
         <List
-          header={<div>Header</div>}
-          footer={<div>Footer</div>}
+          header={<Text strong>Highest Preference</Text>}
+          footer={<Text strong>Lowest Preference</Text>}
           bordered
           dataSource={projectIds}
           rowKey={(projectId: number) => projectId}
           renderItem={(projectId: number) => {
-            const project = projects?.find(
-              (project: Project) => project.id === projectId
-            ) as Project;
-            return <ProjectItem project={project} />;
+            const project = projects?.find((project: Project) => project.id === projectId);
+            if (project) {
+              return <ProjectItem project={project as Project} />;
+            }
           }}
         />
       </Reorder.Group>
@@ -61,6 +66,7 @@ interface ProjectItemProps {
 function ProjectItem({ project }: ProjectItemProps) {
   // Drag controls for Framer Motion's Reorder component
   const controls = useDragControls();
+  const revalidator = useRevalidator();
 
   return (
     <Reorder.Item
@@ -71,11 +77,20 @@ function ProjectItem({ project }: ProjectItemProps) {
       dragControls={controls}
     >
       <List.Item className="flex justify-between w-full">
-        <span className="select-none">{project.title}</span>
+        <Link to={`/projects/${project.id}`} className="select-none">
+          {project.title}
+        </Link>
         <Space>
           <HolderOutlined onPointerDown={(event) => controls.start(event)} />
           <Tooltip title="Delete">
-            <Button className="border-none" icon={<DeleteOutlined />} />
+            <Button
+              className="border-none"
+              icon={<DeleteOutlined />}
+              onClick={async () => {
+                await client.delete(`/users/me/shortlisted/${project.id}`);
+                revalidator.revalidate();
+              }}
+            />
           </Tooltip>
         </Space>
       </List.Item>

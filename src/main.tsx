@@ -7,14 +7,15 @@ import CenterLayout from './components/layouts/CenterLayout';
 import HeaderLayout from './components/layouts/HeaderLayout';
 import SiderLayout from './components/layouts/SiderLayout';
 import Error from './pages/Error';
-import Project, { loader as projectLoader } from './pages/projects/Project';
-import ProjectAdd, { action as projectAddAction } from './pages/projects/ProjectAdd';
-import ProjectEdit, { action as projectEditAction, loader as projectEditLoader } from './pages/projects/ProjectEdit';
-import Projects, { loader as projectsLoader } from './pages/projects/Projects';
-import Proposed, { loader as proposedLoader } from './pages/projects/Proposed';
-import Shortlisted, { loader as shortlistedLoader } from './pages/projects/Shortlisted';
+import Project, { projectLoader } from './pages/projects/Project';
+import ProjectAdd, { projectAddAction } from './pages/projects/ProjectAdd';
+import { projectDeleteAction } from './pages/projects/ProjectDelete';
+import ProjectEdit, { projectEditAction, projectEditLoader } from './pages/projects/ProjectEdit';
+import Projects, { projectsLoader } from './pages/projects/Projects';
+import Proposed, { proposedLoader } from './pages/projects/Proposed';
+import Shortlisted, { shortlistedLoader } from './pages/projects/Shortlisted';
 import SignIn from './pages/SignIn';
-import Profile, { loader as userViewLoader } from './pages/users/User';
+import User, { currentUserLoader, userLoader } from './pages/users/User';
 
 // TODO: Split the route object into separet files
 // https://reactrouter.com/en/main/routers/create-browser-router
@@ -81,6 +82,10 @@ const router = createBrowserRouter([
                 loader: projectEditLoader,
                 action: projectEditAction,
               },
+              {
+                path: ":id/delete",
+                action: projectDeleteAction,
+              },
             ]
           },
           {
@@ -95,8 +100,13 @@ const router = createBrowserRouter([
           },
           {
             path: "profile",
-            element: <Profile />,
-            loader: userViewLoader,
+            element: <User />,
+            loader: currentUserLoader,
+          },
+          {
+            path: "users/:id",
+            element: <User />,
+            loader: userLoader,
           },
         ],
       },

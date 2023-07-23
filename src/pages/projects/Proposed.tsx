@@ -1,57 +1,11 @@
 import client from '@/services/api';
-import type { Project } from "@/types";
-import { Divider, Space, Table, Tag, Typography } from 'antd';
-import { useLoaderData } from 'react-router-dom';
+import { ProjectsTable } from './Projects';
 
-const { Title } = Typography;
-
-const columns = [
-  {
-    title: "Title",
-    render: (project: Project) => (
-      <a href={`/projects/${project.id}`}>{project.title}</a>
-    ),
-  },
-  {
-    title: "Description",
-    render: (project: Project) => project.description.length < 500
-      ? project.description
-      : project.description.slice(0, 500) + "...",
-  },
-  {
-    title: "Categories",
-    render: (project: Project) => (
-      <Space className="flex-wrap min-w-xl">
-        {project.categories.map((category: string) => (
-          <Tag key={category}>{category}</Tag>
-        ))}
-      </Space>
-    ),
-  },
-];
-
-export async function loader() {
+export async function proposedLoader() {
   const { data } = await client.get('/users/me/proposed');
   return data;
 }
 
 export default function Proposed() {
-  const projects = useLoaderData() as Project[];
-
-  return (
-    <>
-      <Title level={3}>List of Proposed Projects</Title>
-      <Divider />
-      <Table
-        rowSelection={{ type: 'checkbox' }}
-        columns={columns}
-        dataSource={
-          projects?.map((project: Project) => ({
-            ...project,
-            key: project.id,
-          }))
-        }
-      />
-    </>
-  );
-};
+  return <ProjectsTable title="List of Proposed Projects" />
+}

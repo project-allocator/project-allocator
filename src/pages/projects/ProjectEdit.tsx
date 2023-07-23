@@ -3,12 +3,12 @@ import type { Project } from "@/types";
 import { redirect, useLoaderData, type ActionFunctionArgs, type LoaderFunctionArgs } from 'react-router-dom';
 import { ProjectForm } from './ProjectAdd';
 
-export async function loader({ params }: LoaderFunctionArgs) {
+export async function projectEditLoader({ params }: LoaderFunctionArgs) {
   const { data } = await client.get(`/projects/${params.id}`);
   return data;
 }
 
-export async function action({ request, params }: ActionFunctionArgs) {
+export async function projectEditAction({ request, params }: ActionFunctionArgs) {
   const data = await request.json();
   // TODO: Implement custom project details support
   data.details = [];

@@ -10,7 +10,7 @@ const { Title } = Typography;
 const { TextArea } = Input;
 const { useForm, useFormInstance } = Form;
 
-export async function action({ request }: ActionFunctionArgs) {
+export async function projectAddAction({ request }: ActionFunctionArgs) {
   const data = await request.json();
   // TODO: Implement custom project details support
   data.details = [];
