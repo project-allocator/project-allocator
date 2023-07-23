@@ -5,8 +5,3 @@ project:
       description: "Lorem ipsum"
       type: text
       required: true
-    categories:
-      title: "Categories"
-      description: "Lorem ipsum"
-      type: tags
-      required: false
