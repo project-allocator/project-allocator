@@ -68,7 +68,7 @@ async def reorder_shortlisted(
 ):
     # TODO: Read from session
     user_id = 11
-    for preference, id in enumerate(ids):
+    for preference, id in enumerate(reversed(ids)):
         shortlist = session.get(Shortlist, (user_id, id))
         # Preference should be 1 to 10
         # 0 is reserved as the default value
@@ -81,7 +81,7 @@ async def reorder_shortlisted(
 @router.get("/projects/{id}/shortlisters", response_model=List[UserRead])
 async def read_shortlisters(id: int, session: Session = Depends(get_session)):
     shortlists = session.exec(select(Shortlist).where(Shortlist.project_id == id)).all()
-    shortlists.sort(key=lambda shortlist: shortlist.preference)
+    shortlists.sort(key=lambda shortlist: shortlist.preference, reverse=True)
     users = []
     for shortlist in shortlists:
         user = session.get(User, shortlist.user_id)
