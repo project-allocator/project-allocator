@@ -1,5 +1,6 @@
 import { ProjectRead } from "@/services/api";
-import { Divider, Input, Space, Table, Tag, Typography } from "antd";
+import { PlusOutlined } from '@ant-design/icons';
+import { Button, Divider, Input, Space, Table, Tag, Tooltip, Typography } from "antd";
 import { useState } from "react";
 import Highlighter from 'react-highlight-words';
 import { Link, useLoaderData } from "react-router-dom";
@@ -14,6 +15,7 @@ interface ProjectsTableProps {
 export function ProjectsTable({ title }: ProjectsTableProps) {
   const projects = useLoaderData() as ProjectRead[];
   const [searchText, setSearchText] = useState('');
+  const isStudent = true;
 
   const columns = [
     {
@@ -59,16 +61,24 @@ export function ProjectsTable({ title }: ProjectsTableProps) {
 
   return (
     <>
+      {/* TODO: Refactor!! */}
       <Title level={3} className="flex justify-between items-center">
         {title}
-        <Search
-          className="w-64"
-          placeholder="Enter search text"
-          onChange={(event) => setSearchText(event.target.value)}
-          onSearch={(searchText) => setSearchText(searchText)}
-        />
+        {isStudent && (
+          <Tooltip title="Add">
+            <Link to="/projects/add" >
+              <Button shape="circle" icon={<PlusOutlined />} />
+            </Link>
+          </Tooltip>
+        )}
       </Title>
       <Divider />
+      <Search
+        className="w-64 mb-4"
+        placeholder="Enter search text"
+        onChange={(event) => setSearchText(event.target.value)}
+        onSearch={(searchText) => setSearchText(searchText)}
+      />
       <Table
         columns={columns}
         dataSource={

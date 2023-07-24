@@ -18,6 +18,7 @@ export default function User() {
 
   return (
     <>
+      {/* TODO: Refactor!! */}
       <Title level={3} className="flex justify-between items-center">
         Profile
         <Avatar>{getInitialLetters(user.name)}</Avatar>

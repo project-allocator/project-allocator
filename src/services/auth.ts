@@ -1,5 +1,3 @@
-// TODO: Congigure Azure AD SSO
-// https://learn.microsoft.com/en-us/azure/active-directory/develop/single-page-app-tutorial-01-register-app
 import { Configuration, LogLevel, PublicClientApplication } from "@azure/msal-browser";
 
 /**

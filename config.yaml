@@ -44,13 +44,25 @@ project:
       description:
       type: select
       required: true
+      options:
+        - Lorem 1
+        - Lorem 2
+        - Lorem 3
     - name: lorem9
       title: Lorem ipsum
       description:
       type: checkbox
       required: true
+      options:
+        - Lorem 1
+        - Lorem 2
+        - Lorem 3
     - name: lorem10
       title: Lorem ipsum
       description:
       type: radio
       required: true
+      options:
+        - Lorem 1
+        - Lorem 2
+        - Lorem 3

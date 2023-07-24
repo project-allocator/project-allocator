@@ -7,7 +7,6 @@ const { Header, Content } = Layout;
 const menuItems: MenuProps["items"] = [
   {
     key: "profile",
-    // TODO: Setup correct link to individual user profile
     label: <Link to="/profile">Profile</Link>,
     icon: <UserOutlined />,
   },
@@ -18,8 +17,7 @@ const menuItems: MenuProps["items"] = [
         to="/api/auth/signout"
         onClick={(event) => {
           event.preventDefault();
-          // TODO: Setup auth
-          // signOut();
+          // TODO: Setup SSO
         }}
       >
         Sign Out

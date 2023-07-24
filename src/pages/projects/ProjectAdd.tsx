@@ -1,6 +1,6 @@
 import { ProjectForm } from '@/components/ProjectForm';
 import { ProjectService } from '@/services/api';
-import { type ActionFunctionArgs } from 'react-router-dom';
+import type { ActionFunctionArgs } from 'react-router-dom';
 
 export async function projectAddAction({ request }: ActionFunctionArgs) {
   const data = await request.json();

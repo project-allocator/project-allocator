@@ -3,6 +3,7 @@ import { ProjectRead } from '@/services/api';
 import { PlusOutlined } from '@ant-design/icons';
 import type { InputRef } from 'antd';
 import { Button, Checkbox, DatePicker, Divider, Form, Input, InputNumber, Radio, Select, Slider, Space, Switch, Tag, TimePicker, Typography } from 'antd';
+import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
 import { useSubmit } from 'react-router-dom';
 
@@ -34,13 +35,13 @@ export function ProjectForm({ title, initProject }: ProjectFormProps) {
             encType: "application/json"
           })
         }
-        initialValues={initProject}
         className='ml-6 max-w-xl'
       >
         <Form.Item
           label="Title"
           name="title"
           rules={[{ required: true, message: 'Please enter your project title!' }]}
+          initialValue={initProject?.title}
         >
           <Input />
         </Form.Item>
@@ -48,11 +49,12 @@ export function ProjectForm({ title, initProject }: ProjectFormProps) {
           label="Description"
           name="description"
           rules={[{ required: true, message: 'Please enter your project description!' }]}
+          initialValue={initProject?.description}
         >
           <TextArea rows={5} maxLength={500} showCount />
         </Form.Item>
-        <ProjectCategoriesForm />
-        <ProjectDetailsForm />
+        <ProjectDetailsForm initProject={initProject} />
+        <ProjectCategoriesForm initProject={initProject} />
         <Form.Item>
           <Button type="primary" htmlType="submit">
             Submit
@@ -63,7 +65,72 @@ export function ProjectForm({ title, initProject }: ProjectFormProps) {
   );
 }
 
-function ProjectCategoriesForm() {
+interface ProjectDetailsFormProps {
+  initProject?: ProjectRead,
+}
+
+function ProjectDetailsForm({ initProject }: ProjectDetailsFormProps) {
+  return (
+    config.project.details.map((detail) => (
+      <Form.Item
+        key={detail.name}
+        name={detail.name}
+        label={detail.title}
+        tooltip={detail.description}
+        rules={[{ required: detail.required, message: detail.message }]}
+        initialValue={(() => {
+          // TODO: Refactor!!
+          // @ts-ignore
+          const value = initProject?.[detail.name];
+          if (detail.type === 'date' || detail.type === 'time') {
+            return dayjs(value as string);
+          }
+          return value;
+        })()}
+        valuePropName={({
+          // TODO: Refactor!!
+          'switch': 'checked',
+          'radio': 'defaultValue',
+          'checkbox': 'defaultValue',
+        } as any)[detail.type]}
+      >
+        {({
+          // TODO: Refactor!!
+          'textfield': <Input />,
+          'textarea': <TextArea rows={5} maxLength={500} showCount />,
+          'number': <InputNumber className='w-48' />,
+          'slider': <Slider />,
+          'date': <DatePicker className='w-48' />,
+          'time': <TimePicker className='w-48' />,
+          'switch': <Switch />,
+          'select': (
+            <Select
+              className='w-48'
+              options={detail.options?.map((option) => ({ value: option, label: option }))}
+            />
+          ),
+          'checkbox': (
+            <Checkbox.Group
+              options={detail.options?.map((option) => ({ value: option, label: option }))}
+            />
+          ),
+          'radio': (
+            <Radio.Group
+              options={detail.options?.map((option) => ({ value: option, label: option }))}
+            />
+          ),
+        })[detail.type]}
+      </Form.Item >
+    ))
+  );
+}
+
+
+interface ProjectCategoriesFormProps {
+  initProject?: ProjectRead
+}
+
+function ProjectCategoriesForm({ initProject }: ProjectCategoriesFormProps) {
   // Propagate change up to the parent form component
   const form = useFormInstance();
   function setCategoriesWithForm(categories: string[]) {
@@ -71,9 +138,7 @@ function ProjectCategoriesForm() {
     setCategories(categories);
   }
 
-  const initCategories: string[] = form.getFieldValue('categories') || [];
-  const [categories, setCategories] = useState<string[]>(initCategories);
-
+  const [categories, setCategories] = useState<string[]>(initProject?.categories || []);
   const [addInputVisible, setAddInputVisible] = useState(false);
   const [addInputValue, setAddInputValue] = useState('');
   const [editInputIndex, setEditInputIndex] = useState(-1);
@@ -127,6 +192,7 @@ function ProjectCategoriesForm() {
     <Form.Item
       label="Categories"
       name="categories"
+      initialValue={categories}
     >
       <Space size="small" wrap>
         {/* Edit the existing categories */}
@@ -187,69 +253,3 @@ function ProjectCategoriesForm() {
     </Form.Item>
   );
 };
-
-function ProjectDetailsForm() {
-  return (
-    config.project.details.map((detail) => (
-      <Form.Item
-        key={detail.name}
-        name={detail.name}
-        label={detail.title}
-        tooltip={detail.description}
-        rules={[{ required: detail.required, message: detail.message }]}
-      >
-        {(() => {
-          switch (detail.type) {
-            case 'textfield':
-              return <Input />;
-            case 'textarea':
-              return <TextArea rows={5} maxLength={500} showCount />;
-            case 'number':
-              return <InputNumber className='w-48' />;
-            case 'slider':
-              return <Slider />;
-            case 'date':
-              return <DatePicker className='w-48' />;
-            case 'time':
-              return <TimePicker className='w-48' />;
-            case 'switch':
-              return <Switch />;
-            case 'select':
-              return (
-                <Select
-                  className='w-48'
-                  options={[
-                    { value: 'jack', label: 'Jack' },
-                    { value: 'lucy', label: 'Lucy' },
-                    { value: 'Yiminghe', label: 'yiminghe' },
-                    { value: 'disabled', label: 'Disabled' },
-                  ]}
-                />
-              );
-            case 'checkbox':
-              return (
-                <Checkbox.Group
-                  options={[
-                    { label: 'Apple', value: 'Apple' },
-                    { label: 'Pear', value: 'Pear' },
-                    { label: 'Orange', value: 'Orange' },
-                  ]}
-                />
-              );
-            case 'radio':
-              return (
-                <Radio.Group>
-                  <Radio value={1}>A</Radio>
-                  <Radio value={2}>B</Radio>
-                  <Radio value={3}>C</Radio>
-                  <Radio value={4}>D</Radio>
-                </Radio.Group>
-              );
-            default:
-              throw new Error("Unknown project detail type");
-          }
-        })()}
-      </Form.Item>
-    ))
-  );
-}

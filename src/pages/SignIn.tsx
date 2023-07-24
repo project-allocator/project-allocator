@@ -21,8 +21,7 @@ export default function SignIn() {
           href="/api/auth/signin"
           onClick={(event) => {
             event.preventDefault();
-            // TODO: Setup Microsoft SSO
-            // signIn();
+            // TODO: Setup SSO
             instance.loginPopup(loginRequest).catch((e) => {
               console.log(e);
             });

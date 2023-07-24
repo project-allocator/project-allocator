@@ -9,6 +9,7 @@ export interface Config {
       message: string;
       type: "textfield" | "textarea" | "number" | "slider" | "date" | "time" | "switch" | "select" | "checkbox" | "radio";
       required: boolean;
+      options?: string[];
     }[];
   };
 }
