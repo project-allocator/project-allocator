@@ -5,21 +5,13 @@ from sqlmodel import Session, select
 from ..models import (
     Project,
     ProjectCreate,
-    ProjectDetail,
     ProjectRead,
     ProjectUpdate,
     User,
 )
 from ..dependencies import get_session
-from ..config import config
 
 router = APIRouter(tags=["project"])
-
-
-def check_project_detail(detail: ProjectDetail):
-    # Check if detail is allowed in config
-    if detail.key not in config["project"]["details"].keys():
-        raise HTTPException(status_code=400, detail="Invalid project details")
 
 
 @router.get("/projects", response_model=List[ProjectRead])
@@ -43,9 +35,7 @@ async def create_project(
     project.proposer = session.get(User, user_id)
     session.add(project)
     session.commit()
-    session.refresh(project)
-    print(project)
-    return {**project.dict(), "hello": "ok"}
+    return project
 
 
 @router.put("/projects/{id}", response_model=ProjectRead)

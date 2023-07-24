@@ -1,7 +1,10 @@
-from typing import List
+import random
+from typing import Annotated, Any, Dict, List, Type
 from polyfactory.factories.pydantic_factory import ModelFactory
 from faker import Faker
+
 from .models import Shortlist, User, Project
+from .config import config
 
 ################################################################################
 #                                User Factory                                  #
@@ -53,12 +56,27 @@ class ProjectFactory(ModelFactory):
 
     @classmethod
     def categories(cls) -> List[str]:
-        categories = []
-        while len(categories) < 5:
-            word = cls.__faker__.word()
-            if word not in categories:
-                categories.append(word)
-        return categories
+        return [cls.__faker__.word() for _ in range(5)]
+
+
+# Dynamically customize factory methods according to the YAML config
+# https://stackoverflow.com/questions/285061/how-do-you-programmatically-set-an-attribute
+for detail in config["project"]["details"]:
+    if detail["type"] in ["select", "checkbox", "radio"]:
+        setattr(
+            ProjectFactory,
+            detail["name"],
+            lambda: random.choice(detail["options"]),
+        )
+    if detail["type"] == "checkbox":
+        setattr(
+            ProjectFactory,
+            detail["name"],
+            lambda: random.sample(
+                detail["options"],
+                random.randint(0, len(detail["options"])),
+            ),
+        )
 
 
 ################################################################################

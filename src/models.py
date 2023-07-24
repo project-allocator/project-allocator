@@ -5,8 +5,10 @@
 # https://fastapi.tiangolo.com/tutorial/sql-databases/
 from typing import List, Optional
 from datetime import datetime
-from pydantic import Extra
+from pydantic import create_model
 from sqlmodel import JSON, Column, Field, Relationship, SQLModel
+
+from .config import config
 
 ################################################################################
 #                                 User Models                                  #
@@ -43,10 +45,30 @@ class UserRead(UserBase):
 ################################################################################
 
 
-class ProjectBase(SQLModel):
-    title: str
-    description: str
-    categories: List[str] = Field(sa_column=Column(JSON))
+# Create ProjectBase Pydantic model dynamically according to the YAML config
+# https://stackoverflow.com/questions/74186458/how-to-dynamically-define-an-sqlmodel-class
+ProjectBase = create_model(
+    "ProjectBase",
+    __base__=SQLModel,
+    title=(str, ...),
+    description=(str, ...),
+    categories=(List[str], Field(sa_column=Column(JSON))),
+    **{
+        detail["name"]: {
+            "textfield": (str, ...),
+            "textarea": (str, ...),
+            "number": (int, ...),
+            "slider": (int, ...),
+            "date": (datetime, ...),
+            "time": (datetime, ...),
+            "switch": (bool, ...),
+            "select": (str, ...),
+            "checkbox": (List[str], Field(sa_column=Column(JSON))),
+            "radio": (str, ...),
+        }[detail["type"]]
+        for detail in config["project"]["details"]
+    },
+)
 
 
 class Project(ProjectBase, table=True):
@@ -56,46 +78,22 @@ class Project(ProjectBase, table=True):
 
     proposer_id: Optional[int] = Field(default=None, foreign_key="user.id")
     proposer: User = Relationship(back_populates="proposed")
-    details: List["ProjectDetail"] = Relationship(
-        back_populates="project",
-        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
-    )
     shortlists: List["Shortlist"] = Relationship(
         back_populates="project",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
 
 
-class ProjectCreate(ProjectBase, extra=Extra.allow):
+class ProjectCreate(ProjectBase):
     pass
 
 
-class ProjectRead(ProjectBase, extra=Extra.allow):
+class ProjectRead(ProjectBase):
     id: int
 
 
-class ProjectUpdate(SQLModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
-
-
-################################################################################
-#                            Project Detail Models                             #
-################################################################################
-
-
-class ProjectDetailBase(SQLModel):
-    key: str
-    value: str
-
-
-class ProjectDetail(ProjectDetailBase, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    created_at: datetime = Field(default=datetime.utcnow())
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
-
-    project_id: Optional[int] = Field(default=None, foreign_key="project.id")
-    project: Project = Relationship(back_populates="details")
+class ProjectUpdate(ProjectBase):
+    pass
 
 
 ################################################################################
