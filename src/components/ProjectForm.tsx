@@ -79,47 +79,52 @@ function ProjectDetailsForm({ initProject }: ProjectDetailsFormProps) {
         tooltip={detail.description}
         rules={[{ required: detail.required, message: detail.message }]}
         initialValue={(() => {
-          // TODO: Refactor!!
-          // @ts-ignore
-          const value = initProject?.[detail.name];
-          if (detail.type === 'date' || detail.type === 'time') {
-            return dayjs(value as string);
+          const value = initProject?.[detail.name as keyof ProjectRead];
+          switch (detail.type) {
+            case 'date':
+            case 'time':
+              return dayjs(value as string);
+            default:
+              return value;
           }
-          return value;
         })()}
-        valuePropName={({
-          // TODO: Refactor!!
-          'switch': 'checked',
-          'radio': 'defaultValue',
-          'checkbox': 'defaultValue',
-        } as any)[detail.type]}
+        valuePropName={(() => {
+          switch (detail.type) {
+            case 'switch':
+              return 'checked';
+            case 'radio':
+            case 'checkbox':
+              return 'defaultValue';
+            default:
+              return undefined;
+          }
+        })()}
       >
-        {({
-          // TODO: Refactor!!
-          'textfield': <Input />,
-          'textarea': <TextArea rows={5} maxLength={500} showCount />,
-          'number': <InputNumber className='w-48' />,
-          'slider': <Slider />,
-          'date': <DatePicker className='w-48' />,
-          'time': <TimePicker className='w-48' />,
-          'switch': <Switch />,
-          'select': (
-            <Select
-              className='w-48'
-              options={detail.options?.map((option) => ({ value: option, label: option }))}
-            />
-          ),
-          'checkbox': (
-            <Checkbox.Group
-              options={detail.options?.map((option) => ({ value: option, label: option }))}
-            />
-          ),
-          'radio': (
-            <Radio.Group
-              options={detail.options?.map((option) => ({ value: option, label: option }))}
-            />
-          ),
-        })[detail.type]}
+        {(() => {
+          const options = detail.options?.map((option) => ({ value: option, label: option }));
+          switch (detail.type) {
+            case 'textfield':
+              return <Input />;
+            case 'textarea':
+              return <TextArea rows={5} maxLength={500} showCount />;
+            case 'number':
+              return <InputNumber className='w-48' />;
+            case 'slider':
+              return <Slider />;
+            case 'date':
+              return <DatePicker className='w-48' />;
+            case 'time':
+              return <TimePicker className='w-48' />;
+            case 'switch':
+              return <Switch />;
+            case 'select':
+              return <Select className='w-48' options={options} />;
+            case 'checkbox':
+              return <Checkbox.Group options={options} />;
+            case 'radio':
+              return <Radio.Group options={options} />;
+          }
+        })()}
       </Form.Item >
     ))
   );

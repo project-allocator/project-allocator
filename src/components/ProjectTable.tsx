@@ -61,9 +61,10 @@ export function ProjectsTable({ title }: ProjectsTableProps) {
 
   return (
     <>
-      {/* TODO: Refactor!! */}
-      <Title level={3} className="flex justify-between items-center">
-        {title}
+      <Space className="flex items-end justify-between">
+        <Title level={3} className="mb-0">
+          {title}
+        </Title>
         {isStudent && (
           <Tooltip title="Add">
             <Link to="/projects/add" >
@@ -71,7 +72,7 @@ export function ProjectsTable({ title }: ProjectsTableProps) {
             </Link>
           </Tooltip>
         )}
-      </Title>
+      </Space>
       <Divider />
       <Search
         className="w-64 mb-4"

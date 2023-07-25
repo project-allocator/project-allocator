@@ -20,8 +20,6 @@ import SignIn from './pages/SignIn';
 import User, { currentUserLoader, userLoader } from './pages/users/User';
 import { msalInstance } from './services/auth';
 
-// TODO: Split the route object into separet files
-// https://reactrouter.com/en/main/routers/create-browser-router
 const router = createBrowserRouter([
   {
     path: "/",

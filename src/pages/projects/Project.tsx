@@ -23,9 +23,10 @@ export default function Project() {
 
   return (
     <>
-      {/* TODO: Refactor!! */}
-      <Title level={3} className="flex justify-between items-center">
-        Project #{project.id}
+      <Space className="flex items-end justify-between">
+        <Title level={3} className="mb-0">
+          Project #{project.id}
+        </Title>
         {isStudent ? (
           <Tooltip title="Shortlist">
             <Button
@@ -61,7 +62,7 @@ export default function Project() {
             </Tooltip>
           </Space>
         )}
-      </Title >
+      </Space>
       <Divider />
       <Title level={4}>Title</Title>
       <Paragraph>{project.title}</Paragraph>
@@ -71,18 +72,21 @@ export default function Project() {
         <div key={detail.name}>
           <Title level={4}>{detail.title}</Title>
           <Paragraph>
-            {({
-              // TODO: Refactor!!
-              // @ts-ignore
-              'date': dayjs(project[detail.name]).format('DD/MM/YYYY'),
-              // @ts-ignore
-              'time': dayjs(project[detail.name]).format('hh:mm:ss'),
-              // @ts-ignore
-              'switch': project[detail.name] ? 'Yes' : 'No',
-              // @ts-ignore
-              'checkbox': Array(project[detail.name]).join(','),
-              // @ts-ignore
-            } as any)[detail.type] || project[detail.name]}
+            {(() => {
+              const value = project[detail.name as keyof ProjectRead];
+              switch (detail.type) {
+                case 'date':
+                  return dayjs(value as string).format('DD/MM/YYYY');
+                case 'time':
+                  return dayjs(value as string).format('hh:mm:ss');
+                case 'switch':
+                  return value ? 'Yes' : 'No';
+                case 'checkbox':
+                  return Array(value).join(', ')
+                default:
+                  return value;
+              }
+            })()}
           </Paragraph>
         </div>
       ))}

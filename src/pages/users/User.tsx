@@ -1,6 +1,6 @@
 import { UserRead, UserService } from "@/services/api";
 import { getInitialLetters, toCapitalCase } from "@/utils";
-import { Avatar, Divider, Typography } from "antd";
+import { Avatar, Divider, Space, Typography } from "antd";
 import { LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
 
 const { Title, Paragraph } = Typography;
@@ -18,11 +18,12 @@ export default function User() {
 
   return (
     <>
-      {/* TODO: Refactor!! */}
-      <Title level={3} className="flex justify-between items-center">
-        Profile
+      <Space className="flex items-end justify-between">
+        <Title level={3} className="mb-0">
+          Profile
+        </Title>
         <Avatar>{getInitialLetters(user.name)}</Avatar>
-      </Title>
+      </Space>
       <Divider />
       <Title level={4}>Name</Title>
       <Paragraph>{user.name}</Paragraph>

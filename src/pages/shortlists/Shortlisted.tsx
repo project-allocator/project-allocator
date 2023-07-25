@@ -11,8 +11,6 @@ export async function shortlistedLoader() {
   return await ShortlistService.readShortlisted();
 }
 
-// TODO: Re-implement list items with dnd kit
-// https://ant.design/components/table#components-table-demo-drag-sorting-handler
 export default function Shortlisted() {
   const projects = useLoaderData() as ProjectRead[];
 
