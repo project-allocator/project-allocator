@@ -1,5 +1,5 @@
 import { toCapitalCase } from '@/utils';
-import { FileAddOutlined, FileDoneOutlined, FileTextOutlined, HomeOutlined } from '@ant-design/icons';
+import { FileAddOutlined, FileDoneOutlined, FileTextOutlined, HomeOutlined, LockOutlined } from '@ant-design/icons';
 import { Breadcrumb, BreadcrumbProps, Layout, Menu, MenuProps } from 'antd';
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
@@ -34,6 +34,15 @@ const dropdownItems: MenuProps['items'] = [
       </Link>
     )
   },
+  {
+    key: 'admin',
+    icon: <LockOutlined />,
+    label: (
+      <Link to="/admin">
+        Administration
+      </Link>
+    )
+  }
 ];
 
 interface SiderLayoutProps {

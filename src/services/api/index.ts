@@ -14,6 +14,7 @@ export type { ProjectUpdate } from './models/ProjectUpdate';
 export type { UserRead } from './models/UserRead';
 export type { ValidationError } from './models/ValidationError';
 
+export { AdminService } from './services/AdminService';
 export { DefaultService } from './services/DefaultService';
 export { ProjectService } from './services/ProjectService';
 export { ProposalService } from './services/ProposalService';

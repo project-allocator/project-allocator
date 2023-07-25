@@ -1,8 +1,9 @@
 import { Button, Layout, Result } from 'antd';
 import { ResultStatusType } from "antd/es/result";
-import { Link, isRouteErrorResponse, useRouteError } from "react-router-dom";
+import { isRouteErrorResponse, useNavigate, useRouteError } from "react-router-dom";
 
 export default function Error() {
+  const navigate = useNavigate();
   const error = useRouteError() as any;
   console.error(error);
 
@@ -15,9 +16,9 @@ export default function Error() {
             title={`${error.status} ${error.statusText}`}
             subTitle={`${error.error?.message}`}
             extra={
-              <Link to="/">
-                <Button type="primary">Back Home</Button>
-              </Link>
+              <Button type="primary" onClick={() => navigate(-1)}>
+                Go Back
+              </Button>
             }
           />
         ) : (
@@ -25,9 +26,9 @@ export default function Error() {
             status="500"
             title="Something went wrong"
             extra={
-              <Link to="/">
-                <Button type="primary">Back Home</Button>
-              </Link>
+              <Button type="primary" onClick={() => navigate(-1)}>
+                Go Back
+              </Button>
             }
           />
         )}

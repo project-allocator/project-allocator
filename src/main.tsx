@@ -7,6 +7,7 @@ import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
 import CenterLayout from './components/layouts/CenterLayout';
 import HeaderLayout from './components/layouts/HeaderLayout';
 import SiderLayout from './components/layouts/SiderLayout';
+import Admin, { adminLoader } from './pages/admins/Admin';
 import Error from './pages/Error';
 import Project, { projectLoader } from './pages/projects/Project';
 import ProjectAdd, { projectAddAction } from './pages/projects/ProjectAdd';
@@ -99,6 +100,11 @@ const router = createBrowserRouter([
             path: "shortlisted",
             element: <Shortlisted />,
             loader: shortlistedLoader,
+          },
+          {
+            path: "admin",
+            element: <Admin />,
+            loader: adminLoader,
           },
           {
             path: "profile",
