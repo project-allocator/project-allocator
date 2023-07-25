@@ -9,7 +9,7 @@ from ..models import (
     ProjectUpdate,
     User,
 )
-from ..dependencies import get_session
+from ..dependencies import block_proposals_if_shutdown, get_session
 
 router = APIRouter(tags=["project"])
 
@@ -24,7 +24,11 @@ async def read_project(id: int, session: Session = Depends(get_session)):
     return session.get(Project, id)
 
 
-@router.post("/projects", response_model=ProjectRead)
+@router.post(
+    "/projects",
+    response_model=ProjectRead,
+    dependencies=[Depends(block_proposals_if_shutdown)],
+)
 async def create_project(
     project_data: ProjectCreate,
     session: Session = Depends(get_session),
@@ -38,7 +42,11 @@ async def create_project(
     return project
 
 
-@router.put("/projects/{id}", response_model=ProjectRead)
+@router.put(
+    "/projects/{id}",
+    response_model=ProjectRead,
+    dependencies=[Depends(block_proposals_if_shutdown)],
+)
 async def update_project(
     id: int,
     project_data: ProjectUpdate,
@@ -55,7 +63,10 @@ async def update_project(
     return project
 
 
-@router.delete("/projects/{id}")
+@router.delete(
+    "/projects/{id}",
+    dependencies=[Depends(block_proposals_if_shutdown)],
+)
 async def delete_project(id: int, session: Session = Depends(get_session)):
     project = session.get(Project, id)
     if not project:

@@ -1,5 +1,5 @@
 import random
-from typing import Annotated, Any, Dict, List, Type
+from typing import List
 from polyfactory.factories.pydantic_factory import ModelFactory
 from faker import Faker
 
@@ -59,7 +59,7 @@ class ProjectFactory(ModelFactory):
         return [cls.__faker__.word() for _ in range(5)]
 
 
-# Dynamically customize factory methods according to the YAML config
+# TODO: Dynamically customize factory methods according to the YAML config
 # https://stackoverflow.com/questions/285061/how-do-you-programmatically-set-an-attribute
 for detail in config["project"]["details"]:
     if detail["type"] in ["select", "checkbox", "radio"]:

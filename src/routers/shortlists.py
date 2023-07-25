@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
 from ..models import Project, ProjectRead, Shortlist, User, UserRead
-from ..dependencies import get_session
+from ..dependencies import block_shortlists_if_shutdown, get_session
 
 router = APIRouter(tags=["shortlist"])
 
@@ -33,7 +33,10 @@ async def is_shortlisted(
     return bool(shortlist)
 
 
-@router.post("/users/me/shortlisted/{id}")
+@router.post(
+    "/users/me/shortlisted/{id}",
+    dependencies=[Depends(block_shortlists_if_shutdown)],
+)
 async def set_shortlisted(
     id: int,
     session: Session = Depends(get_session),
@@ -46,7 +49,10 @@ async def set_shortlisted(
     return {"ok": True}
 
 
-@router.delete("/users/me/shortlisted/{id}")
+@router.delete(
+    "/users/me/shortlisted/{id}",
+    dependencies=[Depends(block_shortlists_if_shutdown)],
+)
 async def unset_shortlisted(
     id: int,
     session: Session = Depends(get_session),
@@ -61,7 +67,10 @@ async def unset_shortlisted(
     return {"ok": True}
 
 
-@router.put("/users/me/shortlisted")
+@router.put(
+    "/users/me/shortlisted",
+    dependencies=[Depends(block_shortlists_if_shutdown)],
+)
 async def reorder_shortlisted(
     ids: List[int],
     session: Session = Depends(get_session),

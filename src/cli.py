@@ -6,7 +6,7 @@ from rich.progress import track
 from sqlmodel import SQLModel, Session
 
 from .db import engine
-from .models import Project, Shortlist, User
+from .models import Project, Shortlist, Status, User
 from .factories import ShortlistFactory, UserFactory, ProjectFactory
 
 app = typer.Typer()
@@ -74,4 +74,9 @@ def seed():
                 session.add(project)
             session.add(student)
             session.commit()
+    print("Seeding status...")
+    with Session(engine) as session:
+        session.add(Status(key="proposals.shutdown", value="false"))
+        session.add(Status(key="shortlists.shutdown", value="false"))
+        session.commit()
     print("✨[green]Successfully seeded the database.")

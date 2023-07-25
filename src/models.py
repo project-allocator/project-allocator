@@ -1,8 +1,3 @@
-# TODO: Split models in separate files
-# SQLModel suffers from circular import issues, which does not work well with polyfactory.
-# In the future, consider using SQLAlchemy and pydantic individually to solve this issue.
-# https://sqlmodel.tiangolo.com/tutorial/code-structure/
-# https://fastapi.tiangolo.com/tutorial/sql-databases/
 from typing import List, Optional
 from datetime import datetime
 from pydantic import create_model
@@ -84,12 +79,12 @@ class Project(ProjectBase, table=True):
     )
 
 
-class ProjectCreate(ProjectBase):
-    pass
-
-
 class ProjectRead(ProjectBase):
     id: int
+
+
+class ProjectCreate(ProjectBase):
+    pass
 
 
 class ProjectUpdate(ProjectBase):
@@ -101,11 +96,9 @@ class ProjectUpdate(ProjectBase):
 ################################################################################
 
 
-class ShortlistBase(SQLModel):
+class Shortlist(SQLModel, table=True):
     preference: int
 
-
-class Shortlist(ShortlistBase, table=True):
     created_at: datetime = Field(default=datetime.utcnow())
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -117,3 +110,16 @@ class Shortlist(ShortlistBase, table=True):
     )
     user: User = Relationship(back_populates="shortlists")
     project: Project = Relationship(back_populates="shortlists")
+
+
+################################################################################
+#                                Status Models                                 #
+################################################################################
+
+
+class Status(SQLModel, table=True):
+    key: str = Field(primary_key=True)
+    value: str
+
+    created_at: datetime = Field(default=datetime.utcnow())
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
