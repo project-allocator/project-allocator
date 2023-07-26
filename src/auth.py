@@ -1,24 +1,22 @@
+import os
+from dotenv import load_dotenv
 from fastapi_azure_auth import SingleTenantAzureAuthorizationCodeBearer
-from pydantic import BaseSettings, Field
 
-
-class Settings(BaseSettings):
-    TENANT_ID: str = Field(default="", env="TENANT_ID")
-    APP_CLIENT_ID: str = Field(default="", env="APP_CLIENT_ID")
-    OPENAPI_CLIENT_ID: str = Field(default="", env="OPENAPI_CLIENT_ID")
-
-    class Config:
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = True
-
-
-settings = Settings()
+load_dotenv()
+TENANT_ID = os.environ.get("TENANT_ID")
+APP_CLIENT_ID = os.environ.get("APP_CLIENT_ID")
+OPENAPI_CLIENT_ID = os.environ.get("OPENAPI_CLIENT_ID")
 
 azure_scheme = SingleTenantAzureAuthorizationCodeBearer(
-    app_client_id=settings.APP_CLIENT_ID,
-    tenant_id=settings.TENANT_ID,
-    scopes={
-        f"api://{settings.APP_CLIENT_ID}/user_impersonation": "user_impersonation",
-    },
+    app_client_id=APP_CLIENT_ID,
+    tenant_id=TENANT_ID,
+    scopes={f"api://{APP_CLIENT_ID}/user_impersonation": "user_impersonation"},
 )
+
+swagger_scheme = {
+    "swagger_ui_oauth2_redirect_url": "/oauth2-redirect",
+    "swagger_ui_init_oauth": {
+        "usePkceWithAuthorizationCodeGrant": True,
+        "clientId": OPENAPI_CLIENT_ID,
+    },
+}
