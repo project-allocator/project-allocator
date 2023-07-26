@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlmodel import Session, select
 
 from ..models import (
@@ -9,7 +9,12 @@ from ..models import (
     ProjectUpdate,
     User,
 )
-from ..dependencies import block_proposals_if_shutdown, get_session
+from ..dependencies import (
+    block_proposals_if_shutdown,
+    check_staff,
+    get_session,
+    get_user,
+)
 
 router = APIRouter(tags=["project"])
 
@@ -27,16 +32,15 @@ async def read_project(id: int, session: Session = Depends(get_session)):
 @router.post(
     "/projects",
     response_model=ProjectRead,
-    dependencies=[Depends(block_proposals_if_shutdown)],
+    dependencies=[Security(check_staff), Security(block_proposals_if_shutdown)],
 )
 async def create_project(
     project_data: ProjectCreate,
+    user: User = Depends(get_user),
     session: Session = Depends(get_session),
 ):
     project = Project.from_orm(project_data)
-    # TODO: Read from session
-    user_id = 1
-    project.proposer = session.get(User, user_id)
+    project.proposer = session.get(User, user.id)
     session.add(project)
     session.commit()
     return project
@@ -45,16 +49,19 @@ async def create_project(
 @router.put(
     "/projects/{id}",
     response_model=ProjectRead,
-    dependencies=[Depends(block_proposals_if_shutdown)],
+    dependencies=[Security(check_staff), Security(block_proposals_if_shutdown)],
 )
 async def update_project(
     id: int,
     project_data: ProjectUpdate,
+    user: User = Depends(get_user),
     session: Session = Depends(get_session),
 ):
     project = session.get(Project, id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
+    if project.proposer != user:
+        raise HTTPException(status_code=401, detail="Project not owned by user")
     # Update project
     for key, value in project_data.dict(exclude_unset=True).items():
         setattr(project, key, value)
@@ -65,12 +72,18 @@ async def update_project(
 
 @router.delete(
     "/projects/{id}",
-    dependencies=[Depends(block_proposals_if_shutdown)],
+    dependencies=[Security(check_staff), Security(block_proposals_if_shutdown)],
 )
-async def delete_project(id: int, session: Session = Depends(get_session)):
+async def delete_project(
+    id: int,
+    user: User = Depends(get_user),
+    session: Session = Depends(get_session),
+):
     project = session.get(Project, id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
+    if project.proposer != user:
+        raise HTTPException(status_code=401, detail="Project not owned by user")
     session.delete(project)
     session.commit()
     return {"ok": True}

@@ -1,19 +1,44 @@
+import requests
 from fastapi import APIRouter, Depends
 from sqlmodel import Session
 
 from ..models import User, UserRead
-from ..dependencies import get_session
+from ..dependencies import get_session, get_user, get_user_or_none
 
 router = APIRouter(tags=["user"])
 
 
 @router.get("/users/me", response_model=UserRead)
-async def read_current_user(session: Session = Depends(get_session)):
-    # TODO: Read from session
-    user_id = 1
-    return session.get(User, user_id)
+async def read_current_user(user: User = Depends(get_user)):
+    return user
 
 
 @router.get("/users/{id}", response_model=UserRead)
 async def read_user(id: int, session: Session = Depends(get_session)):
     return session.get(User, id)
+
+
+@router.post("/users", response_model=UserRead)
+async def create_user(
+    access_token: str,
+    user: User | None = Depends(get_user_or_none),
+    session: Session = Depends(get_session),
+):
+    # Return the user if the user exists in the database.
+    if user:
+        return user
+    # If logging in for the first time,
+    # retrieve user data via Microsoft Graph API and create user in the database.
+    res = requests.get(
+        "https://graph.microsoft.com/v1.0/me",
+        headers={"Authorization": f"Bearer {access_token}"},
+    ).json()
+    user = User(
+        email=res["userPrincipalName"],
+        name=f"{res['givenName']} {res['surname']}",
+        role="student" if res["jobTitle"] == "Undergraduate" else "staff",
+    )
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    return user

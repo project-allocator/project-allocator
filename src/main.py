@@ -1,4 +1,5 @@
-from fastapi import FastAPI, APIRouter, Security
+from fastapi import FastAPI, APIRouter, Security, Depends
+from fastapi_azure_auth.user import User
 
 from .auth import swagger_scheme, azure_scheme
 from .routers import projects, users, proposals, shortlists, admin
@@ -17,6 +18,8 @@ router = APIRouter(
     prefix="/api",
     # For generating frontend client
     generate_unique_id_function=lambda route: route.name,
+    # Block if not authenticated
+    dependencies=[Security(azure_scheme)],
 )
 router.include_router(projects.router)
 router.include_router(users.router)
@@ -30,9 +33,9 @@ async def root():
     return {"message": "Hello World"}
 
 
-@router.get("/test", dependencies=[Security(azure_scheme)])
-async def test():
-    return {"ok": True}
+@router.get("/test")
+async def test(user: User = Depends(azure_scheme)):
+    return user.dict()
 
 
 # Add this router after path operations
