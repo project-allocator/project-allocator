@@ -2,28 +2,24 @@ import { ProjectRead } from '@/api';
 import config from '@/config';
 import { PlusOutlined } from '@ant-design/icons';
 import type { InputRef } from 'antd';
-import { Button, Checkbox, DatePicker, Divider, Form, Input, InputNumber, Radio, Select, Slider, Space, Switch, Tag, TimePicker, Typography } from 'antd';
+import { Button, Checkbox, DatePicker, Form, Input, InputNumber, Radio, Select, Slider, Space, Switch, Tag, TimePicker } from 'antd';
 import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
 import { useSubmit } from 'react-router-dom';
 
-const { Title } = Typography;
 const { TextArea } = Input;
 const { useForm, useFormInstance } = Form;
 
 interface ProjectFormProps {
-  title: string,
   initProject?: ProjectRead,
 }
 
-export function ProjectForm({ title, initProject }: ProjectFormProps) {
+export function ProjectForm({ initProject }: ProjectFormProps) {
   const [form] = useForm();
   const submit = useSubmit();
 
   return (
     <>
-      <Title level={3}>{title}</Title>
-      <Divider />
       <Form
         form={form}
         method="post"
@@ -92,9 +88,6 @@ function ProjectDetailsForm({ initProject }: ProjectDetailsFormProps) {
           switch (detail.type) {
             case 'switch':
               return 'checked';
-            case 'radio':
-            case 'checkbox':
-              return 'defaultValue';
             default:
               return undefined;
           }

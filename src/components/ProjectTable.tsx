@@ -1,21 +1,14 @@
 import { ProjectRead } from "@/api";
-import { PlusOutlined } from '@ant-design/icons';
-import { Button, Divider, Input, Space, Table, Tag, Tooltip, Typography } from "antd";
+import { Input, Space, Table, Tag } from "antd";
 import { useState } from "react";
 import Highlighter from 'react-highlight-words';
 import { Link, useLoaderData } from "react-router-dom";
 
-const { Title } = Typography;
 const { Search } = Input;
 
-interface ProjectsTableProps {
-  title: string
-}
-
-export function ProjectsTable({ title }: ProjectsTableProps) {
+export function ProjectsTable() {
   const projects = useLoaderData() as ProjectRead[];
   const [searchText, setSearchText] = useState('');
-  const isStudent = true;
 
   const columns = [
     {
@@ -61,19 +54,6 @@ export function ProjectsTable({ title }: ProjectsTableProps) {
 
   return (
     <>
-      <Space className="flex items-end justify-between">
-        <Title level={3} className="mb-0">
-          {title}
-        </Title>
-        {isStudent && (
-          <Tooltip title="Add">
-            <Link to="/projects/add" >
-              <Button shape="circle" icon={<PlusOutlined />} />
-            </Link>
-          </Tooltip>
-        )}
-      </Space>
-      <Divider />
       <Search
         className="w-64 mb-4"
         placeholder="Enter search text"

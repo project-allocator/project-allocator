@@ -1,25 +1,29 @@
-import { ProjectRead, ProjectService, ShortlistService, UserRead } from "@/api";
+import { ProjectRead, ProjectService, ProposalService, ShortlistService, UserRead } from "@/api";
 import config from "@/config";
+import StaffRoute from "@/routes/StaffRoute";
+import StudentRoute from "@/routes/StudentRoute";
 import { getInitialLetters } from "@/utils";
 import { DeleteOutlined, EditOutlined, HeartOutlined } from '@ant-design/icons';
 import { Avatar, Button, Divider, List, Space, Tag, Tooltip, Typography } from "antd";
 import dayjs from 'dayjs';
-import { Link, useLoaderData, useRevalidator, useSubmit, type LoaderFunctionArgs } from 'react-router-dom';
+import { Link, useLoaderData, useLocation, useNavigate, useRevalidator, type LoaderFunctionArgs } from 'react-router-dom';
 
 const { Title, Paragraph } = Typography;
 
 export async function projectLoader({ params }: LoaderFunctionArgs) {
   const project = await ProjectService.readProject(parseInt(params.id!));
+  const isProposed = await ProposalService.isProposed(parseInt(params.id!));
   const shortlisters = await ShortlistService.readShortlisters(parseInt(params.id!));
   const isShortlisted = await ShortlistService.isShortlisted(parseInt(params.id!));
-  return [project, shortlisters, isShortlisted];
+  return [project, isProposed, shortlisters, isShortlisted];
 }
 
 export default function Project() {
-  const [project, shortlisters, isShortlisted] = useLoaderData() as [ProjectRead, UserRead[], boolean];
-  const isStudent = false;
-  const submit = useSubmit();
+  const [project, isProposed, shortlisters, isShortlisted]
+    = useLoaderData() as [ProjectRead, boolean, UserRead[], boolean];
   const revalidator = useRevalidator();
+  const navigate = useNavigate();
+  const location = useLocation();
 
   return (
     <>
@@ -27,7 +31,7 @@ export default function Project() {
         <Title level={3} className="mb-0">
           Project #{project.id}
         </Title>
-        {isStudent ? (
+        <StudentRoute>
           <Tooltip title="Shortlist">
             <Button
               shape="circle"
@@ -41,27 +45,31 @@ export default function Project() {
               }}
             />
           </Tooltip>
-        ) : (
-          <Space>
-            <Tooltip title="Edit">
-              <Link to="./edit" >
-                <Button shape="circle" icon={<EditOutlined />} />
-              </Link>
-            </Tooltip>
-            <Tooltip title="Delete">
-              <Button
-                shape="circle"
-                icon={<DeleteOutlined />}
-                onClick={() =>
-                  submit(null, {
-                    method: 'post',
-                    action: 'delete'
-                  })
-                }
-              />
-            </Tooltip>
-          </Space>
-        )}
+        </StudentRoute>
+        <StaffRoute>
+          {isProposed &&
+            <Space>
+              <Tooltip title="Edit">
+                <Link to="./edit" >
+                  <Button shape="circle" icon={<EditOutlined />} />
+                </Link>
+              </Tooltip>
+              <Tooltip title="Delete">
+                <Button
+                  shape="circle"
+                  icon={<DeleteOutlined />}
+                  onClick={async () => {
+                    await ProjectService.deleteProject(project.id);
+                    // Navigate back to either '/projects' or '/proposed'
+                    // or to '/projects' if the history stack is empty.
+                    location.key === 'default'
+                      ? navigate('/projects')
+                      : navigate(-1);
+                  }}
+                />
+              </Tooltip>
+            </Space>}
+        </StaffRoute>
       </Space>
       <Divider />
       <Title level={4}>Title</Title>
@@ -82,7 +90,9 @@ export default function Project() {
                 case 'switch':
                   return value ? 'Yes' : 'No';
                 case 'checkbox':
-                  return Array(value).join(', ')
+                  return Array(value).length > 0
+                    ? Array(value).join(', ')
+                    : "Not specified"
                 default:
                   return value;
               }
@@ -92,12 +102,12 @@ export default function Project() {
       ))}
       <Title level={4}>Categories</Title>
       <Space className="flex-wrap min-w-xl mt-2">
-        {project.categories.map((category: string) => (
-          <Tag key={category}>{category}</Tag>
-        ))}
+        {project.categories.length > 0
+          ? project.categories.map((category: string) => (<Tag key={category}>{category}</Tag>))
+          : "Not specified"}
       </Space>
-      {
-        !isStudent && (
+      <StaffRoute>
+        {isProposed &&
           <>
             <Title level={4}>Shortlisted Students</Title>
             <List
@@ -114,9 +124,8 @@ export default function Project() {
                 </List.Item>
               )}
             />
-          </>
-        )
-      }
+          </>}
+      </StaffRoute>
     </>
   );
 }

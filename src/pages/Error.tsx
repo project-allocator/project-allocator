@@ -5,7 +5,6 @@ import { isRouteErrorResponse, useNavigate, useRouteError } from "react-router-d
 export default function Error() {
   const navigate = useNavigate();
   const error = useRouteError() as any;
-  console.error(error);
 
   return (
     <Layout className="grid place-content-center">

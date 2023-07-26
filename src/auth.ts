@@ -1,20 +1,24 @@
-import { Configuration, LogLevel, PublicClientApplication } from "@azure/msal-browser";
+import { LogLevel, PublicClientApplication } from "@azure/msal-browser";
+import axios, { AxiosError } from "axios";
 
-/**
- * Configuration object to be passed to MSAL instance on creation. 
- * For a full list of MSAL.js configuration parameters, visit:
- * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/configuration.md 
- */
-export const msalConfig: Configuration = {
+export const authRequest = {
+  scopes: [`api://${import.meta.env.VITE_CLIENT_ID}/user_impersonation`]
+};
+
+export const tokenRequest = {
+  scopes: ['User.Read']
+}
+
+export const msalInstance = new PublicClientApplication({
   auth: {
-    clientId: import.meta.env.VITE_CLIENT_ID, // This is the ONLY mandatory field that you need to supply.
-    authority: `https://login.microsoftonline.com/${import.meta.env.VITE_TENANT_ID}`, // Defaults to "https://login.microsoftonline.com/common"
-    redirectUri: '/', // Points to window.location.origin. You must register this URI on Azure Portal/App Registration.
-    postLogoutRedirectUri: '/signin', // Indicates the page to navigate after logout.
+    clientId: import.meta.env.VITE_CLIENT_ID,
+    authority: `https://login.microsoftonline.com/${import.meta.env.VITE_TENANT_ID}`,
+    redirectUri: '/',
+    postLogoutRedirectUri: '/signin',
   },
   cache: {
-    cacheLocation: "sessionStorage", // This configures where your cache will be stored
-    storeAuthStateInCookie: false, // Set this to "true" if you are having issues on IE11 or Edge
+    cacheLocation: "sessionStorage",
+    storeAuthStateInCookie: false,
   },
   system: {
     loggerOptions: {
@@ -41,16 +45,28 @@ export const msalConfig: Configuration = {
       }
     }
   }
-};
+});
 
-/**
- * Scopes you add here will be prompted for user consent during sign-in.
- * By default, MSAL.js will add OIDC scopes (openid, profile, email) to any login request.
- * For more information about OIDC scopes, visit: 
- * https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-permissions-and-consent#openid-connect-scopes
- */
-export const loginRequest = {
-  scopes: [`api://${import.meta.env.VITE_CLIENT_ID}/user_impersonation`]
-};
+// Configure interceptor for axios instance used by the auto-generated client.
+// This automatically sets the access token in the request header if the user is logged in.
+// You can avoid using this interceptor by creating a new axios instance.
+axios.interceptors.request.use(async (config) => {
+  const { accessToken } = await msalInstance.acquireTokenSilent({
+    ...authRequest,
+    account: msalInstance.getActiveAccount()!,
+  });
+  config.headers.set('Authorization', `Bearer ${accessToken}`)
+  return config;
+});
 
-export const msalInstance = new PublicClientApplication(msalConfig);
+// This ignores the error if the user is unauthenticated.
+// In React Router v6, loader functions can be called before the pages are rendered,
+// which results in unauthenticated users making requests to protected API endpoints.
+// Frontend routes should be protected with route components
+// https://stackoverflow.com/questions/74267693/prevent-falsy-request-from-react-router-loader-function
+axios.interceptors.response.use(undefined, (error: AxiosError) => {
+  if (error.response?.status === 401) {
+    return Promise.resolve({ status: 200, data: null });
+  }
+  return Promise.reject(error);
+})

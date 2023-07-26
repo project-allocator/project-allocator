@@ -43,4 +43,25 @@ export class UserService {
         });
     }
 
+    /**
+     * Create User
+     * @param accessToken
+     * @returns UserRead Successful Response
+     * @throws ApiError
+     */
+    public static createUser(
+        accessToken: string,
+    ): CancelablePromise<UserRead> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/users',
+            query: {
+                'access_token': accessToken,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
 }

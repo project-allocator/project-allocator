@@ -1,23 +1,15 @@
-import { loginRequest } from '@/auth';
+import { UserService } from '@/api';
+import { authRequest } from '@/auth';
+import { useUserContext } from '@/contexts/UserContext';
 import { WindowsOutlined } from '@ant-design/icons';
-import { useIsAuthenticated, useMsal } from '@azure/msal-react';
+import { useMsal } from '@azure/msal-react';
 import { Button, Layout, Space, Typography } from "antd";
-import axios from 'axios';
 
 const { Title, Paragraph } = Typography;
 
 export default function SignIn() {
-  const isAuth = useIsAuthenticated();
-  const { instance } = useMsal();
-  if (isAuth)
-    instance.acquireTokenSilent({
-      ...loginRequest,
-      account: instance.getAllAccounts()[0],
-    }).then(response => {
-      axios.get('/api/test', { headers: { 'Authorization': `Bearer ${response.accessToken}` } })
-        .then(response => console.log(response))
-        .catch(error => console.log(error));
-    });
+  const { instance: msalInstance } = useMsal();
+  const { setUser } = useUserContext();
 
   return (
     <Layout className="grid place-content-center">
@@ -26,7 +18,18 @@ export default function SignIn() {
         <Paragraph>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</Paragraph>
         <Button
           type="primary"
-          onClick={() => instance.loginPopup(loginRequest)}>
+          onClick={async () => {
+            const { account } = await msalInstance.loginPopup(authRequest);
+            msalInstance.setActiveAccount(account);
+            // See the following discussion for the motivation behind sending access token for Microsoft Graph API
+            // https://www.reddit.com/r/webdev/comments/v62e78/authenticate_in_the_frontend_and_send_a_token_to/
+            const { accessToken } = await msalInstance.acquireTokenSilent({
+              scopes: ["User.Read"],
+              account: msalInstance.getActiveAccount()!,
+            });
+            const user = await UserService.createUser(accessToken);
+            setUser(user);
+          }}>
           <Space>
             Sign In with Microsoft SSO
             <WindowsOutlined />

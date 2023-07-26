@@ -3,26 +3,30 @@ import './index.css';
 import { MsalProvider } from '@azure/msal-react';
 import * as React from 'react';
 import * as ReactDOM from 'react-dom/client';
-import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
+import { Navigate, Outlet, RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { msalInstance } from './auth';
 import CenterLayout from './components/layouts/CenterLayout';
 import HeaderLayout from './components/layouts/HeaderLayout';
 import SiderLayout from './components/layouts/SiderLayout';
-import Admin, { adminLoader } from './pages/admins/Admin';
+import { UserContextProvider } from './contexts/UserContext';
 import Error from './pages/Error';
+import SignIn from './pages/SignIn';
+import Admin, { adminLoader } from './pages/admins/Admin';
 import Project, { projectLoader } from './pages/projects/Project';
 import ProjectAdd, { projectAddAction } from './pages/projects/ProjectAdd';
-import { projectDeleteAction } from './pages/projects/ProjectDelete';
 import ProjectEdit, { projectEditAction, projectEditLoader } from './pages/projects/ProjectEdit';
 import Projects, { projectsLoader } from './pages/projects/Projects';
 import Proposed, { proposedLoader } from './pages/proposals/Proposed';
 import Shortlisted, { shortlistedLoader } from './pages/shortlists/Shortlisted';
-import SignIn from './pages/SignIn';
 import User, { currentUserLoader, userLoader } from './pages/users/User';
-import { msalInstance } from './auth';
+import AdminRoute from './routes/AdminRoute';
+import AuthRoute from './routes/AuthRoute';
+import GuestRoute from './routes/GuestRoute';
+import StaffRoute from './routes/StaffRoute';
+import StudentRoute from './routes/StudentRoute';
 
 const router = createBrowserRouter([
   {
-    path: "/",
     element: (
       <HeaderLayout>
         <Outlet />
@@ -35,27 +39,31 @@ const router = createBrowserRouter([
     ),
     children: [
       {
+        index: true,
         element: (
           <CenterLayout>
-            <Outlet />
+            <AuthRoute redirect>
+              <Navigate to="/projects" />,
+            </AuthRoute>
           </CenterLayout>
         ),
-        children: [
-          {
-            index: true,
-            element: <div />,
-          },
-          {
-            path: "signin",
-            element: <SignIn />,
-            action: undefined,
-          },
-        ]
+      },
+      {
+        path: "signin",
+        element: (
+          <CenterLayout>
+            <GuestRoute redirect>
+              <SignIn />
+            </GuestRoute>
+          </CenterLayout>
+        ),
       },
       {
         element: (
           <SiderLayout>
-            <Outlet />
+            <AuthRoute redirect>
+              <Outlet />
+            </AuthRoute>
           </SiderLayout>
         ),
         children: [
@@ -68,40 +76,56 @@ const router = createBrowserRouter([
                 loader: projectsLoader,
               },
               {
-                path: "add",
-                element: <ProjectAdd />,
-                action: projectAddAction,
-              },
-              {
                 path: ":id",
                 element: <Project />,
                 loader: projectLoader,
               },
               {
-                path: ":id/edit",
-                element: <ProjectEdit />,
-                loader: projectEditLoader,
-                action: projectEditAction,
+                path: "add",
+                element: (
+                  <StaffRoute redirect>
+                    <ProjectAdd />
+                  </StaffRoute>
+                ),
+                action: projectAddAction,
               },
               {
-                path: ":id/delete",
-                action: projectDeleteAction,
+                path: ":id/edit",
+                element: (
+                  <StaffRoute redirect>
+                    <ProjectEdit />
+                  </StaffRoute>
+                ),
+                loader: projectEditLoader,
+                action: projectEditAction,
               },
             ]
           },
           {
             path: "proposed",
-            element: <Proposed />,
+            element: (
+              <StaffRoute redirect>
+                <Proposed />
+              </StaffRoute>
+            ),
             loader: proposedLoader,
           },
           {
             path: "shortlisted",
-            element: <Shortlisted />,
+            element: (
+              <StudentRoute redirect>
+                <Shortlisted />
+              </StudentRoute>
+            ),
             loader: shortlistedLoader,
           },
           {
             path: "admin",
-            element: <Admin />,
+            element: (
+              <AdminRoute redirect>
+                <Admin />
+              </AdminRoute>
+            ),
             loader: adminLoader,
           },
           {
@@ -123,7 +147,9 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <MsalProvider instance={msalInstance}>
-      <RouterProvider router={router} />
+      <UserContextProvider>
+        <RouterProvider router={router} />
+      </UserContextProvider>
     </MsalProvider>
   </React.StrictMode>,
 );
