@@ -1,4 +1,4 @@
-import { ProjectRead, ShortlistService } from "@/services/api";
+import { ProjectRead, ShortlistService } from "@/api";
 import { DeleteOutlined, HolderOutlined } from '@ant-design/icons';
 import { Button, Divider, List, Space, Tooltip, Typography } from "antd";
 import { Reorder, useDragControls } from "framer-motion";

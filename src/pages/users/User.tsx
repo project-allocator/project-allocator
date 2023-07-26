@@ -1,4 +1,4 @@
-import { UserRead, UserService } from "@/services/api";
+import { UserRead, UserService } from "@/api";
 import { getInitialLetters, toCapitalCase } from "@/utils";
 import { Avatar, Divider, Space, Typography } from "antd";
 import { LoaderFunctionArgs, useLoaderData } from 'react-router-dom';

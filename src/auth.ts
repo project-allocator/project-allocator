@@ -10,11 +10,10 @@ export const msalConfig: Configuration = {
     clientId: import.meta.env.VITE_CLIENT_ID, // This is the ONLY mandatory field that you need to supply.
     authority: `https://login.microsoftonline.com/${import.meta.env.VITE_TENANT_ID}`, // Defaults to "https://login.microsoftonline.com/common"
     redirectUri: '/', // Points to window.location.origin. You must register this URI on Azure Portal/App Registration.
-    postLogoutRedirectUri: '/', // Indicates the page to navigate after logout.
-    navigateToLoginRequestUrl: false, // If "true", will navigate back to the original request location before processing the auth code response.
+    postLogoutRedirectUri: '/signin', // Indicates the page to navigate after logout.
   },
   cache: {
-    cacheLocation: 'sessionStorage', // Configures cache location. "sessionStorage" is more secure, but "localStorage" gives you SSO between tabs.
+    cacheLocation: "sessionStorage", // This configures where your cache will be stored
     storeAuthStateInCookie: false, // Set this to "true" if you are having issues on IE11 or Edge
   },
   system: {
@@ -39,9 +38,9 @@ export const msalConfig: Configuration = {
           default:
             return;
         }
-      },
-    },
-  },
+      }
+    }
+  }
 };
 
 /**
@@ -51,7 +50,7 @@ export const msalConfig: Configuration = {
  * https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-permissions-and-consent#openid-connect-scopes
  */
 export const loginRequest = {
-  scopes: []
+  scopes: [`api://${import.meta.env.VITE_CLIENT_ID}/user_impersonation`]
 };
 
 export const msalInstance = new PublicClientApplication(msalConfig);

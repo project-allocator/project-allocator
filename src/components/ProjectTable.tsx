@@ -1,4 +1,4 @@
-import { ProjectRead } from "@/services/api";
+import { ProjectRead } from "@/api";
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, Divider, Input, Space, Table, Tag, Tooltip, Typography } from "antd";
 import { useState } from "react";

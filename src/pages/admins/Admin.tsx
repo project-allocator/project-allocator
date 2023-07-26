@@ -1,4 +1,4 @@
-import { AdminService } from "@/services/api";
+import { AdminService } from "@/api";
 import { Divider, Switch, Typography } from "antd";
 import { useLoaderData } from "react-router-dom";
 

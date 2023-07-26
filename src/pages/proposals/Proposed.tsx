@@ -1,5 +1,5 @@
+import { ProposalService } from '@/api';
 import { ProjectsTable } from '@/components/ProjectTable';
-import { ProposalService } from '@/services/api';
 
 export async function proposedLoader() {
   return await ProposalService.readProjects()

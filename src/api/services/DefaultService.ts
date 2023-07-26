@@ -28,7 +28,7 @@ export class DefaultService {
     public static test(): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/hello',
+            url: '/api/test',
         });
     }
 

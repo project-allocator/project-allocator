@@ -1,5 +1,5 @@
+import { ProjectRead } from '@/api';
 import config from '@/config';
-import { ProjectRead } from '@/services/api';
 import { PlusOutlined } from '@ant-design/icons';
 import type { InputRef } from 'antd';
 import { Button, Checkbox, DatePicker, Divider, Form, Input, InputNumber, Radio, Select, Slider, Space, Switch, Tag, TimePicker, Typography } from 'antd';

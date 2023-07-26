@@ -1,5 +1,5 @@
+import { ProjectRead, ProjectService } from '@/api';
 import { ProjectForm } from '@/components/ProjectForm';
-import { ProjectRead, ProjectService } from '@/services/api';
 import { redirect, useLoaderData, type ActionFunctionArgs, type LoaderFunctionArgs } from 'react-router-dom';
 
 export async function projectEditLoader({ params }: LoaderFunctionArgs) {

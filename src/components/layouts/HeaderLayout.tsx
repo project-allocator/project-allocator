@@ -1,40 +1,35 @@
 import { DownOutlined, LogoutOutlined, UserOutlined } from "@ant-design/icons";
+import { useMsal } from "@azure/msal-react";
 import { Button, Dropdown, Layout, MenuProps, Space } from "antd";
 import { Link } from "react-router-dom";
 
 const { Header, Content } = Layout;
-
-const menuItems: MenuProps["items"] = [
-  {
-    key: "profile",
-    label: <Link to="/profile">Profile</Link>,
-    icon: <UserOutlined />,
-  },
-  {
-    key: "signout",
-    label: (
-      <Link
-        to="/api/auth/signout"
-        onClick={(event) => {
-          event.preventDefault();
-          // TODO: Setup SSO
-        }}
-      >
-        Sign Out
-      </Link>
-    ),
-    icon: <LogoutOutlined />,
-  },
-];
 
 interface HeaderLayoutProps {
   children: React.ReactNode;
 };
 
 export default function HeaderLayout({ children }: HeaderLayoutProps) {
-  // Get session from Next Auth
-  // const { data: session } = useSession();
+  // TODO: Get user data
   const session = {};
+
+  const { instance } = useMsal();
+  const menuItems: MenuProps["items"] = [
+    {
+      key: "profile",
+      label: <Link to="/profile">Profile</Link>,
+      icon: <UserOutlined />,
+    },
+    {
+      key: "signout",
+      label: (
+        <div onClick={() => instance.logout()}>
+          Sign Out
+        </div>
+      ),
+      icon: <LogoutOutlined />,
+    },
+  ];
 
   return (
     <Layout className="min-h-screen">

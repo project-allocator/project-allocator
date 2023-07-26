@@ -1,5 +1,5 @@
+import { ProjectRead, ProjectService, ShortlistService, UserRead } from "@/api";
 import config from "@/config";
-import { ProjectRead, ProjectService, ShortlistService, UserRead } from "@/services/api";
 import { getInitialLetters } from "@/utils";
 import { DeleteOutlined, EditOutlined, HeartOutlined } from '@ant-design/icons';
 import { Avatar, Button, Divider, List, Space, Tag, Tooltip, Typography } from "antd";

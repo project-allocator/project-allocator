@@ -18,7 +18,7 @@ import Proposed, { proposedLoader } from './pages/proposals/Proposed';
 import Shortlisted, { shortlistedLoader } from './pages/shortlists/Shortlisted';
 import SignIn from './pages/SignIn';
 import User, { currentUserLoader, userLoader } from './pages/users/User';
-import { msalInstance } from './services/auth';
+import { msalInstance } from './auth';
 
 const router = createBrowserRouter([
   {

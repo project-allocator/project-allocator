@@ -6,45 +6,6 @@ import { Link, useLocation } from 'react-router-dom';
 
 const { Content, Sider } = Layout;
 
-const dropdownItems: MenuProps['items'] = [
-  {
-    key: 'projects',
-    icon: <FileTextOutlined />,
-    label: (
-      <Link to="/projects">
-        All Projects
-      </Link>
-    )
-  },
-  {
-    key: 'proposed',
-    icon: <FileAddOutlined />,
-    label: (
-      <Link to="/proposed">
-        Proposed Projects
-      </Link>
-    )
-  },
-  {
-    key: 'shortlisted',
-    icon: <FileDoneOutlined />,
-    label: (
-      <Link to="/shortlisted">
-        Shortlisted Projects
-      </Link>
-    )
-  },
-  {
-    key: 'admin',
-    icon: <LockOutlined />,
-    label: (
-      <Link to="/admin">
-        Administration
-      </Link>
-    )
-  }
-];
-
 interface SiderLayoutProps {
   children: React.ReactNode;
 };
@@ -58,6 +19,45 @@ export default function SiderLayout({ children }: SiderLayoutProps) {
     title: toCapitalCase(dirname),
     href: pathnames[index],
   }));
+
+  const dropdownItems: MenuProps['items'] = [
+    {
+      key: 'projects',
+      icon: <FileTextOutlined />,
+      label: (
+        <Link to="/projects">
+          All Projects
+        </Link>
+      )
+    },
+    {
+      key: 'proposed',
+      icon: <FileAddOutlined />,
+      label: (
+        <Link to="/proposed">
+          Proposed Projects
+        </Link>
+      )
+    },
+    {
+      key: 'shortlisted',
+      icon: <FileDoneOutlined />,
+      label: (
+        <Link to="/shortlisted">
+          Shortlisted Projects
+        </Link>
+      )
+    },
+    {
+      key: 'admin',
+      icon: <LockOutlined />,
+      label: (
+        <Link to="/admin">
+          Administration
+        </Link>
+      )
+    }
+  ];
 
   return (
     <Layout>
