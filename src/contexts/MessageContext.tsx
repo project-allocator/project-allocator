@@ -2,28 +2,32 @@ import { notification } from "antd";
 import { NotificationInstance } from "antd/es/notification/interface";
 import React, { useContext } from "react";
 
-interface NotificationContextType {
+interface MessageContextType {
   instance: NotificationInstance,
-  notifySuccess: (message: string) => void,
-  notifyError: (message: string) => void,
+  messageSuccess: (message: string) => void,
+  messageError: (message: string) => void,
 }
 
-const NotificationContext = React.createContext<NotificationContextType | undefined>(undefined);
+const MessageContext = React.createContext<MessageContextType | undefined>(undefined);
 
-export function NotificationContextProvider({ children }: { children: React.ReactNode }) {
+interface MessageContextProviderProps {
+  children: React.ReactNode;
+}
+
+export function MessageContextProvider({ children }: MessageContextProviderProps) {
   const [instance, contextHolder] = notification.useNotification();
 
   return (
-    <NotificationContext.Provider value={{
+    <MessageContext.Provider value={{
       instance,
-      notifySuccess: (message) => {
+      messageSuccess: (message) => {
         instance.info({
           message: "Success",
           description: message,
           placement: "bottomRight",
         });
       },
-      notifyError: (message) => {
+      messageError: (message) => {
         instance.error({
           message: "Error",
           description: message,
@@ -33,12 +37,12 @@ export function NotificationContextProvider({ children }: { children: React.Reac
     }}>
       {contextHolder}
       {children}
-    </NotificationContext.Provider>
+    </MessageContext.Provider>
   )
 }
 
 export function useNotificationContext() {
-  const context = useContext(NotificationContext);
+  const context = useContext(MessageContext);
   if (!context) {
     throw new Error("useNotificationContext() was used outside of its Provider.");
   }

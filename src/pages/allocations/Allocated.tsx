@@ -1,7 +1,7 @@
 import { AllocationService, ProjectRead, ShortlistService } from '@/api';
 import { ProjectView } from '@/components/ProjectView';
-import { HeartOutlined } from '@ant-design/icons';
-import { Button, Divider, Empty, Space, Tag, Tooltip, Typography } from "antd";
+import { CheckOutlined, HeartOutlined } from '@ant-design/icons';
+import { Button, Divider, Empty, Space, Tooltip, Typography } from "antd";
 import { useLoaderData, useRevalidator } from 'react-router-dom';
 
 const { Title } = Typography;
@@ -24,7 +24,13 @@ export default function Allocated() {
         </Title>
         {project &&
           <Space>
-            <Tag color="success">Allocated</Tag>
+            <Tooltip title="Allocated">
+              <Button
+                shape="circle"
+                type="primary"
+                icon={<CheckOutlined />}
+              />
+            </Tooltip>
             <Tooltip title="Shortlist">
               <Button
                 shape="circle"

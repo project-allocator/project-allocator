@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { ProjectRead } from '../models/ProjectRead';
+import type { UserRead } from '../models/UserRead';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -37,12 +38,12 @@ export class AllocationService {
     /**
      * Read Allocatees
      * @param id
-     * @returns ProjectRead Successful Response
+     * @returns UserRead Successful Response
      * @throws ApiError
      */
     public static readAllocatees(
         id: number,
-    ): CancelablePromise<Array<ProjectRead>> {
+    ): CancelablePromise<Array<UserRead>> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/projects/{id}/allocatees',

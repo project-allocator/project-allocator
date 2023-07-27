@@ -26,10 +26,19 @@ export default function User() {
       </Space>
       <Divider />
       <Title level={4}>Name</Title>
+      <Paragraph className="text-slate-500">
+        Full name of the user, which is based on the user's profile on Microsoft.
+      </Paragraph>
       <Paragraph>{user.name}</Paragraph>
       <Title level={4}>Email Address</Title>
+      <Paragraph className="text-slate-500">
+        Email address of the user, which is based on the user's profile on Microsoft.
+      </Paragraph>
       <Paragraph>{user.email}</Paragraph>
       <Title level={4}>Role</Title>
+      <Paragraph className="text-slate-500">
+        Role of the user. This will be one of student, staff or admin.
+      </Paragraph>
       <Paragraph>{toCapitalCase(user.role)}</Paragraph>
     </>
   );

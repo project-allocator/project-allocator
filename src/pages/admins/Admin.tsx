@@ -1,5 +1,5 @@
 import { AdminService, AllocationService } from "@/api";
-import { useNotificationContext } from "@/contexts/NotificationContext";
+import { useNotificationContext } from "@/contexts/MessageContext";
 import { Button, Divider, Switch, Typography } from "antd";
 import { useLoaderData } from "react-router-dom";
 
@@ -13,7 +13,7 @@ export async function adminLoader() {
 
 export default function Admin() {
   const [areProposalsShutdown, areShortlistsShutdown] = useLoaderData() as [boolean, boolean];
-  const { notifySuccess } = useNotificationContext();
+  const { messageSuccess: notifySuccess } = useNotificationContext();
 
   return (
     <>
@@ -22,19 +22,26 @@ export default function Admin() {
       </Title>
       <Divider />
       <Title level={4}>Shutdown Proposals</Title>
-      <Paragraph>Turn this on to block any new project proposasl from staff.</Paragraph>
+      <Paragraph className="text-slate-500">
+        Turn this on to block any new project proposasl from staff.
+      </Paragraph>
       <Switch
         defaultChecked={areProposalsShutdown}
         onChange={() => AdminService.toggleProposalsShutdown()}
       />
       <Title level={4}>Shutdown Shortlists</Title>
-      <Paragraph>Turn this on to block any new project shortlists from students.</Paragraph>
+      <Paragraph className="text-slate-500">
+        Turn this on to block any new project shortlists from students.
+      </Paragraph>
       <Switch
         defaultChecked={areShortlistsShutdown}
         onChange={() => AdminService.toggleShortlistsShutdown()}
       />
+      <Divider />
       <Title level={4}>Allocate Projects</Title>
-      <Paragraph>Click this to allocate projects to shortlisted students.</Paragraph>
+      <Paragraph className="text-slate-500">
+        Click this to allocate projects to shortlisted students.
+      </Paragraph>
       <Button onClick={async () => {
         await AllocationService.allocateProjects();
         notifySuccess("Successfully allocated projects to all students.");
@@ -42,7 +49,9 @@ export default function Admin() {
         Allocate
       </Button>
       <Title level={4}>Deallocate Projects</Title>
-      <Paragraph>Click this to deallocate projects from allocated students.</Paragraph>
+      <Paragraph className="text-slate-500">
+        Click this to deallocate projects from allocated students.
+      </Paragraph>
       <Button onClick={async () => {
         await AllocationService.deallocateProjects();
         notifySuccess("Successfully deallocated projects from all students.");

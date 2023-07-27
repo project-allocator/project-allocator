@@ -1,14 +1,14 @@
 import { AllocationService, ProjectRead, ProjectService, ProposalService, ShortlistService, UserRead } from "@/api";
 import { ProjectView } from "@/components/ProjectView";
-import { useNotificationContext } from "@/contexts/NotificationContext";
+import { useNotificationContext } from "@/contexts/MessageContext";
 import StaffRoute from "@/routes/StaffRoute";
 import StudentRoute from "@/routes/StudentRoute";
 import { getInitialLetters } from "@/utils";
-import { DeleteOutlined, EditOutlined, HeartOutlined } from '@ant-design/icons';
-import { Avatar, Button, Divider, List, Space, Tag, Tooltip, Typography } from "antd";
+import { CheckOutlined, DeleteOutlined, EditOutlined, HeartOutlined } from '@ant-design/icons';
+import { Avatar, Button, Divider, List, Space, Tooltip, Typography } from "antd";
 import { Link, useLoaderData, useLocation, useNavigate, useRevalidator, type LoaderFunctionArgs } from 'react-router-dom';
 
-const { Title } = Typography;
+const { Title, Paragraph } = Typography;
 
 export async function projectLoader({ params }: LoaderFunctionArgs) {
   const id = parseInt(params.id!);
@@ -27,7 +27,7 @@ export default function Project() {
   const navigate = useNavigate();
   const location = useLocation();
   const revalidator = useRevalidator();
-  const { notifySuccess } = useNotificationContext();
+  const { messageSuccess: notifySuccess } = useNotificationContext();
 
   return (
     <>
@@ -38,7 +38,13 @@ export default function Project() {
         <StudentRoute>
           <Space>
             {isAllocated &&
-              <Tag color="success">Allocated</Tag>}
+              <Tooltip title="Allocated">
+                <Button
+                  shape="circle"
+                  type="primary"
+                  icon={<CheckOutlined />}
+                />
+              </Tooltip>}
             <Tooltip title="Shortlist">
               <Button
                 shape="circle"
@@ -87,7 +93,11 @@ export default function Project() {
       <StaffRoute>
         {isProposed &&
           <>
+            <Divider />
             <Title level={4}>Allocated Students</Title>
+            <Paragraph className="text-slate-500">
+              List of students allocated by the administrator will be shown here.
+            </Paragraph>
             <List
               className="mt-4"
               itemLayout="horizontal"
@@ -102,7 +112,11 @@ export default function Project() {
                 </List.Item>
               )}
             />
+            <Divider />
             <Title level={4}>Shortlisted Students</Title>
+            <Paragraph className="text-slate-500">
+              List of students who shortlisted this projected will be shown in here, in the order of their preference.
+            </Paragraph>
             <List
               className="mt-4"
               itemLayout="horizontal"

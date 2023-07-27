@@ -9,7 +9,11 @@ interface UserContextType {
 
 const UserContext = React.createContext<UserContextType | undefined>(undefined);
 
-export function UserContextProvider({ children }: { children: React.ReactNode }) {
+interface UserContextProviderProps {
+  children: React.ReactNode;
+}
+
+export function UserContextProvider({ children }: UserContextProviderProps) {
   const [user, setUser] = useState<UserRead>();
 
   const isAuth = useIsAuthenticated();

@@ -1,10 +1,13 @@
+import { NotificationRead, NotificationService } from "@/api";
 import { useUserContext } from "@/contexts/UserContext";
 import AuthRoute from "@/routes/AuthRoute";
-import { DownOutlined, LogoutOutlined, UserOutlined } from "@ant-design/icons";
+import { DeleteOutlined, DownOutlined, LogoutOutlined, NotificationOutlined, UserOutlined } from "@ant-design/icons";
 import { useMsal } from "@azure/msal-react";
-import { Button, Dropdown, Layout, Space } from "antd";
+import { Badge, Button, Card, Drawer, Dropdown, Layout, Space, Tooltip, Typography } from "antd";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
+const { Text } = Typography;
 const { Header, Content } = Layout;
 
 interface HeaderLayoutProps {
@@ -15,49 +18,103 @@ export default function HeaderLayout({ children }: HeaderLayoutProps) {
   const { instance: msalInstance } = useMsal();
   const { setUser } = useUserContext();
 
+  const [open, setOpen] = useState(false);
+  const [notifications, setNotifications] = useState<NotificationRead[]>([]);
+  useEffect(() => {
+    const fetchNotifications = () => {
+      NotificationService.readNotifications()
+        .then((notifications) => setNotifications(notifications as NotificationRead[]));
+    }
+    fetchNotifications();
+    setInterval(fetchNotifications, 60000);
+  }, [])
+
   return (
     <Layout className="min-h-screen">
       <Header className="flex items-center justify-between">
         <h1 className="text-xl text-white">Project Allocator</h1>
         <AuthRoute>
-          <Dropdown
-            menu={{
-              items: [
-                {
-                  key: "profile",
-                  label: <Link to="/profile">Profile</Link>,
-                  icon: <UserOutlined />,
-                },
-                {
-                  key: "signout",
-                  label: (
-                    <div onClick={
-                      async () => {
-                        await msalInstance.logout();
-                        setUser(undefined);
-                      }}
-                    >
-                      Sign Out
-                    </div>
-                  ),
-                  icon: <LogoutOutlined />,
-                },
-              ]
-            }}
-            className="bg-transparent text-white"
-          >
-            <Button>
-              <Space>
-                Account
-                <DownOutlined />
-              </Space>
-            </Button>
-          </Dropdown>
+          <Space>
+            <Dropdown
+              className="bg-transparent text-white"
+              menu={{
+                items: [
+                  {
+                    key: "profile",
+                    label: <Link to="/profile">Profile</Link>,
+                    icon: <UserOutlined />,
+                  },
+                  {
+                    key: "signout",
+                    label: "Sign Out",
+                    icon: <LogoutOutlined />,
+                    onClick: async () => {
+                      await msalInstance.logout();
+                      setUser(undefined);
+                    }
+                  },
+                ]
+              }}
+            >
+              <Button>
+                <Space>
+                  Account
+                  <DownOutlined />
+                </Space>
+              </Button>
+            </Dropdown>
+            <Badge count={notifications.filter((notification) => !notification.seen).length}>
+              <Button
+                className="bg-transparent text-white"
+                icon={<NotificationOutlined />}
+                onClick={() => setOpen(true)}
+              />
+            </Badge>
+          </Space>
         </AuthRoute>
       </Header>
+      <Drawer
+        title="Notifications"
+        placement="right"
+        open={open}
+        onClose={async () => {
+          setOpen(false);
+          await NotificationService.markNotifications();
+          const notifications = await NotificationService.readNotifications();
+          setNotifications(notifications);
+        }}
+      >
+        <Space direction="vertical" className="w-full">
+          {notifications.map((notification) => (
+            <Card
+              key={notification.id}
+              size="small"
+              className={notification.seen ? "opacity-50" : ""}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex flex-col">
+                  <Text strong>{notification.title}</Text>
+                  <Text>{notification.description}</Text>
+                </div>
+                <Tooltip title="Dismiss">
+                  <Button
+                    className="border-none"
+                    icon={<DeleteOutlined />}
+                    onClick={async () => {
+                      await NotificationService.deleteNotification(notification.id);
+                      const notifications = await NotificationService.readNotifications();
+                      setNotifications(notifications);
+                    }}
+                  />
+                </Tooltip>
+              </div>
+            </Card>
+          ))}
+        </Space>
+      </Drawer>
       <Content className="grid">
         {children}
       </Content>
-    </Layout>
+    </Layout >
   );
 }

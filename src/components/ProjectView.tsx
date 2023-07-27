@@ -1,6 +1,6 @@
 import { ProjectRead } from "@/api";
 import config from "@/config";
-import { Space, Tag, Typography } from "antd";
+import { Divider, Space, Tag, Typography } from "antd";
 import dayjs from 'dayjs';
 
 const { Title, Paragraph } = Typography;
@@ -12,13 +12,13 @@ interface ProjectViewProps {
 export function ProjectView({ project }: ProjectViewProps) {
   return (
     <>
-      <Title level={4}>Title</Title>
-      <Paragraph>{project.title}</Paragraph>
-      <Title level={4}>Description</Title>
+      <Title level={4}>{project.title}</Title>
       <Paragraph>{project.description}</Paragraph>
+      <Divider />
       {config.project.details.map((detail) => (
         <div key={detail.name}>
           <Title level={4}>{detail.title}</Title>
+          <Paragraph className="text-slate-500">{detail.description}</Paragraph>
           <Paragraph>
             {(() => {
               const value = project[detail.name as keyof ProjectRead];
@@ -41,6 +41,9 @@ export function ProjectView({ project }: ProjectViewProps) {
         </div>
       ))}
       <Title level={4}>Categories</Title>
+      <Paragraph className="text-slate-500">
+        List of categories set by the proposer will be shown here.
+      </Paragraph>
       <Space className="flex-wrap min-w-xl mt-2">
         {project.categories.length > 0
           ? project.categories.map((category: string) => (<Tag key={category}>{category}</Tag>))
