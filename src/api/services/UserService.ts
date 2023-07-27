@@ -45,18 +45,18 @@ export class UserService {
 
     /**
      * Create User
-     * @param accessToken
+     * @param xGraphToken
      * @returns UserRead Successful Response
      * @throws ApiError
      */
     public static createUser(
-        accessToken: string,
+        xGraphToken?: string,
     ): CancelablePromise<UserRead> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/users',
-            query: {
-                'access_token': accessToken,
+            headers: {
+                'x-graph-token': xGraphToken,
             },
             errors: {
                 422: `Validation Error`,

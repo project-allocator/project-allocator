@@ -6,7 +6,7 @@
 export type NotificationRead = {
     title: string;
     description: string;
-    seen: boolean;
+    seen?: boolean;
     id: number;
 };
 

@@ -13,25 +13,43 @@ export class AllocationService {
 
     /**
      * Allocate Projects
+     * @param accessToken
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static allocateProjects(): CancelablePromise<any> {
+    public static allocateProjects(
+        accessToken: string,
+    ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/projects/allocatees',
+            query: {
+                'access_token': accessToken,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
         });
     }
 
     /**
      * Deallocate Projects
+     * @param accessToken
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static deallocateProjects(): CancelablePromise<any> {
+    public static deallocateProjects(
+        accessToken: string,
+    ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'DELETE',
             url: '/api/projects/allocatees',
+            query: {
+                'access_token': accessToken,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
         });
     }
 

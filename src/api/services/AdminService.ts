@@ -22,13 +22,22 @@ export class AdminService {
 
     /**
      * Toggle Proposals Shutdown
+     * @param accessToken
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static toggleProposalsShutdown(): CancelablePromise<any> {
+    public static toggleProposalsShutdown(
+        accessToken: string,
+    ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'PUT',
             url: '/api/proposals/shutdown',
+            query: {
+                'access_token': accessToken,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
         });
     }
 
@@ -46,13 +55,22 @@ export class AdminService {
 
     /**
      * Toggle Shortlists Shutdown
+     * @param accessToken
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static toggleShortlistsShutdown(): CancelablePromise<any> {
+    public static toggleShortlistsShutdown(
+        accessToken: string,
+    ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'PUT',
             url: '/api/shortlists/shutdown',
+            query: {
+                'access_token': accessToken,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
         });
     }
 

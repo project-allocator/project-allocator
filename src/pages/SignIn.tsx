@@ -32,13 +32,7 @@ export default function SignIn() {
             onClick={async () => {
               const { account } = await msalInstance.loginPopup(authRequest);
               msalInstance.setActiveAccount(account);
-              // See the following discussion for the motivation behind sending access token for Microsoft Graph API
-              // https://www.reddit.com/r/webdev/comments/v62e78/authenticate_in_the_frontend_and_send_a_token_to/
-              const { accessToken } = await msalInstance.acquireTokenSilent({
-                scopes: ["User.Read"],
-                account: msalInstance.getActiveAccount()!,
-              });
-              const user = await UserService.createUser(accessToken);
+              const user = await UserService.createUser();
               setUser(user);
             }}>
             <Space>
