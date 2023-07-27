@@ -32,51 +32,31 @@ export default function SiderLayout({ children }: SiderLayoutProps) {
             {
               key: 'projects',
               icon: <FileTextOutlined />,
-              label: (
-                <Link to="/projects">
-                  All Projects
-                </Link>
-              )
+              label: <Link to="/projects">All Projects</Link>,
             },
             (user?.role === 'staff' || user?.role === 'admin') &&
             {
               key: 'proposed',
               icon: <FileAddOutlined />,
-              label: (
-                <Link to="/proposed">
-                  Proposed Projects
-                </Link>
-              )
+              label: <Link to="/proposed">Proposed Projects</Link>,
             },
             user?.role === 'student' &&
             {
               key: 'allocated',
               icon: <FileDoneOutlined />,
-              label: (
-                <Link to="/allocated">
-                  Allocated Project
-                </Link>
-              )
+              label: <Link to="/allocated">Allocated Project</Link>,
             },
             user?.role === 'student' &&
             {
               key: 'shortlisted',
               icon: <FileDoneOutlined />,
-              label: (
-                <Link to="/shortlisted">
-                  Shortlisted Projects
-                </Link>
-              )
+              label: <Link to="/shortlisted">Shortlisted Projects</Link>,
             },
             user?.role === 'admin' &&
             {
               key: 'admin',
               icon: <LockOutlined />,
-              label: (
-                <Link to="/admin">
-                  Administration
-                </Link>
-              )
+              label: <Link to="/admin">Administration</Link>,
             }
           ] as ItemType<MenuItemType>[]}
           defaultSelectedKeys={[dirnames[0]]}

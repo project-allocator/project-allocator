@@ -13,18 +13,18 @@ export class AllocationService {
 
     /**
      * Allocate Projects
-     * @param accessToken
+     * @param xGraphToken
      * @returns any Successful Response
      * @throws ApiError
      */
     public static allocateProjects(
-        accessToken: string,
+        xGraphToken?: string,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/projects/allocatees',
-            query: {
-                'access_token': accessToken,
+            headers: {
+                'x-graph-token': xGraphToken,
             },
             errors: {
                 422: `Validation Error`,
@@ -34,18 +34,18 @@ export class AllocationService {
 
     /**
      * Deallocate Projects
-     * @param accessToken
+     * @param xGraphToken
      * @returns any Successful Response
      * @throws ApiError
      */
     public static deallocateProjects(
-        accessToken: string,
+        xGraphToken?: string,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'DELETE',
             url: '/api/projects/allocatees',
-            query: {
-                'access_token': accessToken,
+            headers: {
+                'x-graph-token': xGraphToken,
             },
             errors: {
                 422: `Validation Error`,

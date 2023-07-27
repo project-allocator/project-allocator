@@ -3,7 +3,7 @@ import { useUserContext } from "@/contexts/UserContext";
 import AuthRoute from "@/routes/AuthRoute";
 import { DeleteOutlined, DownOutlined, LogoutOutlined, NotificationOutlined, UserOutlined } from "@ant-design/icons";
 import { useMsal } from "@azure/msal-react";
-import { Badge, Button, Card, Drawer, Dropdown, Layout, Space, Tooltip, Typography } from "antd";
+import { Badge, Button, Card, Drawer, Dropdown, Empty, Layout, Space, Tooltip, Typography } from "antd";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -20,18 +20,18 @@ export default function HeaderLayout({ children }: HeaderLayoutProps) {
 
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationRead[]>([]);
+  const fetchNotifications = () => {
+    NotificationService.readNotifications()
+      .then((notifications) => setNotifications(notifications as NotificationRead[]));
+  }
   useEffect(() => {
-    const fetchNotifications = () => {
-      NotificationService.readNotifications()
-        .then((notifications) => setNotifications(notifications as NotificationRead[]));
-    }
     fetchNotifications();
     setInterval(fetchNotifications, 60000);
   }, [])
 
   return (
     <Layout className="min-h-screen">
-      <Header className="flex items-center justify-between">
+      <Header className="flex items-center justify-between bg-black">
         <h1 className="text-xl text-white">Project Allocator</h1>
         <AuthRoute>
           <Space>
@@ -49,7 +49,7 @@ export default function HeaderLayout({ children }: HeaderLayoutProps) {
                     label: "Sign Out",
                     icon: <LogoutOutlined />,
                     onClick: async () => {
-                      await msalInstance.logout();
+                      await msalInstance.logoutPopup();
                       setUser(undefined);
                     }
                   },
@@ -80,36 +80,36 @@ export default function HeaderLayout({ children }: HeaderLayoutProps) {
         onClose={async () => {
           setOpen(false);
           await NotificationService.markNotifications();
-          const notifications = await NotificationService.readNotifications();
-          setNotifications(notifications);
+          await fetchNotifications();
         }}
       >
         <Space direction="vertical" className="w-full">
-          {notifications.map((notification) => (
-            <Card
-              key={notification.id}
-              size="small"
-              className={notification.seen ? "opacity-50" : ""}
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex flex-col">
-                  <Text strong>{notification.title}</Text>
-                  <Text>{notification.description}</Text>
+          {notifications.length > 0 ?
+            notifications.map((notification) => (
+              <Card
+                key={notification.id}
+                size="small"
+                className={notification.seen ? "opacity-50" : ""}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col">
+                    <Text strong>{notification.title}</Text>
+                    <Text>{notification.description}</Text>
+                  </div>
+                  <Tooltip title="Dismiss">
+                    <Button
+                      className="border-none"
+                      icon={<DeleteOutlined />}
+                      onClick={async () => {
+                        await NotificationService.deleteNotification(notification.id);
+                        await fetchNotifications();
+                      }}
+                    />
+                  </Tooltip>
                 </div>
-                <Tooltip title="Dismiss">
-                  <Button
-                    className="border-none"
-                    icon={<DeleteOutlined />}
-                    onClick={async () => {
-                      await NotificationService.deleteNotification(notification.id);
-                      const notifications = await NotificationService.readNotifications();
-                      setNotifications(notifications);
-                    }}
-                  />
-                </Tooltip>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            ))
+            : <Empty />}
         </Space>
       </Drawer>
       <Content className="grid">

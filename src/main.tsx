@@ -29,9 +29,23 @@ import StudentRoute from './routes/StudentRoute';
 
 const router = createBrowserRouter([
   {
+    path: "signin",
+    element: (
+      <CenterLayout>
+        <GuestRoute fallback="/">
+          <SignIn />
+        </GuestRoute>
+      </CenterLayout>
+    ),
+  },
+  {
     element: (
       <HeaderLayout>
-        <Outlet />
+        <SiderLayout>
+          <AuthRoute fallback="/signin">
+            <Outlet />
+          </AuthRoute>
+        </SiderLayout>
       </HeaderLayout>
     ),
     errorElement: (
@@ -42,114 +56,87 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: (
-          <CenterLayout>
-            <AuthRoute fallback="/signin">
-              <Navigate to="/projects" />,
-            </AuthRoute>
-          </CenterLayout>
-        ),
+        element: <Navigate to="/projects" />,
       },
       {
-        path: "signin",
-        element: (
-          <CenterLayout>
-            <GuestRoute fallback="/">
-              <SignIn />
-            </GuestRoute>
-          </CenterLayout>
-        ),
-      },
-      {
-        element: (
-          <SiderLayout>
-            <AuthRoute fallback="/signin">
-              <Outlet />
-            </AuthRoute>
-          </SiderLayout>
-        ),
+        path: "projects",
         children: [
           {
-            path: "projects",
-            children: [
-              {
-                index: true,
-                element: <Projects />,
-                loader: projectsLoader,
-              },
-              {
-                path: ":id",
-                element: <Project />,
-                loader: projectLoader,
-              },
-              {
-                path: "add",
-                element: (
-                  <StaffRoute fallback="/">
-                    <ProjectAdd />
-                  </StaffRoute>
-                ),
-                action: projectAddAction,
-              },
-              {
-                path: ":id/edit",
-                element: (
-                  <StaffRoute fallback="/">
-                    <ProjectEdit />
-                  </StaffRoute>
-                ),
-                loader: projectEditLoader,
-                action: projectEditAction,
-              },
-            ]
+            index: true,
+            element: <Projects />,
+            loader: projectsLoader,
           },
           {
-            path: "proposed",
+            path: ":id",
+            element: <Project />,
+            loader: projectLoader,
+          },
+          {
+            path: "add",
             element: (
               <StaffRoute fallback="/">
-                <Proposed />
+                <ProjectAdd />
               </StaffRoute>
             ),
-            loader: proposedLoader,
+            action: projectAddAction,
           },
           {
-            path: "shortlisted",
+            path: ":id/edit",
             element: (
-              <StudentRoute fallback="/">
-                <Shortlisted />
-              </StudentRoute>
+              <StaffRoute fallback="/">
+                <ProjectEdit />
+              </StaffRoute>
             ),
-            loader: shortlistedLoader,
+            loader: projectEditLoader,
+            action: projectEditAction,
           },
-          {
-            path: "allocated",
-            element: (
-              <StudentRoute fallback="/">
-                <Allocated />
-              </StudentRoute>
-            ),
-            loader: allocatedLoader,
-          },
-          {
-            path: "admin",
-            element: (
-              <AdminRoute fallback="/">
-                <Admin />
-              </AdminRoute>
-            ),
-            loader: adminLoader,
-          },
-          {
-            path: "profile",
-            element: <User />,
-            loader: currentUserLoader,
-          },
-          {
-            path: "users/:id",
-            element: <User />,
-            loader: userLoader,
-          },
-        ],
+        ]
+      },
+      {
+        path: "proposed",
+        element: (
+          <StaffRoute fallback="/">
+            <Proposed />
+          </StaffRoute>
+        ),
+        loader: proposedLoader,
+      },
+      {
+        path: "shortlisted",
+        element: (
+          <StudentRoute fallback="/">
+            <Shortlisted />
+          </StudentRoute>
+        ),
+        loader: shortlistedLoader,
+      },
+      {
+        path: "allocated",
+        element: (
+          <StudentRoute fallback="/">
+            <Allocated />
+          </StudentRoute>
+        ),
+        loader: allocatedLoader,
+      },
+      {
+        path: "admin",
+        element: (
+          <AdminRoute fallback="/">
+            <Admin />
+          </AdminRoute>
+        ),
+        loader: adminLoader,
+      },
+      {
+        path: "profile",
+        element: <User />,
+        loader: currentUserLoader,
+      },
+      {
+        path: "users/:id",
+        element: <User />,
+        loader: userLoader,
       },
     ],
   },

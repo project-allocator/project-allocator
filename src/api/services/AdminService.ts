@@ -22,18 +22,18 @@ export class AdminService {
 
     /**
      * Toggle Proposals Shutdown
-     * @param accessToken
+     * @param xGraphToken
      * @returns any Successful Response
      * @throws ApiError
      */
     public static toggleProposalsShutdown(
-        accessToken: string,
+        xGraphToken?: string,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'PUT',
             url: '/api/proposals/shutdown',
-            query: {
-                'access_token': accessToken,
+            headers: {
+                'x-graph-token': xGraphToken,
             },
             errors: {
                 422: `Validation Error`,
@@ -55,18 +55,18 @@ export class AdminService {
 
     /**
      * Toggle Shortlists Shutdown
-     * @param accessToken
+     * @param xGraphToken
      * @returns any Successful Response
      * @throws ApiError
      */
     public static toggleShortlistsShutdown(
-        accessToken: string,
+        xGraphToken?: string,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'PUT',
             url: '/api/shortlists/shutdown',
-            query: {
-                'access_token': accessToken,
+            headers: {
+                'x-graph-token': xGraphToken,
             },
             errors: {
                 422: `Validation Error`,

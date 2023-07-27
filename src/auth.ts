@@ -51,20 +51,20 @@ export const msalInstance = new PublicClientApplication({
 // This automatically sets the access token in the request header if the user is logged in.
 // You can avoid using this interceptor by creating a new axios instance.
 axios.interceptors.request.use(async (config) => {
-  const { accessToken: apiToken } = await msalInstance.acquireTokenSilent({
-    ...authRequest,
-    account: msalInstance.getActiveAccount()!,
-  });
-  config.headers.set('Authorization', `Bearer ${apiToken}`);
-
-  // See the following discussion for the motivation behind sending access token for Microsoft Graph API
-  // https://www.reddit.com/r/webdev/comments/v62e78/authenticate_in_the_frontend_and_send_a_token_to/
-  const { accessToken: graphToken } = await msalInstance.acquireTokenSilent({
-    scopes: ["User.Read", "Mail.Send"],
-    account: msalInstance.getActiveAccount()!,
-  });
-  config.headers.set('X-Graph-Token', graphToken);
-
+  if (msalInstance.getActiveAccount()) {
+    const { accessToken: apiToken } = await msalInstance.acquireTokenSilent({
+      ...authRequest,
+      account: msalInstance.getActiveAccount()!,
+    });
+    config.headers.set('Authorization', `Bearer ${apiToken}`);
+    // See the following discussion for the motivation behind sending access token for Microsoft Graph API
+    // https://www.reddit.com/r/webdev/comments/v62e78/authenticate_in_the_frontend_and_send_a_token_to/
+    const { accessToken: graphToken } = await msalInstance.acquireTokenSilent({
+      scopes: ["User.Read"],
+      account: msalInstance.getActiveAccount()!,
+    });
+    config.headers.set('X-Graph-Token', graphToken);
+  }
   return config;
 });
 
