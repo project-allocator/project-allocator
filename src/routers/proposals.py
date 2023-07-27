@@ -20,7 +20,11 @@ async def read_proposed(
     return session.exec(select(Project).where(Project.proposer_id == user.id)).all()
 
 
-@router.get("/users/me/proposed/{id}", response_model=bool)
+@router.get(
+    "/users/me/proposed/{id}",
+    response_model=bool,
+    dependencies=[Security(check_staff)],
+)
 async def is_proposed(
     id: int,
     user: User = Depends(get_user),

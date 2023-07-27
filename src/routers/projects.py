@@ -21,7 +21,9 @@ router = APIRouter(tags=["project"])
 
 @router.get("/projects", response_model=List[ProjectRead])
 async def read_projects(session: Session = Depends(get_session)):
-    return session.exec(select(Project)).all()
+    projects = session.exec(select(Project)).all()
+    projects.sort(key=lambda project: project.updated_at, reverse=True)
+    return projects
 
 
 @router.get("/projects/{id}", response_model=ProjectRead)

@@ -1,4 +1,6 @@
 project:
+  allocations:
+    students: 4
   details:
     - name: lorem1
       title: Lorem ipsum

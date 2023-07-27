@@ -20,6 +20,7 @@ class UserFactory(ModelFactory):
     id = None
     created_at = None
     updated_at = None
+    allocated_id = None
 
     @classmethod
     def email(cls) -> str:
@@ -44,7 +45,7 @@ class ProjectFactory(ModelFactory):
     id = None
     created_at = None
     updated_at = None
-    user_id = None
+    proposer_id = None
 
     @classmethod
     def title(cls) -> str:

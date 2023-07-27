@@ -23,7 +23,12 @@ class User(UserBase, table=True):
 
     proposed: List["Project"] = Relationship(
         back_populates="proposer",
-        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+        sa_relationship_kwargs={"foreign_keys": "[Project.proposer_id]"},
+    )
+    allocated_id: Optional[int] = Field(default=None, foreign_key="project.id")
+    allocated: "Project" = Relationship(
+        back_populates="allocatees",
+        sa_relationship_kwargs={"foreign_keys": "[User.allocated_id]"},
     )
     shortlists: List["Shortlist"] = Relationship(
         back_populates="user",
@@ -72,7 +77,14 @@ class Project(ProjectBase, table=True):
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
     proposer_id: Optional[int] = Field(default=None, foreign_key="user.id")
-    proposer: User = Relationship(back_populates="proposed")
+    proposer: User = Relationship(
+        back_populates="proposed",
+        sa_relationship_kwargs={"foreign_keys": "[Project.proposer_id]"},
+    )
+    allocatees: List["User"] = Relationship(
+        back_populates="allocated",
+        sa_relationship_kwargs={"foreign_keys": "[User.allocated_id]"},
+    )
     shortlists: List["Shortlist"] = Relationship(
         back_populates="project",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},

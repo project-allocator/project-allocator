@@ -2,7 +2,7 @@ from fastapi import FastAPI, APIRouter, Security, Depends
 from fastapi_azure_auth.user import User
 
 from .auth import swagger_scheme, azure_scheme
-from .routers import projects, users, proposals, shortlists, admin
+from .routers import projects, users, proposals, allocations, shortlists, admin
 
 # For Open API authentication
 app = FastAPI(**swagger_scheme)
@@ -21,11 +21,14 @@ router = APIRouter(
     # Block if not authenticated
     dependencies=[Security(azure_scheme)],
 )
-router.include_router(projects.router)
-router.include_router(users.router)
+
+# Order is important as path parameters may collide
+router.include_router(allocations.router)
 router.include_router(proposals.router)
 router.include_router(shortlists.router)
 router.include_router(admin.router)
+router.include_router(projects.router)
+router.include_router(users.router)
 
 
 @router.get("/")
