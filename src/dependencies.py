@@ -44,12 +44,16 @@ def check_student(user=Depends(get_user)):
 def block_proposals_if_shutdown(session: Session = Depends(get_session)):
     status = session.get(Status, "proposals.shutdown")
     if status.value == "true":
-        raise HTTPException(status_code=400, detail="Proposals are currently shutdown.")
+        raise HTTPException(
+            status_code=403,
+            detail="Proposals are currently shutdown.",
+        )
 
 
 def block_shortlists_if_shutdown(session: Session = Depends(get_session)):
     status = session.get(Status, "shortlists.shutdown")
     if status.value == "true":
         raise HTTPException(
-            status_code=400, detail="Shortlists are currently shutdown."
+            status_code=403,
+            detail="Shortlists are currently shutdown.",
         )

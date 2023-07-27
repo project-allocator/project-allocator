@@ -12,6 +12,7 @@ from ..dependencies import (
     get_user,
 )
 from ..models import Project, ProjectRead, Shortlist, User, UserRead
+from .notifications import create_notifications
 
 router = APIRouter(tags=["allocation"])
 
@@ -50,6 +51,11 @@ async def allocate_projects(session: Session = Depends(get_session)):
             )
             session.add(project)
             session.commit()
+    create_notifications(
+        title="Projects have been allocated.",
+        description="You can check your allocated project in 'Allocated Project'.",
+        roles=["staff", "admin"],
+    )
     return {"ok": True}
 
 
@@ -63,6 +69,11 @@ async def deallocate_projects(session: Session = Depends(get_session)):
         project.allocatees = []
         session.add(project)
     session.commit()
+    create_notifications(
+        title="Projects have been deallocated.",
+        description="Wait for the administrators to allocate projects again.",
+        roles=["staff", "admin"],
+    )
     return {"ok": True}
 
 

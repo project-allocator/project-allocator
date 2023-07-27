@@ -1,7 +1,8 @@
 from typing import List, Optional
 from datetime import datetime
 from pydantic import create_model
-from sqlmodel import JSON, Column, Field, Relationship, SQLModel
+from sqlalchemy import Column, JSON, ForeignKey
+from sqlmodel import Field, Relationship, SQLModel
 
 from .config import config
 
@@ -18,6 +19,7 @@ class UserBase(SQLModel):
 
 class User(UserBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
+
     created_at: datetime = Field(default=datetime.utcnow())
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
@@ -25,12 +27,22 @@ class User(UserBase, table=True):
         back_populates="proposer",
         sa_relationship_kwargs={"foreign_keys": "[Project.proposer_id]"},
     )
-    allocated_id: Optional[int] = Field(default=None, foreign_key="project.id")
+    # Set user_alter to True to avoid circular dependency error when dropping table
+    # https://dev.to/whchi/disable-sqlmodel-foreign-key-constraint-55kp
+    # fmt: off
+    allocated_id: Optional[int] = Field(
+        default=None,
+        sa_column=Column(ForeignKey("project.id", use_alter=True, name="fk_allocation")),
+    )
     allocated: "Project" = Relationship(
         back_populates="allocatees",
         sa_relationship_kwargs={"foreign_keys": "[User.allocated_id]"},
     )
     shortlists: List["Shortlist"] = Relationship(
+        back_populates="user",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    )
+    notifications: List["Notification"] = Relationship(
         back_populates="user",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
@@ -73,10 +85,16 @@ ProjectBase = create_model(
 
 class Project(ProjectBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
+
     created_at: datetime = Field(default=datetime.utcnow())
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
-    proposer_id: Optional[int] = Field(default=None, foreign_key="user.id")
+    # Set user_alter to True to avoid circular dependency error when dropping table
+    # https://dev.to/whchi/disable-sqlmodel-foreign-key-constraint-55kp
+    proposer_id: Optional[int] = Field(
+        default=None,
+        sa_column=Column(ForeignKey("user.id", use_alter=True, name="fk_proposal")),
+    )
     proposer: User = Relationship(
         back_populates="proposed",
         sa_relationship_kwargs={"foreign_keys": "[Project.proposer_id]"},
@@ -115,10 +133,14 @@ class Shortlist(SQLModel, table=True):
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
     user_id: Optional[int] = Field(
-        default=None, foreign_key="user.id", primary_key=True
+        default=None,
+        foreign_key="user.id",
+        primary_key=True,
     )
     project_id: Optional[int] = Field(
-        default=None, foreign_key="project.id", primary_key=True
+        default=None,
+        foreign_key="project.id",
+        primary_key=True,
     )
     user: User = Relationship(back_populates="shortlists")
     project: Project = Relationship(back_populates="shortlists")
@@ -135,3 +157,28 @@ class Status(SQLModel, table=True):
 
     created_at: datetime = Field(default=datetime.utcnow())
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+################################################################################
+#                             Notification Models                              #
+################################################################################
+
+
+class NotificationBase(SQLModel):
+    title: str
+    description: str
+    seen: bool = False
+
+
+class Notification(NotificationBase, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+
+    created_at: datetime = Field(default=datetime.utcnow())
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    user_id: Optional[int] = Field(default=None, foreign_key="user.id")
+    user: User = Relationship(back_populates="notifications")
+
+
+class NotificationRead(NotificationBase):
+    id: int

@@ -2,7 +2,15 @@ from fastapi import FastAPI, APIRouter, Security, Depends
 from fastapi_azure_auth.user import User
 
 from .auth import swagger_scheme, azure_scheme
-from .routers import projects, users, proposals, allocations, shortlists, admin
+from .routers import (
+    projects,
+    users,
+    proposals,
+    allocations,
+    shortlists,
+    admin,
+    notifications,
+)
 
 # For Open API authentication
 app = FastAPI(**swagger_scheme)
@@ -29,6 +37,7 @@ router.include_router(shortlists.router)
 router.include_router(admin.router)
 router.include_router(projects.router)
 router.include_router(users.router)
+router.include_router(notifications.router)
 
 
 @router.get("/")
