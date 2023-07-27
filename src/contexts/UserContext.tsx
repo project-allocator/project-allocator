@@ -7,10 +7,7 @@ interface UserContextType {
   setUser: React.Dispatch<React.SetStateAction<UserRead | undefined>>
 }
 
-const UserContext = React.createContext<UserContextType>({
-  user: undefined,
-  setUser: () => { }
-});
+const UserContext = React.createContext<UserContextType | undefined>(undefined);
 
 export function UserContextProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<UserRead>();

@@ -8,6 +8,7 @@ import { msalInstance } from './auth';
 import CenterLayout from './components/layouts/CenterLayout';
 import HeaderLayout from './components/layouts/HeaderLayout';
 import SiderLayout from './components/layouts/SiderLayout';
+import { NotificationContextProvider } from './contexts/NotificationContext';
 import { UserContextProvider } from './contexts/UserContext';
 import Error from './pages/Error';
 import SignIn from './pages/SignIn';
@@ -158,7 +159,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <MsalProvider instance={msalInstance}>
       <UserContextProvider>
-        <RouterProvider router={router} />
+        <NotificationContextProvider>
+          <RouterProvider router={router} />
+        </NotificationContextProvider>
       </UserContextProvider>
     </MsalProvider>
   </React.StrictMode>,

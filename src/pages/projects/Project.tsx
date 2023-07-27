@@ -1,5 +1,6 @@
 import { AllocationService, ProjectRead, ProjectService, ProposalService, ShortlistService, UserRead } from "@/api";
 import { ProjectView } from "@/components/ProjectView";
+import { useNotificationContext } from "@/contexts/NotificationContext";
 import StaffRoute from "@/routes/StaffRoute";
 import StudentRoute from "@/routes/StudentRoute";
 import { getInitialLetters } from "@/utils";
@@ -23,9 +24,10 @@ export async function projectLoader({ params }: LoaderFunctionArgs) {
 export default function Project() {
   const [project, isProposed, shortlisters, isShortlisted, allocatees, isAllocated]
     = useLoaderData() as [ProjectRead, boolean, UserRead[], boolean, UserRead[], boolean];
-  const revalidator = useRevalidator();
   const navigate = useNavigate();
   const location = useLocation();
+  const revalidator = useRevalidator();
+  const { notifySuccess } = useNotificationContext();
 
   return (
     <>
@@ -46,6 +48,9 @@ export default function Project() {
                   await !isShortlisted
                     ? ShortlistService.setShortlisted(project.id)
                     : ShortlistService.unsetShortlisted(project.id);
+                  notifySuccess(isShortlisted
+                    ? "Successfully unshortlisted project."
+                    : "Successfully shortlisted project.");
                   revalidator.revalidate();
                 }}
               />
