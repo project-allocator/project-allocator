@@ -21,18 +21,35 @@ router = APIRouter(tags=["allocation"])
     dependencies=[Security(check_admin)],
 )
 async def allocate_projects(session: Session = Depends(get_session)):
+    count = config["project"]["allocations"]["students"]
     projects = session.exec(select(Project)).all()
+    # Allocate shortlisted students to projects
     for project in projects:
         shortlists = session.exec(
-            select(Shortlist).where(Shortlist.project_id == project.id)
+            select(Shortlist)
+            .where(Shortlist.project_id == project.id)
+            .order_by(Shortlist.preference.desc())
         ).all()
+        shortlisters = list(map(lambda shortlist: shortlist.user, shortlists))
         project.allocatees = []
-        project.allocatees = random.sample(
-            list(map(lambda shortlist: shortlist.user, shortlists)),
-            config["project"]["allocations"]["students"],
-        )
+        project.allocatees = shortlisters[: min(count, len(shortlisters))]
         session.add(project)
         session.commit()
+    # Allocate remaining students to projects
+    for project in projects:
+        # fmt: off
+        non_allocatees = session.exec(
+            select(User)
+            .where(User.role == "student")
+            .where(User.allocated == None)
+        ).all()
+        if len(project.allocatees) < count:
+            project.allocatees += random.sample(
+                non_allocatees,
+                min(count - len(project.allocatees), len(non_allocatees)),
+            )
+            session.add(project)
+            session.commit()
     return {"ok": True}
 
 
@@ -45,7 +62,7 @@ async def deallocate_projects(session: Session = Depends(get_session)):
     for project in projects:
         project.allocatees = []
         session.add(project)
-        session.commit()
+    session.commit()
     return {"ok": True}
 
 
@@ -56,7 +73,6 @@ async def deallocate_projects(session: Session = Depends(get_session)):
 )
 async def read_allocatees(id: int, session: Session = Depends(get_session)):
     project = session.get(Project, id)
-    print(project.allocatees)
     return project.allocatees
 
 

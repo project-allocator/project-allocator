@@ -25,7 +25,7 @@ async def read_shortlisted(
 ):
     # fmt: off
     shortlists = session.exec(select(Shortlist).where(Shortlist.user_id == user.id)).all()
-    shortlists.sort(key=lambda shortlist: shortlist.preference, reverse=True)
+    shortlists.sort(key=lambda shortlist: shortlist.preference)
     projects = []
     for shortlist in shortlists:
         project = session.get(Project, shortlist.project_id)
@@ -56,7 +56,11 @@ async def set_shortlisted(
     user: User = Depends(get_user),
     session: Session = Depends(get_session),
 ):
-    shortlist = Shortlist(user_id=user.id, project_id=id, preference=0)
+    shortlists = session.exec(
+        select(Shortlist).where(Shortlist.user_id == user.id)
+    ).all()
+    # Set new shortlist to lowest preference
+    shortlist = Shortlist(user_id=user.id, project_id=id, preference=len(shortlists))
     session.add(shortlist)
     session.commit()
     return {"ok": True}
@@ -76,6 +80,14 @@ async def unset_shortlisted(
         raise HTTPException(status_code=404, detail="Shortlist not found")
     session.delete(shortlist)
     session.commit()
+    # Recalculate shortlist preferences
+    shortlists = session.exec(
+        select(Shortlist).where(Shortlist.user_id == user.id)
+    ).all()
+    for preference, shortlist in enumerate(shortlists):
+        shortlist.preference = preference
+        session.add(shortlist)
+        session.commit()
     return {"ok": True}
 
 
@@ -88,13 +100,11 @@ async def reorder_shortlisted(
     user: User = Depends(get_user),
     session: Session = Depends(get_session),
 ):
-    for preference, id in enumerate(reversed(ids)):
+    for preference, id in enumerate(ids):
         shortlist = session.get(Shortlist, (user.id, id))
-        # Preference should be 1 to 10
-        # 0 is reserved as the default value
-        shortlist.preference = preference + 1
+        shortlist.preference = preference
         session.add(shortlist)
-    session.commit()
+        session.commit()
     return {"ok": True}
 
 
@@ -114,7 +124,7 @@ async def read_shortlisters(
     if project.proposer != user:
         raise HTTPException(status_code=401, detail="Project not owned by user")
     shortlists = session.exec(select(Shortlist).where(Shortlist.project_id == id)).all()
-    shortlists.sort(key=lambda shortlist: shortlist.preference, reverse=True)
+    shortlists.sort(key=lambda shortlist: shortlist.preference)
     users = []
     for shortlist in shortlists:
         user = session.get(User, shortlist.user_id)
