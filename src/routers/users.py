@@ -1,9 +1,9 @@
 import requests
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Header
 from sqlmodel import Session
 
 from ..models import User, UserRead
-from ..dependencies import get_session, get_user, get_user_or_none
+from ..dependencies import get_session, get_token, get_user, get_user_or_none
 
 router = APIRouter(tags=["user"])
 
@@ -20,8 +20,8 @@ async def read_user(id: int, session: Session = Depends(get_session)):
 
 @router.post("/users", response_model=UserRead)
 async def create_user(
-    access_token: str,
     user: User | None = Depends(get_user_or_none),
+    token: str | None = Depends(get_token),
     session: Session = Depends(get_session),
 ):
     # Return the user if the user exists in the database.
@@ -31,7 +31,7 @@ async def create_user(
     # retrieve user data via Microsoft Graph API and create user in the database.
     res = requests.get(
         "https://graph.microsoft.com/v1.0/me",
-        headers={"Authorization": f"Bearer {access_token}"},
+        headers={"Authorization": f"Bearer {token}"},
     ).json()
     user = User(
         email=res["userPrincipalName"],

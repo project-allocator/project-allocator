@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException, Header
 from fastapi_azure_auth.user import User as AzureUser
 from sqlmodel import Session, select
 
@@ -24,6 +24,10 @@ def get_user(user=Depends(get_user_or_none)):
     if not user:
         raise HTTPException(status_code=404, detail="User is not in the database.")
     return user
+
+
+def get_token(x_graph_token: str | None = Header(default=None)):
+    return x_graph_token
 
 
 def check_admin(user=Depends(get_user)):

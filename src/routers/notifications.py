@@ -2,21 +2,10 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 
-from ..db import engine
 from ..dependencies import get_session, get_user
 from ..models import Notification, NotificationRead, User
 
 router = APIRouter(tags=["notification"])
-
-
-def create_notifications(title: str, description: str, roles: List[str]):
-    with Session(engine) as session:
-        users = session.exec(select(User).where(User.role.in_(roles))).all()
-        for user in users:
-            notification = Notification(title=title, description=description)
-            user.notifications.append(notification)
-            session.add(user)
-            session.commit()
 
 
 @router.get("/users/me/notifications", response_model=List[NotificationRead])
