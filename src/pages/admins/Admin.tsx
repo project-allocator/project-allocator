@@ -1,5 +1,5 @@
-import { AdminService } from "@/api";
-import { Divider, Switch, Typography } from "antd";
+import { AdminService, AllocationService } from "@/api";
+import { Button, Divider, Switch, Typography } from "antd";
 import { useLoaderData } from "react-router-dom";
 
 const { Title, Paragraph } = Typography;
@@ -31,6 +31,16 @@ export default function Admin() {
         defaultChecked={areShortlistsShutdown}
         onChange={() => AdminService.toggleShortlistsShutdown()}
       />
+      <Title level={4}>Allocate Projects</Title>
+      <Paragraph>Click this to allocate projects to shortlisted students.</Paragraph>
+      <Button onClick={() => AllocationService.allocateProjects()}>
+        Allocate
+      </Button>
+      <Title level={4}>Deallocate Projects</Title>
+      <Paragraph>Click this to deallocate projects from allocated students.</Paragraph>
+      <Button onClick={() => AllocationService.deallocateProjects()}>
+        Deallocate
+      </Button>
     </>
   );
 }

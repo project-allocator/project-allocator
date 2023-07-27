@@ -50,6 +50,16 @@ export default function SiderLayout({ children }: SiderLayoutProps) {
             },
             user?.role === 'student' &&
             {
+              key: 'allocated',
+              icon: <FileDoneOutlined />,
+              label: (
+                <Link to="/allocated">
+                  Allocated Project
+                </Link>
+              )
+            },
+            user?.role === 'student' &&
+            {
               key: 'shortlisted',
               icon: <FileDoneOutlined />,
               label: (

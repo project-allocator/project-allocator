@@ -6,6 +6,7 @@ interface AuthRouteProps {
   redirect?: boolean;
 }
 
+// TODO: Find better ways to switch redirect
 export default function AuthRoute({ children, redirect }: AuthRouteProps) {
   const { user } = useUserContext();
   if (!user) {

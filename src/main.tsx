@@ -12,6 +12,7 @@ import { UserContextProvider } from './contexts/UserContext';
 import Error from './pages/Error';
 import SignIn from './pages/SignIn';
 import Admin, { adminLoader } from './pages/admins/Admin';
+import Allocated, { allocatedLoader } from './pages/allocations/Allocated';
 import Project, { projectLoader } from './pages/projects/Project';
 import ProjectAdd, { projectAddAction } from './pages/projects/ProjectAdd';
 import ProjectEdit, { projectEditAction, projectEditLoader } from './pages/projects/ProjectEdit';
@@ -118,6 +119,15 @@ const router = createBrowserRouter([
               </StudentRoute>
             ),
             loader: shortlistedLoader,
+          },
+          {
+            path: "allocated",
+            element: (
+              <StudentRoute redirect>
+                <Allocated />
+              </StudentRoute>
+            ),
+            loader: allocatedLoader,
           },
           {
             path: "admin",
