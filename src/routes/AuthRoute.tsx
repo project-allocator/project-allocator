@@ -3,14 +3,14 @@ import { Navigate } from "react-router-dom";
 
 interface AuthRouteProps {
   children: React.ReactNode;
-  redirect?: boolean;
+  fallback?: string;
 }
 
 // TODO: Find better ways to switch redirect
-export default function AuthRoute({ children, redirect }: AuthRouteProps) {
+export default function AuthRoute({ children, fallback }: AuthRouteProps) {
   const { user } = useUserContext();
   if (!user) {
-    if (redirect) return <Navigate to="/signin" />;
+    if (fallback) return <Navigate to={fallback} />;
     return null
   }
   return children;

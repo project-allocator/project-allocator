@@ -3,13 +3,13 @@ import { Navigate } from "react-router-dom";
 
 interface AdminRouteProps {
     children: React.ReactNode;
-    redirect?: boolean;
+    fallback?: string;
 }
 
-export default function AdminRoute({ children, redirect }: AdminRouteProps) {
+export default function AdminRoute({ children, fallback }: AdminRouteProps) {
     const { user } = useUserContext();
     if (user?.role !== "admin") {
-        if (redirect) return <Navigate to="/" />;
+        if (fallback) return <Navigate to={fallback} />;
         return null;
     }
     return children;

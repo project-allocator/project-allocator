@@ -3,13 +3,13 @@ import { Navigate } from "react-router-dom";
 
 interface GuestRouteProps {
   children: React.ReactNode;
-  redirect?: boolean;
+  fallback?: string;
 }
 
-export default function GuestRoute({ children, redirect }: GuestRouteProps) {
+export default function GuestRoute({ children, fallback }: GuestRouteProps) {
   const { user } = useUserContext();
   if (user) {
-    if (redirect) return <Navigate to="/" />;
+    if (fallback) return <Navigate to={fallback} />;
     return null;
   }
   return children;

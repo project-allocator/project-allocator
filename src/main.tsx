@@ -44,7 +44,7 @@ const router = createBrowserRouter([
         index: true,
         element: (
           <CenterLayout>
-            <AuthRoute redirect>
+            <AuthRoute fallback="/signin">
               <Navigate to="/projects" />,
             </AuthRoute>
           </CenterLayout>
@@ -54,7 +54,7 @@ const router = createBrowserRouter([
         path: "signin",
         element: (
           <CenterLayout>
-            <GuestRoute redirect>
+            <GuestRoute fallback="/">
               <SignIn />
             </GuestRoute>
           </CenterLayout>
@@ -63,7 +63,7 @@ const router = createBrowserRouter([
       {
         element: (
           <SiderLayout>
-            <AuthRoute redirect>
+            <AuthRoute fallback="/signin">
               <Outlet />
             </AuthRoute>
           </SiderLayout>
@@ -85,7 +85,7 @@ const router = createBrowserRouter([
               {
                 path: "add",
                 element: (
-                  <StaffRoute redirect>
+                  <StaffRoute fallback="/">
                     <ProjectAdd />
                   </StaffRoute>
                 ),
@@ -94,7 +94,7 @@ const router = createBrowserRouter([
               {
                 path: ":id/edit",
                 element: (
-                  <StaffRoute redirect>
+                  <StaffRoute fallback="/">
                     <ProjectEdit />
                   </StaffRoute>
                 ),
@@ -106,7 +106,7 @@ const router = createBrowserRouter([
           {
             path: "proposed",
             element: (
-              <StaffRoute redirect>
+              <StaffRoute fallback="/">
                 <Proposed />
               </StaffRoute>
             ),
@@ -115,7 +115,7 @@ const router = createBrowserRouter([
           {
             path: "shortlisted",
             element: (
-              <StudentRoute redirect>
+              <StudentRoute fallback="/">
                 <Shortlisted />
               </StudentRoute>
             ),
@@ -124,7 +124,7 @@ const router = createBrowserRouter([
           {
             path: "allocated",
             element: (
-              <StudentRoute redirect>
+              <StudentRoute fallback="/">
                 <Allocated />
               </StudentRoute>
             ),
@@ -133,7 +133,7 @@ const router = createBrowserRouter([
           {
             path: "admin",
             element: (
-              <AdminRoute redirect>
+              <AdminRoute fallback="/">
                 <Admin />
               </AdminRoute>
             ),

@@ -3,13 +3,13 @@ import { Navigate } from "react-router-dom";
 
 interface StaffRouteProps {
     children: React.ReactNode;
-    redirect?: boolean;
+    fallback?: string;
 }
 
-export default function StaffRoute({ children, redirect }: StaffRouteProps) {
+export default function StaffRoute({ children, fallback }: StaffRouteProps) {
     const { user } = useUserContext();
     if (user?.role !== "staff" && user?.role !== "admin") {
-        if (redirect) return <Navigate to="/" />;
+        if (fallback) return <Navigate to={fallback} />;
         return null;
     }
     return children;
