@@ -27,6 +27,9 @@ if [ "$(wf whoami | wc -l)" -eq 0 ]; then
   exit 1
 fi
 
+# Set the -e option to exit if any subsequent command fails
+set -e
+
 # Get the inputs from terminal.
 read -rp "Do you already have a workspace (yes/no)?: " has_workspace
 if [ "$has_workspace" = "no" ]; then
@@ -41,8 +44,13 @@ read -rp "Enter Wayfinder application name: " application_name
 read -rp "Enter Wayfinder environment name: " environment_name
 read -rp "Enter Wayfinder component name: " component_name
 read -rp "Enter GitHub personal access token (classic): " github_token
-read -rp "Enter GitHub reposity name: " repository_name
-full_repository_name="Digital-Garage-ICL/${repository_name}"
+read -rp "Enter GitHub reposity URL: " repository_url
+while [[ $repository_url != "https://"* ]]; do
+  echo "GitHub repository URL must start with https://"
+  read -rp "Enter GitHub reposity URL: " repository_url
+done
+repository_name=$(echo "$repository_url" | cut -d '/' -f 5)
+full_repository_name=$(echo "$repository_url" | cut -d '/' -f 4,5)
 
 # Set the variables and secrets in GitHub Actions.
 version=$(wf serverinfo -o json | jq -r .version.release)

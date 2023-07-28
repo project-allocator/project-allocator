@@ -16,15 +16,15 @@ export async function projectEditAction({ request, params }: ActionFunctionArgs)
 }
 
 export default function ProjectEdit() {
-  const initProject = useLoaderData() as ProjectRead;
+  const initialProject = useLoaderData() as ProjectRead;
 
   return (
     <>
       <Title level={3}>
-        Edit Project #{initProject.id}
+        Edit Project #{initialProject.id}
       </Title>
       <Divider />
-      <ProjectForm initProject={initProject as ProjectRead} />
+      <ProjectForm initProject={initialProject as ProjectRead} />
     </>
   );
 }

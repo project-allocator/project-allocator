@@ -23,10 +23,10 @@ export async function projectLoader({ params }: LoaderFunctionArgs) {
 }
 
 export default function Project() {
-  const [project, isProposed, allocatees, isAllocated, shortlisters, isShortlisted_]
+  const [project, isProposed, allocatees, isAllocated, shortlisters, isShortlistedInitially]
     = useLoaderData() as [ProjectRead, boolean, UserRead[], boolean, UserRead[], boolean];
   // Use isShortlisted in state to show the change immediagely in the UI.
-  const [isShortlisted, setIsShortlisted] = useState(isShortlisted_);
+  const [isShortlisted, setIsShortlisted] = useState(isShortlistedInitially);
   const navigate = useNavigate();
   const location = useLocation();
   const { messageSuccess } = useMessageContext();
