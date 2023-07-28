@@ -35,11 +35,11 @@ async def mark_notifications(
 
 @router.delete("/users/me/notifications/{id}")
 async def delete_notification(
-    id: int,
+    notification_id: int,
     user: User = Depends(get_user),
     session: Session = Depends(get_session),
 ):
-    notification = session.get(Notification, id)
+    notification = session.get(Notification, notification_id)
     if not notification.user:
         raise HTTPException(status_code=404, detail="Notification does not exist")
     if notification.user != user:

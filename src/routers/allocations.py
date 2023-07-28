@@ -90,8 +90,11 @@ async def deallocate_projects(session: Session = Depends(get_session)):
     response_model=List[UserRead],
     dependencies=[Security(check_staff)],
 )
-async def read_allocatees(id: int, session: Session = Depends(get_session)):
-    project = session.get(Project, id)
+async def read_allocatees(
+    project_id: int,
+    session: Session = Depends(get_session),
+):
+    project = session.get(Project, project_id)
     return project.allocatees
 
 
@@ -146,11 +149,11 @@ async def is_accepted(user: User = Depends(get_user)):
     dependencies=[Security(check_admin)],
 )
 async def add_allocatees(
-    id: int,
+    project_id: int,
     users: List[UserRead],
     session: Session = Depends(get_session),
 ):
-    project = session.get(Project, id)
+    project = session.get(Project, project_id)
     for user in users:
         user = session.get(User, user.id)
         user.allocated = project
@@ -163,8 +166,11 @@ async def add_allocatees(
     "/users/{id}/allocated",
     dependencies=[Security(check_admin)],
 )
-async def remove_allocatee(id: int, session: Session = Depends(get_session)):
-    user = session.get(User, id)
+async def remove_allocatee(
+    user_id: int,
+    session: Session = Depends(get_session),
+):
+    user = session.get(User, user_id)
     user.allocated = None
     session.add(user)
     session.commit()
@@ -176,8 +182,11 @@ async def remove_allocatee(id: int, session: Session = Depends(get_session)):
     response_model=bool,
     dependencies=[Security(check_student)],
 )
-async def is_allocated(id: int, user: User = Depends(get_user)):
-    return user.allocated is not None and user.allocated.id == id
+async def is_allocated(
+    project_id: int,
+    user: User = Depends(get_user),
+):
+    return user.allocated is not None and user.allocated.id == project_id
 
 
 @router.get(

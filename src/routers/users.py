@@ -10,8 +10,10 @@ router = APIRouter(tags=["user"])
 
 
 @router.get("/users", response_model=List[UserRead])
-async def read_users(session: Session = Depends(get_session)):
-    return session.exec(select(User)).all()
+async def read_users(role: str | None = None, session: Session = Depends(get_session)):
+    if not role:
+        return session.exec(select(User)).all()
+    return session.exec(select(User).where(User.role == role)).all()
 
 
 @router.get("/users/me", response_model=UserRead)
@@ -20,8 +22,8 @@ async def read_current_user(user: User = Depends(get_user)):
 
 
 @router.get("/users/{id}", response_model=UserRead)
-async def read_user(id: int, session: Session = Depends(get_session)):
-    return session.get(User, id)
+async def read_user(user_id: int, session: Session = Depends(get_session)):
+    return session.get(User, user_id)
 
 
 @router.post("/users", response_model=UserRead)

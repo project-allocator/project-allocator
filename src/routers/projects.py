@@ -27,8 +27,11 @@ async def read_projects(session: Session = Depends(get_session)):
 
 
 @router.get("/projects/{id}", response_model=ProjectRead)
-async def read_project(id: int, session: Session = Depends(get_session)):
-    return session.get(Project, id)
+async def read_project(
+    project_id: int,
+    session: Session = Depends(get_session),
+):
+    return session.get(Project, project_id)
 
 
 @router.post(
@@ -54,12 +57,12 @@ async def create_project(
     dependencies=[Security(check_staff), Security(block_proposals_if_shutdown)],
 )
 async def update_project(
-    id: int,
+    project_id: int,
     project_data: ProjectUpdate,
     user: User = Depends(get_user),
     session: Session = Depends(get_session),
 ):
-    project = session.get(Project, id)
+    project = session.get(Project, project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     if project.proposer != user:
@@ -77,11 +80,11 @@ async def update_project(
     dependencies=[Security(check_staff), Security(block_proposals_if_shutdown)],
 )
 async def delete_project(
-    id: int,
+    project_id: int,
     user: User = Depends(get_user),
     session: Session = Depends(get_session),
 ):
-    project = session.get(Project, id)
+    project = session.get(Project, project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
     if project.proposer != user:

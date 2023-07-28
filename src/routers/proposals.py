@@ -26,9 +26,9 @@ async def read_proposed(
     dependencies=[Security(check_staff)],
 )
 async def is_proposed(
-    id: int,
+    project_id: int,
     user: User = Depends(get_user),
     session: Session = Depends(get_session),
 ):
-    project = session.get(Project, id)
+    project = session.get(Project, project_id)
     return project.proposer == user
