@@ -2,12 +2,12 @@ import { LogLevel, PublicClientApplication } from "@azure/msal-browser";
 import axios, { AxiosError } from "axios";
 
 export const authRequest = {
-  scopes: [`api://${import.meta.env.VITE_CLIENT_ID}/user_impersonation`]
+  scopes: [
+    `api://${import.meta.env.VITE_CLIENT_ID}/user_impersonation`,
+    "User.Read",
+    "Mail.Send",
+  ]
 };
-
-export const tokenRequest = {
-  scopes: ['User.Read']
-}
 
 export const msalInstance = new PublicClientApplication({
   auth: {
@@ -57,12 +57,13 @@ axios.interceptors.request.use(async (config) => {
       account: msalInstance.getActiveAccount()!,
     });
     config.headers.set('Authorization', `Bearer ${apiToken}`);
-    // See the following discussion for the motivation behind sending access token for Microsoft Graph API
+    // See the following discussion for the motivation behind sending access token for Microsoft Graph API.
     // https://www.reddit.com/r/webdev/comments/v62e78/authenticate_in_the_frontend_and_send_a_token_to/
     const { accessToken: graphToken } = await msalInstance.acquireTokenSilent({
-      scopes: ["User.Read"],
+      scopes: ["User.Read", "Mail.Send"],
       account: msalInstance.getActiveAccount()!,
     });
+    // Access token for Microsoft Graph API must be obtained per resource.
     config.headers.set('X-Graph-Token', graphToken);
   }
   return config;

@@ -27,7 +27,9 @@ export default function Admin() {
       </Paragraph>
       <Switch
         defaultChecked={areProposalsShutdown}
-        onChange={() => AdminService.toggleProposalsShutdown()}
+        onChange={() => areProposalsShutdown
+          ? AdminService.unsetProposalsShutdown()
+          : AdminService.setProposalsShutdown()}
       />
       <Title level={4}>Shutdown Shortlists</Title>
       <Paragraph className="text-slate-500">
@@ -35,7 +37,9 @@ export default function Admin() {
       </Paragraph>
       <Switch
         defaultChecked={areShortlistsShutdown}
-        onChange={() => AdminService.toggleShortlistsShutdown()}
+        onChange={() => areShortlistsShutdown
+          ? AdminService.unsetShortlistsShutdown()
+          : AdminService.setShortlistsShutdown()}
       />
       <Divider />
       <Title level={4}>Allocate Projects</Title>

@@ -24,13 +24,21 @@ export class NotificationService {
 
     /**
      * Mark Notifications
+     * @param requestBody
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static markNotifications(): CancelablePromise<any> {
+    public static markNotifications(
+        requestBody: Array<NotificationRead>,
+    ): CancelablePromise<any> {
         return __request(OpenAPI, {
-            method: 'POST',
+            method: 'PUT',
             url: '/api/users/me/notifications',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
         });
     }
 

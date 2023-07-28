@@ -20,11 +20,11 @@ export default function HeaderLayout({ children }: HeaderLayoutProps) {
 
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationRead[]>([]);
-  const fetchNotifications = () => {
-    NotificationService.readNotifications()
-      .then((notifications) => setNotifications(notifications as NotificationRead[]));
-  }
   useEffect(() => {
+    const fetchNotifications = () => {
+      NotificationService.readNotifications()
+        .then((notifications) => setNotifications(notifications as NotificationRead[]));
+    }
     fetchNotifications();
     setInterval(fetchNotifications, 60000);
   }, [])
@@ -77,10 +77,10 @@ export default function HeaderLayout({ children }: HeaderLayoutProps) {
         title="Notifications"
         placement="right"
         open={open}
-        onClose={async () => {
+        onClose={() => {
           setOpen(false);
-          await NotificationService.markNotifications();
-          await fetchNotifications();
+          setNotifications(notifications.map((item) => ({ ...item, seen: !item.seen })))
+          NotificationService.markNotifications(notifications.filter((item) => !item.seen));
         }}
       >
         <Space direction="vertical" className="w-full">
@@ -100,9 +100,9 @@ export default function HeaderLayout({ children }: HeaderLayoutProps) {
                     <Button
                       className="border-none"
                       icon={<DeleteOutlined />}
-                      onClick={async () => {
-                        await NotificationService.deleteNotification(notification.id);
-                        await fetchNotifications();
+                      onClick={() => {
+                        setNotifications(notifications.filter((item) => item.id !== notification.id))
+                        NotificationService.deleteNotification(notification.id);
                       }}
                     />
                   </Tooltip>
