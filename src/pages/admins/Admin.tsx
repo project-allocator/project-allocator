@@ -16,7 +16,7 @@ export async function adminLoader() {
 export default function Admin() {
   const [areProposalsShutdown, areShortlistsShutdown, conflicted]
     = useLoaderData() as [boolean, boolean, ProjectRead[]];
-  const { messageSuccess } = useMessageContext();
+  const { messageSuccess, messageError } = useMessageContext();
 
   return (
     <>
@@ -49,20 +49,20 @@ export default function Admin() {
       <Paragraph className="text-slate-500">
         Click this to allocate projects to shortlisted students.
       </Paragraph>
-      <Button onClick={async () => {
-        await AllocationService.allocateProjects();
-        messageSuccess("Successfully allocated projects to all students.");
-      }}>
+      <Button onClick={() => AllocationService.allocateProjects()
+        .then(() => messageSuccess("Successfully allocated projects."))
+        .catch(() => messageError("Failed to allocate projects."))}
+      >
         Allocate
-      </Button>
+      </Button >
       <Title level={4}>Deallocate Projects</Title>
       <Paragraph className="text-slate-500">
         Click this to deallocate projects from allocated students.
       </Paragraph>
-      <Button onClick={async () => {
-        await AllocationService.deallocateProjects();
-        messageSuccess("Successfully deallocated projects from all students.");
-      }}>
+      <Button onClick={() => AllocationService.deallocateProjects()
+        .then(() => messageSuccess("Successfully deallocated projects."))
+        .catch(() => messageError("Failed to deallocate projects."))}
+      >
         Deallocate
       </Button>
       <Title level={4}>Conflicting Projects</Title>

@@ -33,7 +33,7 @@ export default function Project() {
   const [selectedUsers, setSelectedUsers] = useState<UserRead[]>([]);
   const navigate = useNavigate();
   const location = useLocation();
-  const { messageSuccess } = useMessageContext();
+  const { messageSuccess, messageError } = useMessageContext();
 
   return (
     <>
@@ -50,19 +50,17 @@ export default function Project() {
                   <Button
                     size="small"
                     type="primary"
-                    onClick={async () => {
-                      await AllocationService.acceptAllocation();
-                      messageSuccess("Successfully accepted project allocation.");
-                    }}
+                    onClick={() => AllocationService.acceptAllocation()
+                      .then(() => messageSuccess("Successfully accepted project allocation."))
+                      .catch(() => messageError("Failed to accept project allocation."))}
                   >
                     Accept
                   </Button>
                   <Button
                     size="small"
-                    onClick={async () => {
-                      await AllocationService.declineAllocation();
-                      messageSuccess("Successfully declined project allocation.");
-                    }}
+                    onClick={() => AllocationService.acceptAllocation()
+                      .then(() => messageSuccess("Successfully declined project allocation."))
+                      .catch(() => messageError("Failed to decline project allocation."))}
                   >
                     Decline
                   </Button>
@@ -125,8 +123,8 @@ export default function Project() {
                 <Button
                   shape="circle"
                   icon={<DeleteOutlined />}
-                  onClick={async () => {
-                    await ProjectService.deleteProject(project.id);
+                  onClick={() => {
+                    ProjectService.deleteProject(project.id);
                     // Navigate back to either '/projects' or '/proposed'
                     // or to '/projects' if the history stack is empty.
                     location.key === 'default'

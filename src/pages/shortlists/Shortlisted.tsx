@@ -32,8 +32,8 @@ export default function Shortlisted() {
         as="div"
         axis="y"
         values={projectIds}
-        onReorder={async (projectIds) => {
-          await ShortlistService.reorderShortlisted(projectIds);
+        onReorder={(projectIds) => {
+          ShortlistService.reorderShortlisted(projectIds);
           setProjectIds(projectIds);
         }}
       >

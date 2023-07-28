@@ -20,6 +20,8 @@ export default function HeaderLayout({ children }: HeaderLayoutProps) {
 
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationRead[]>([]);
+  // Fetch notifications without using React Router's loader
+  // as this should not block render and also should be re-fetched periodically.
   useEffect(() => {
     const fetchNotifications = () => {
       NotificationService.readNotifications()
@@ -27,7 +29,7 @@ export default function HeaderLayout({ children }: HeaderLayoutProps) {
     }
     fetchNotifications();
     setInterval(fetchNotifications, 60000);
-  }, [])
+  }, []);
 
   return (
     <Layout className="min-h-screen">
@@ -78,14 +80,14 @@ export default function HeaderLayout({ children }: HeaderLayoutProps) {
         placement="right"
         open={open}
         onClose={() => {
-          setOpen(false);
           NotificationService.markNotifications(notifications.filter((item) => !item.seen));
           setNotifications(notifications.map((item) => ({ ...item, seen: false })))
+          setOpen(false);
         }}
       >
         <Space direction="vertical" className="w-full">
-          {notifications.length > 0 ?
-            notifications.map((notification) => (
+          {notifications.length > 0
+            ? notifications.map((notification) => (
               <Card
                 key={notification.id}
                 size="small"
