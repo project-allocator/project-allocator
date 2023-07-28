@@ -44,18 +44,18 @@ export class NotificationService {
 
     /**
      * Delete Notification
-     * @param id
+     * @param notificationId
      * @returns any Successful Response
      * @throws ApiError
      */
     public static deleteNotification(
-        id: number,
+        notificationId: number,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'DELETE',
             url: '/api/users/me/notifications/{id}',
-            path: {
-                'id': id,
+            query: {
+                'notification_id': notificationId,
             },
             errors: {
                 422: `Validation Error`,

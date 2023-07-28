@@ -24,18 +24,18 @@ export class ProposalService {
 
     /**
      * Is Proposed
-     * @param id
+     * @param projectId
      * @returns boolean Successful Response
      * @throws ApiError
      */
     public static isProposed(
-        id: number,
+        projectId: number,
     ): CancelablePromise<boolean> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/users/me/proposed/{id}',
-            path: {
-                'id': id,
+            query: {
+                'project_id': projectId,
             },
             errors: {
                 422: `Validation Error`,

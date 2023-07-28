@@ -20,7 +20,7 @@ export default function HeaderLayout({ children }: HeaderLayoutProps) {
 
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationRead[]>([]);
-  // Fetch notifications without using React Router's loader
+  // Avoid using React Router's data loader
   // as this should not block render and also should be re-fetched periodically.
   useEffect(() => {
     const fetchNotifications = () => {

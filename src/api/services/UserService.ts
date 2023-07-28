@@ -12,13 +12,22 @@ export class UserService {
 
     /**
      * Read Users
+     * @param role
      * @returns UserRead Successful Response
      * @throws ApiError
      */
-    public static readUsers(): CancelablePromise<Array<UserRead>> {
+    public static readUsers(
+        role?: string,
+    ): CancelablePromise<Array<UserRead>> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/users',
+            query: {
+                'role': role,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
         });
     }
 
@@ -57,18 +66,18 @@ export class UserService {
 
     /**
      * Read User
-     * @param id
+     * @param userId
      * @returns UserRead Successful Response
      * @throws ApiError
      */
     public static readUser(
-        id: number,
+        userId: number,
     ): CancelablePromise<UserRead> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/users/{id}',
-            path: {
-                'id': id,
+            query: {
+                'user_id': userId,
             },
             errors: {
                 422: `Validation Error`,

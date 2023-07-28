@@ -55,18 +55,18 @@ export class AllocationService {
 
     /**
      * Read Allocatees
-     * @param id
+     * @param projectId
      * @returns UserRead Successful Response
      * @throws ApiError
      */
     public static readAllocatees(
-        id: number,
+        projectId: number,
     ): CancelablePromise<Array<UserRead>> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/projects/{id}/allocatees',
-            path: {
-                'id': id,
+            query: {
+                'project_id': projectId,
             },
             errors: {
                 422: `Validation Error`,
@@ -76,20 +76,20 @@ export class AllocationService {
 
     /**
      * Add Allocatees
-     * @param id
+     * @param projectId
      * @param requestBody
      * @returns any Successful Response
      * @throws ApiError
      */
     public static addAllocatees(
-        id: number,
+        projectId: number,
         requestBody: Array<UserRead>,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/projects/{id}/allocatees',
-            path: {
-                'id': id,
+            query: {
+                'project_id': projectId,
             },
             body: requestBody,
             mediaType: 'application/json',
@@ -149,18 +149,18 @@ export class AllocationService {
 
     /**
      * Remove Allocatee
-     * @param id
+     * @param userId
      * @returns any Successful Response
      * @throws ApiError
      */
     public static removeAllocatee(
-        id: number,
+        userId: number,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'DELETE',
             url: '/api/users/{id}/allocated',
-            path: {
-                'id': id,
+            query: {
+                'user_id': userId,
             },
             errors: {
                 422: `Validation Error`,
@@ -170,18 +170,18 @@ export class AllocationService {
 
     /**
      * Is Allocated
-     * @param id
+     * @param projectId
      * @returns boolean Successful Response
      * @throws ApiError
      */
     public static isAllocated(
-        id: number,
+        projectId: number,
     ): CancelablePromise<boolean> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/users/me/allocated/{id}',
-            path: {
-                'id': id,
+            query: {
+                'project_id': projectId,
             },
             errors: {
                 422: `Validation Error`,

@@ -6,8 +6,8 @@ import StudentRoute from "@/routes/StudentRoute";
 import { getInitialLetters } from "@/utils";
 import { CheckOutlined, DeleteOutlined, EditOutlined, HeartOutlined, PlusOutlined } from '@ant-design/icons';
 import { Alert, Avatar, Button, Divider, List, Select, Space, Tooltip, Typography } from "antd";
-import { useState } from "react";
-import { Link, useLoaderData, useLocation, useNavigate, type LoaderFunctionArgs } from 'react-router-dom';
+import { useEffect, useState } from "react";
+import { Link, useLoaderData, useLocation, useNavigate, useParams, type LoaderFunctionArgs } from 'react-router-dom';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -15,25 +15,37 @@ export async function projectLoader({ params }: LoaderFunctionArgs) {
   const id = parseInt(params.id!);
   const project = await ProjectService.readProject(id);
   const isProposed = await ProposalService.isProposed(id);
-  const allocatees = await AllocationService.readAllocatees(id);
   const isAllocated = await AllocationService.isAllocated(id);
   const isAccepted = await AllocationService.isAccepted();
-  const shortlisters = await ShortlistService.readShortlisters(id);
   const isShortlisted = await ShortlistService.isShortlisted(id);
-  const users = await UserService.readUsers();
-  return [project, isProposed, allocatees, isAllocated, isAccepted, shortlisters, isShortlisted, users];
+  return [project, isProposed, isAllocated, isAccepted, isShortlisted];
 }
 
 export default function Project() {
-  const [project, isProposed, allocatees, isAllocated, isAccepted, shortlisters, isShortlisted, users]
-    = useLoaderData() as [ProjectRead, boolean, UserRead[], boolean, boolean, UserRead[], boolean, UserRead[]];
+  const [project, isProposed, isAllocated, isAccepted, isShortlisted]
+    = useLoaderData() as [ProjectRead, boolean, boolean, boolean, boolean];
   // Use isShortlisted in state to show the change immediagely in the UI.
   const [isShortlistedState, setIsShortlistedState] = useState(isShortlisted);
-  const [allocateesState, setAllocateesState] = useState(allocatees);
-  const [selectedUsers, setSelectedUsers] = useState<UserRead[]>([]);
   const navigate = useNavigate();
+  const params = useParams();
   const location = useLocation();
   const { messageSuccess, messageError } = useMessageContext();
+
+  // Avoid using React Router's data loader
+  // to speed up UI by showing project details first.
+  const [students, setStudents] = useState<UserRead[]>([]);
+  const [allocatees, setAllocatees] = useState<UserRead[]>([]);
+  const [shortlisters, setShortlisters] = useState<UserRead[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<UserRead[]>([]);
+  useEffect(() => {
+    const id = parseInt(params.id!);
+    UserService.readUsers("student")
+      .then((students) => setStudents(students));
+    AllocationService.readAllocatees(id)
+      .then((allocatees) => setAllocatees(allocatees));
+    ShortlistService.readShortlisters(id)
+      .then((shortlisters) => setShortlisters(shortlisters));
+  }, []);
 
   return (
     <>
@@ -149,16 +161,16 @@ export default function Project() {
             mode="multiple"
             allowClear
             className="w-full grow"
-            placeholder="Please select"
+            placeholder="Select students to add"
+            options={students.map((student, index) =>
+              ({ label: `${student.name} (${student.email})`, value: index }))}
             filterOption={(inputValue, option) => {
               if (!option) return false;
-              const user = users[option!.value];
-              return [user.email, user.name].some((item) => item.toLowerCase().includes(inputValue));
+              const student = students[option!.value];
+              return [student.email, student.name].some((item) => item.toLowerCase().includes(inputValue));
             }}
-            options={users.map((user, index) =>
-              ({ label: `${user.name} (${user.email})`, value: index }))}
             onChange={(indices: number[]) => {
-              setSelectedUsers(indices.map((index) => users[index]))
+              setSelectedUsers(indices.map((index) => students[index]))
             }}
           />
           <Button
@@ -167,14 +179,14 @@ export default function Project() {
             icon={<PlusOutlined />}
             onClick={() => {
               AllocationService.addAllocatees(project.id, selectedUsers);
-              setAllocateesState([...selectedUsers, ...allocateesState]);
+              setAllocatees([...selectedUsers, ...allocatees]);
             }}
           />
         </div>
         <List
           className="mt-4"
           itemLayout="horizontal"
-          dataSource={allocateesState}
+          dataSource={allocatees}
           renderItem={(allocatee) => (
             <List.Item
               actions={[
@@ -184,7 +196,7 @@ export default function Project() {
                     icon={<DeleteOutlined />}
                     onClick={() => {
                       AllocationService.removeAllocatee(allocatee.id);
-                      setAllocateesState(allocatees.filter((item) => item.id !== allocatee.id));
+                      setAllocatees(allocatees.filter((item) => item.id !== allocatee.id));
                     }}
                   />
                 </Tooltip>

@@ -46,18 +46,18 @@ export class ProjectService {
 
     /**
      * Read Project
-     * @param id
+     * @param projectId
      * @returns ProjectRead Successful Response
      * @throws ApiError
      */
     public static readProject(
-        id: number,
+        projectId: number,
     ): CancelablePromise<ProjectRead> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/projects/{id}',
-            path: {
-                'id': id,
+            query: {
+                'project_id': projectId,
             },
             errors: {
                 422: `Validation Error`,
@@ -67,20 +67,20 @@ export class ProjectService {
 
     /**
      * Update Project
-     * @param id
+     * @param projectId
      * @param requestBody
      * @returns ProjectRead Successful Response
      * @throws ApiError
      */
     public static updateProject(
-        id: number,
+        projectId: number,
         requestBody: ProjectUpdate,
     ): CancelablePromise<ProjectRead> {
         return __request(OpenAPI, {
             method: 'PUT',
             url: '/api/projects/{id}',
-            path: {
-                'id': id,
+            query: {
+                'project_id': projectId,
             },
             body: requestBody,
             mediaType: 'application/json',
@@ -92,18 +92,18 @@ export class ProjectService {
 
     /**
      * Delete Project
-     * @param id
+     * @param projectId
      * @returns any Successful Response
      * @throws ApiError
      */
     public static deleteProject(
-        id: number,
+        projectId: number,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'DELETE',
             url: '/api/projects/{id}',
-            path: {
-                'id': id,
+            query: {
+                'project_id': projectId,
             },
             errors: {
                 422: `Validation Error`,
