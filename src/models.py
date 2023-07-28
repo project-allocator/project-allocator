@@ -16,6 +16,9 @@ class UserBase(SQLModel):
     name: str
     role: str
 
+    # True if user has accepted allocation
+    accepted: Optional[bool]
+
 
 class User(UserBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

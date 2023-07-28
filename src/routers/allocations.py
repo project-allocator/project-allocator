@@ -104,6 +104,73 @@ async def read_allocated(user: User = Depends(get_user)):
     return user.allocated
 
 
+@router.post(
+    "/users/me/allocated/accepted",
+    dependencies=[Security(check_student)],
+)
+async def accept_allocation(
+    user: User = Depends(get_user),
+    session: Session = Depends(get_session),
+):
+    user.accepted = True
+    session.add(user)
+    session.commit()
+    return {"ok": True}
+
+
+@router.post(
+    "/users/me/allocated/declined",
+    dependencies=[Security(check_student)],
+)
+async def decline_allocation(
+    user: User = Depends(get_user),
+    session: Session = Depends(get_session),
+):
+    user.accepted = False
+    session.add(user)
+    session.commit()
+    return {"ok": True}
+
+
+@router.get(
+    "/users/me/allocated/accepted",
+    response_model=bool | None,
+    dependencies=[Security(check_student)],
+)
+async def is_accepted(user: User = Depends(get_user)):
+    return user.accepted
+
+
+@router.post(
+    "/projects/{id}/allocatees",
+    dependencies=[Security(check_admin)],
+)
+async def add_allocatees(
+    id: int,
+    users: List[UserRead],
+    session: Session = Depends(get_session),
+):
+    project = session.get(Project, id)
+    for user in users:
+        user = session.get(User, user.id)
+        user.allocated = project
+        session.add(project)
+        session.commit()
+    return {"ok": True}
+
+
+@router.delete(
+    "/users/{id}/allocated",
+    dependencies=[Security(check_admin)],
+)
+async def remove_allocatee(id: int, session: Session = Depends(get_session)):
+    user = session.get(User, id)
+    user.allocated = None
+    session.add(user)
+    session.commit()
+    return {"ok": True}
+
+
 @router.get(
     "/users/me/allocated/{id}",
     response_model=bool,
@@ -111,3 +178,19 @@ async def read_allocated(user: User = Depends(get_user)):
 )
 async def is_allocated(id: int, user: User = Depends(get_user)):
     return user.allocated is not None and user.allocated.id == id
+
+
+@router.get(
+    "/projects/conflicted",
+    response_model=List[ProjectRead],
+    dependencies=[Security(check_admin)],
+)
+async def read_conflicted(session: Session = Depends(get_session)):
+    projects = session.exec(select(Project)).all()
+    conflicted = []
+    for project in projects:
+        # fmt: off
+        resolved = any(list(map(lambda allocatee: allocatee.accepted, project.allocatees)))
+        if not resolved:
+            conflicted.append(project)
+    return conflicted

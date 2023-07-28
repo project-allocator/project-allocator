@@ -93,7 +93,8 @@ def send_notifications(
             "message": {
                 "subject": title,
                 "body": {"contentType": "Text", "content": description},
-                "toRecipients": [{"emailAddress": {"address": "tm821@ic.ac.uk"}}],
+                "toRecipients": [],
+                # "toRecipients": [{"emailAddress": {"address": "tm821@ic.ac.uk"}}],
                 # "toRecipients": [{"emailAddress": {"address": user.email}} for user in users],
             },
             "saveToSentItems": "false",
