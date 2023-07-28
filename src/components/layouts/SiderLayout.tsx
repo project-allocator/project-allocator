@@ -1,10 +1,10 @@
 import { useUserContext } from '@/contexts/UserContext';
 import { toCapitalCase } from '@/utils';
 import { FileAddOutlined, FileDoneOutlined, FileTextOutlined, HomeOutlined, LockOutlined } from '@ant-design/icons';
-import { Breadcrumb, BreadcrumbProps, Layout, Menu } from 'antd';
+import { Breadcrumb, BreadcrumbProps, Layout, Menu, Skeleton } from 'antd';
 import { ItemType, MenuItemType } from 'antd/es/menu/hooks/useItems';
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigation } from 'react-router-dom';
 
 const { Content, Sider } = Layout;
 
@@ -13,6 +13,7 @@ interface SiderLayoutProps {
 }
 
 export default function SiderLayout({ children }: SiderLayoutProps) {
+  const navigation = useNavigation();
   const { user } = useUserContext();
   const { pathname } = useLocation();
   const dirnames: string[] = pathname.split('/').slice(1);
@@ -75,7 +76,7 @@ export default function SiderLayout({ children }: SiderLayoutProps) {
           className='my-4'
         />
         <Content className='p-8 m-0 bg-white'>
-          {children}
+          {navigation.state === "loading" ? <Skeleton active /> : children}
         </Content>
       </Layout>
     </Layout>
