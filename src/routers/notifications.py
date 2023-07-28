@@ -42,10 +42,10 @@ async def delete_notification(
     session: Session = Depends(get_session),
 ):
     notification = session.get(Notification, id)
+    if not notification.user:
+        raise HTTPException(status_code=404, detail="Notification does not exist")
     if notification.user != user:
-        raise HTTPException(
-            status_code=401, detail="Notification does not belong to user"
-        )
+        raise HTTPException(status_code=401, detail="Notification is not owned")
     session.delete(notification)
     session.commit()
     return {"ok": True}

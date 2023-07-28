@@ -26,8 +26,12 @@ def get_user(user=Depends(get_user_or_none)):
     return user
 
 
-def get_token(x_graph_token: str | None = Header(default=None)):
-    return x_graph_token
+def get_user_read_token(x_user_read_token: str | None = Header(default=None)):
+    return x_user_read_token
+
+
+def get_mail_send_token(x_mail_send_token: str | None = Header(default=None)):
+    return x_mail_send_token
 
 
 def check_admin(user=Depends(get_user)):

@@ -8,8 +8,8 @@ from ..dependencies import (
     check_admin,
     check_staff,
     check_student,
+    get_mail_send_token,
     get_session,
-    get_token,
     get_user,
 )
 from ..models import Project, ProjectRead, Shortlist, User, UserRead
@@ -23,7 +23,7 @@ router = APIRouter(tags=["allocation"])
     dependencies=[Security(check_admin)],
 )
 async def allocate_projects(
-    token: str | None = Depends(get_token),
+    token: str | None = Depends(get_mail_send_token),
     session: Session = Depends(get_session),
 ):
     count = config["project"]["allocations"]["students"]
@@ -70,7 +70,7 @@ async def allocate_projects(
     dependencies=[Security(check_admin)],
 )
 async def deallocate_projects(
-    token: str | None = Depends(get_token),
+    token: str | None = Depends(get_mail_send_token),
     session: Session = Depends(get_session),
 ):
     projects = session.exec(select(Project)).all()

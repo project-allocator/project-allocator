@@ -1,3 +1,4 @@
+import json
 from typing import List
 import requests
 from sqlmodel import Session, select
@@ -21,21 +22,22 @@ def send_notifications(
         session.commit()
         session.refresh(user)
     # Send email to every user as admin.
-    recipients = [{"emailAddress": {"address": user.email}} for user in users]
-    message = {
-        "subject": title,
-        "body": {"contentType": "Text", "content": description},
-        "toRecipients": recipients,
-    }
-    requests.post(
-        "https://graph.microsoft.com/v1.0/me/sendMail",
-        data={
-            "message": message,
-            "saveToSentItems": "false",
+    data = {
+        "message": {
+            "subject": title,
+            "body": {"contentType": "Text", "content": description},
+            "toRecipients": [{"emailAddress": {"address": "wxc20@ic.ac.uk"}}],
+            # "toRecipients": [{"emailAddress": {"address": user.email}} for user in users],
         },
+        "saveToSentItems": "false",
+    }
+    res = requests.post(
+        "https://graph.microsoft.com/v1.0/me/sendMail",
+        data=json.dumps(data),
         headers={
             "Authorization": f"Bearer {token}",
             "Content-Type": "application/json",
         },
         timeout=30,
-    )
+    ).json()
+    print(res)

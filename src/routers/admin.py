@@ -2,7 +2,11 @@ from fastapi import APIRouter, Depends, Security
 from sqlmodel import Session
 
 from ..models import Status
-from ..dependencies import check_admin, get_session, get_token
+from ..dependencies import (
+    check_admin,
+    get_mail_send_token,
+    get_session,
+)
 from ..utils import send_notifications
 
 router = APIRouter(tags=["admin"])
@@ -33,7 +37,7 @@ async def are_shortlists_shutdown(session: Session = Depends(get_session)):
     dependencies=[Security(check_admin)],
 )
 async def toggle_proposals_shutdown(
-    token: str | None = Depends(get_token),
+    token: str | None = Depends(get_mail_send_token),
     session: Session = Depends(get_session),
 ):
     status = session.get(Status, "proposals.shutdown")
@@ -60,7 +64,7 @@ async def toggle_proposals_shutdown(
     dependencies=[Security(check_admin)],
 )
 async def toggle_shortlists_shutdown(
-    token: str | None = Depends(get_token),
+    token: str | None = Depends(get_mail_send_token),
     session: Session = Depends(get_session),
 ):
     status = session.get(Status, "shortlists.shutdown")
