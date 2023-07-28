@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, Header
 from sqlmodel import Session
 
 from ..models import User, UserRead
-from ..dependencies import get_session, get_user_read_token, get_user, get_user_or_none
+from ..dependencies import get_session, get_token, get_user, get_user_or_none
 
 router = APIRouter(tags=["user"])
 
@@ -21,7 +21,7 @@ async def read_user(id: int, session: Session = Depends(get_session)):
 @router.post("/users", response_model=UserRead)
 async def create_user(
     user: User | None = Depends(get_user_or_none),
-    token: str | None = Depends(get_user_read_token),
+    token: str = Depends(get_token),
     session: Session = Depends(get_session),
 ):
     # Return the user if the user exists in the database.

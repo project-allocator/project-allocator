@@ -20,15 +20,13 @@ async def read_notifications(
     return notifications
 
 
-@router.post("/users/me/notifications")
+@router.put("/users/me/notifications")
 async def mark_notifications(
-    user: User = Depends(get_user),
+    notifications: List[NotificationRead],
     session: Session = Depends(get_session),
 ):
-    notifications = session.exec(
-        select(Notification).where(Notification.user_id == user.id)
-    ).all()
     for notification in notifications:
+        notification = session.get(Notification, notification.id)
         notification.seen = True
         session.add(notification)
         session.commit()

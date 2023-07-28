@@ -2,12 +2,7 @@ from fastapi import APIRouter, Depends, Security
 from sqlmodel import Session
 
 from ..models import Status
-from ..dependencies import (
-    check_admin,
-    get_mail_send_token,
-    get_session,
-)
-from ..utils import send_notifications
+from ..dependencies import check_admin, get_session, send_notifications
 
 router = APIRouter(tags=["admin"])
 
@@ -32,55 +27,87 @@ async def are_shortlists_shutdown(session: Session = Depends(get_session)):
     return status.value == "true"
 
 
-@router.put(
+@router.post(
     "/proposals/shutdown",
-    dependencies=[Security(check_admin)],
+    dependencies=[
+        Security(check_admin),
+        Depends(
+            send_notifications(
+                title="Proposals have been shutdown.",
+                description="You can no longer shortlist projects.",
+                roles=["staff", "admin"],
+            )
+        ),
+    ],
 )
-async def toggle_proposals_shutdown(
-    token: str | None = Depends(get_mail_send_token),
-    session: Session = Depends(get_session),
-):
+async def set_proposals_shutdown(session: Session = Depends(get_session)):
     status = session.get(Status, "proposals.shutdown")
-    value = not (True if status.value == "true" else False)
-    status.value = str(value).lower()
+    status.value = "true"
     session.add(status)
     session.commit()
-    send_notifications(
-        title=value
-        and "Proposals have been shutdown."
-        or "Proposals have been reopened.",
-        description=value
-        and "You can no longer shortlist projects."
-        or "You can start creating new project proposals",
-        roles=["staff", "admin"],
-        token=token,
-        session=session,
-    )
     return {"ok": True}
 
 
-@router.put(
-    "/shortlists/shutdown",
-    dependencies=[Security(check_admin)],
+@router.delete(
+    "/proposals/shutdown",
+    dependencies=[
+        Security(check_admin),
+        Depends(
+            send_notifications(
+                title="Proposals have been reopened.",
+                description="You can start creating new project proposals",
+                roles=["staff", "admin"],
+            )
+        ),
+    ],
 )
-async def toggle_shortlists_shutdown(
-    token: str | None = Depends(get_mail_send_token),
+async def unset_proposals_shutdown(session: Session = Depends(get_session)):
+    status = session.get(Status, "proposals.shutdown")
+    status.value = "false"
+    session.add(status)
+    session.commit()
+    return {"ok": True}
+
+
+@router.post(
+    "/shortlists/shutdown",
+    dependencies=[
+        Security(check_admin),
+        Depends(
+            send_notifications(
+                title="Shortlists have been shutdown.",
+                description="You can no longer shortlist projects.",
+                roles=["student"],
+            )
+        ),
+    ],
+)
+async def set_shortlists_shutdown(session: Session = Depends(get_session)):
+    status = session.get(Status, "shortlists.shutdown")
+    status.value = "true"
+    session.add(status)
+    session.commit()
+    return {"ok": True}
+
+
+@router.delete(
+    "/shortlists/shutdown",
+    dependencies=[
+        Security(check_admin),
+        Depends(
+            send_notifications(
+                title="Shortlists have been reopened.",
+                description="You can start shortlisting projects.",
+                roles=["student"],
+            )
+        ),
+    ],
+)
+async def unset_shortlists_shutdown(
     session: Session = Depends(get_session),
 ):
     status = session.get(Status, "shortlists.shutdown")
-    value = not (True if status.value == "true" else False)
-    status.value = str(value).lower()
+    status.value = "false"
     session.add(status)
     session.commit()
-    send_notifications(
-        title=value
-        and "Shortlists have been shutdown."
-        or "Shortlists have been reopened.",
-        description=value
-        and "You can no longer shortlist projects."
-        or "You can start shortlisting projects.",
-        roles=["student"],
-        token=token,
-        session=session,
-    )
     return {"ok": True}
