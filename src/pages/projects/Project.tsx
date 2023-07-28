@@ -1,12 +1,13 @@
 import { AllocationService, ProjectRead, ProjectService, ProposalService, ShortlistService, UserRead } from "@/api";
 import { ProjectView } from "@/components/ProjectView";
-import { useNotificationContext } from "@/contexts/MessageContext";
+import { useMessageContext } from "@/contexts/MessageContext";
 import StaffRoute from "@/routes/StaffRoute";
 import StudentRoute from "@/routes/StudentRoute";
 import { getInitialLetters } from "@/utils";
 import { CheckOutlined, DeleteOutlined, EditOutlined, HeartOutlined } from '@ant-design/icons';
 import { Avatar, Button, Divider, List, Space, Tooltip, Typography } from "antd";
-import { Link, useLoaderData, useLocation, useNavigate, useRevalidator, type LoaderFunctionArgs } from 'react-router-dom';
+import { useState } from "react";
+import { Link, useLoaderData, useLocation, useNavigate, type LoaderFunctionArgs } from 'react-router-dom';
 
 const { Title, Paragraph } = Typography;
 
@@ -14,20 +15,21 @@ export async function projectLoader({ params }: LoaderFunctionArgs) {
   const id = parseInt(params.id!);
   const project = await ProjectService.readProject(id);
   const isProposed = await ProposalService.isProposed(id);
-  const shortlisters = await ShortlistService.readShortlisters(id);
-  const isShortlisted = await ShortlistService.isShortlisted(id);
   const allocatees = await AllocationService.readAllocatees(id);
   const isAllocated = await AllocationService.isAllocated(id);
-  return [project, isProposed, shortlisters, isShortlisted, allocatees, isAllocated];
+  const shortlisters = await ShortlistService.readShortlisters(id);
+  const isShortlisted = await ShortlistService.isShortlisted(id);
+  return [project, isProposed, allocatees, isAllocated, shortlisters, isShortlisted];
 }
 
 export default function Project() {
-  const [project, isProposed, shortlisters, isShortlisted, allocatees, isAllocated]
+  const [project, isProposed, allocatees, isAllocated, shortlisters, isShortlisted_]
     = useLoaderData() as [ProjectRead, boolean, UserRead[], boolean, UserRead[], boolean];
+  // Use isShortlisted in state to show the change immediagely in the UI.
+  const [isShortlisted, setIsShortlisted] = useState(isShortlisted_);
   const navigate = useNavigate();
   const location = useLocation();
-  const revalidator = useRevalidator();
-  const { messageSuccess: notifySuccess } = useNotificationContext();
+  const { messageSuccess } = useMessageContext();
 
   return (
     <>
@@ -51,13 +53,13 @@ export default function Project() {
                 icon={<HeartOutlined />}
                 type={isShortlisted ? "primary" : "default"}
                 onClick={async () => {
+                  setIsShortlisted(!isShortlisted);
                   await !isShortlisted
                     ? ShortlistService.setShortlisted(project.id)
                     : ShortlistService.unsetShortlisted(project.id);
-                  notifySuccess(isShortlisted
+                  messageSuccess(isShortlisted
                     ? "Successfully unshortlisted project."
                     : "Successfully shortlisted project.");
-                  revalidator.revalidate();
                 }}
               />
             </Tooltip>

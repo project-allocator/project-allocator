@@ -1,5 +1,5 @@
 import { AdminService, AllocationService } from "@/api";
-import { useNotificationContext } from "@/contexts/MessageContext";
+import { useMessageContext } from "@/contexts/MessageContext";
 import { Button, Divider, Switch, Typography } from "antd";
 import { useLoaderData } from "react-router-dom";
 
@@ -13,7 +13,7 @@ export async function adminLoader() {
 
 export default function Admin() {
   const [areProposalsShutdown, areShortlistsShutdown] = useLoaderData() as [boolean, boolean];
-  const { messageSuccess: notifySuccess } = useNotificationContext();
+  const { messageSuccess } = useMessageContext();
 
   return (
     <>
@@ -48,7 +48,7 @@ export default function Admin() {
       </Paragraph>
       <Button onClick={async () => {
         await AllocationService.allocateProjects();
-        notifySuccess("Successfully allocated projects to all students.");
+        messageSuccess("Successfully allocated projects to all students.");
       }}>
         Allocate
       </Button>
@@ -58,7 +58,7 @@ export default function Admin() {
       </Paragraph>
       <Button onClick={async () => {
         await AllocationService.deallocateProjects();
-        notifySuccess("Successfully deallocated projects from all students.");
+        messageSuccess("Successfully deallocated projects from all students.");
       }}>
         Deallocate
       </Button>

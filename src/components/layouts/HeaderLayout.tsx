@@ -79,8 +79,8 @@ export default function HeaderLayout({ children }: HeaderLayoutProps) {
         open={open}
         onClose={() => {
           setOpen(false);
-          setNotifications(notifications.map((item) => ({ ...item, seen: !item.seen })))
           NotificationService.markNotifications(notifications.filter((item) => !item.seen));
+          setNotifications(notifications.map((item) => ({ ...item, seen: false })))
         }}
       >
         <Space direction="vertical" className="w-full">
@@ -101,8 +101,8 @@ export default function HeaderLayout({ children }: HeaderLayoutProps) {
                       className="border-none"
                       icon={<DeleteOutlined />}
                       onClick={() => {
-                        setNotifications(notifications.filter((item) => item.id !== notification.id))
                         NotificationService.deleteNotification(notification.id);
+                        setNotifications(notifications.filter((item) => item.id !== notification.id))
                       }}
                     />
                   </Tooltip>

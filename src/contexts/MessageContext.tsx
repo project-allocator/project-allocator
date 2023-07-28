@@ -41,7 +41,7 @@ export function MessageContextProvider({ children }: MessageContextProviderProps
   )
 }
 
-export function useNotificationContext() {
+export function useMessageContext() {
   const context = useContext(MessageContext);
   if (!context) {
     throw new Error("useNotificationContext() was used outside of its Provider.");
