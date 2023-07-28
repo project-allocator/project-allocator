@@ -2,12 +2,15 @@ import { ProjectRead } from "@/api";
 import { Input, Space, Table, Tag } from "antd";
 import { useState } from "react";
 import Highlighter from 'react-highlight-words';
-import { Link, useLoaderData } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const { Search } = Input;
 
-export function ProjectsTable() {
-  const projects = useLoaderData() as ProjectRead[];
+interface ProjectsTableProps {
+  projects: ProjectRead[];
+}
+
+export function ProjectsTable({ projects }: ProjectsTableProps) {
   const [searchText, setSearchText] = useState('');
 
   const columns = [

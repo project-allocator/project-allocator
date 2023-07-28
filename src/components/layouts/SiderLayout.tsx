@@ -1,7 +1,7 @@
 import { useUserContext } from '@/contexts/UserContext';
 import { toCapitalCase } from '@/utils';
 import { FileAddOutlined, FileDoneOutlined, FileTextOutlined, HomeOutlined, LockOutlined } from '@ant-design/icons';
-import { Breadcrumb, BreadcrumbProps, Layout, Menu, Skeleton } from 'antd';
+import { Breadcrumb, Layout, Menu, Skeleton } from 'antd';
 import { ItemType, MenuItemType } from 'antd/es/menu/hooks/useItems';
 import React from 'react';
 import { Link, useLocation, useNavigation } from 'react-router-dom';
@@ -19,10 +19,6 @@ export default function SiderLayout({ children }: SiderLayoutProps) {
   const dirnames: string[] = pathname.split('/').slice(1);
   const pathnames: string[] = dirnames.reduce((pathname: string[], dirname: string) =>
     [...pathname, `${pathname.at(-1) || ''}/${dirname}`], []);
-  const breadcrumbItems: BreadcrumbProps['items'] = dirnames.map((dirname, index) => ({
-    title: toCapitalCase(dirname),
-    href: pathnames[index],
-  }));
 
   return (
     <Layout>
@@ -71,7 +67,10 @@ export default function SiderLayout({ children }: SiderLayoutProps) {
               title: <HomeOutlined />,
               href: '/'
             },
-            ...breadcrumbItems
+            ...dirnames.map((dirname, index) => ({
+              title: toCapitalCase(dirname),
+              href: pathnames[index],
+            }))
           ]}
           className='my-4'
         />

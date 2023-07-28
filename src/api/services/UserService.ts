@@ -11,6 +11,39 @@ import { request as __request } from '../core/request';
 export class UserService {
 
     /**
+     * Read Users
+     * @returns UserRead Successful Response
+     * @throws ApiError
+     */
+    public static readUsers(): CancelablePromise<Array<UserRead>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/users',
+        });
+    }
+
+    /**
+     * Create User
+     * @param xGraphToken
+     * @returns UserRead Successful Response
+     * @throws ApiError
+     */
+    public static createUser(
+        xGraphToken?: string,
+    ): CancelablePromise<UserRead> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/users',
+            headers: {
+                'x-graph-token': xGraphToken,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
      * Read Current User
      * @returns UserRead Successful Response
      * @throws ApiError
@@ -36,27 +69,6 @@ export class UserService {
             url: '/api/users/{id}',
             path: {
                 'id': id,
-            },
-            errors: {
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Create User
-     * @param xGraphToken
-     * @returns UserRead Successful Response
-     * @throws ApiError
-     */
-    public static createUser(
-        xGraphToken?: string,
-    ): CancelablePromise<UserRead> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/users',
-            headers: {
-                'x-graph-token': xGraphToken,
             },
             errors: {
                 422: `Validation Error`,

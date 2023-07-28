@@ -3,7 +3,7 @@ import { DeleteOutlined, HolderOutlined } from '@ant-design/icons';
 import { Button, Divider, List, Space, Tooltip, Typography } from "antd";
 import { Reorder, useDragControls } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Link, useLoaderData, useRevalidator } from "react-router-dom";
+import { Link, useLoaderData } from "react-router-dom";
 
 const { Title, Text } = Typography;
 
@@ -46,7 +46,15 @@ export default function Shortlisted() {
           renderItem={(projectId: number) => {
             const project = projects?.find((project: ProjectRead) => project.id === projectId);
             if (project) {
-              return <ProjectItem project={project as ProjectRead} />;
+              return (
+                <ProjectItem
+                  project={project as ProjectRead}
+                  onDelete={() => {
+                    ShortlistService.unsetShortlisted(projectId);
+                    setProjectIds(projectIds.filter((item) => item !== projectId));
+                  }}
+                />
+              );
             }
           }}
         />
@@ -57,12 +65,12 @@ export default function Shortlisted() {
 
 interface ProjectItemProps {
   project: ProjectRead;
+  onDelete: () => void;
 }
 
-function ProjectItem({ project }: ProjectItemProps) {
+function ProjectItem({ project, onDelete }: ProjectItemProps) {
   // Drag controls for Framer Motion's Reorder component
   const controls = useDragControls();
-  const revalidator = useRevalidator();
 
   return (
     <Reorder.Item
@@ -82,10 +90,7 @@ function ProjectItem({ project }: ProjectItemProps) {
             <Button
               className="border-none"
               icon={<DeleteOutlined />}
-              onClick={async () => {
-                await ShortlistService.unsetShortlisted(project.id);
-                revalidator.revalidate();
-              }}
+              onClick={onDelete}
             />
           </Tooltip>
         </Space>

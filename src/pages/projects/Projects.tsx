@@ -1,9 +1,9 @@
-import { ProjectService } from "@/api";
+import { ProjectRead, ProjectService } from "@/api";
 import { ProjectsTable } from "@/components/ProjectTable";
 import StaffRoute from "@/routes/StaffRoute";
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, Divider, Space, Tooltip, Typography } from "antd";
-import { Link } from "react-router-dom";
+import { Link, useLoaderData } from "react-router-dom";
 
 const { Title } = Typography;
 
@@ -12,6 +12,8 @@ export async function projectsLoader() {
 }
 
 export default function Projects() {
+  const projects = useLoaderData() as ProjectRead[];
+
   return (
     <>
       <Space className="flex items-end justify-between">
@@ -27,7 +29,7 @@ export default function Projects() {
         </StaffRoute>
       </Space>
       <Divider />
-      <ProjectsTable />
+      <ProjectsTable projects={projects} />
     </>
   );
 }

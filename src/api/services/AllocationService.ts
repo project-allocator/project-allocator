@@ -75,6 +75,31 @@ export class AllocationService {
     }
 
     /**
+     * Add Allocatees
+     * @param id
+     * @param requestBody
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static addAllocatees(
+        id: number,
+        requestBody: Array<UserRead>,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/projects/{id}/allocatees',
+            path: {
+                'id': id,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
      * Read Allocated
      * @returns ProjectRead Successful Response
      * @throws ApiError
@@ -83,6 +108,63 @@ export class AllocationService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/users/me/allocated',
+        });
+    }
+
+    /**
+     * Is Accepted
+     * @returns boolean Successful Response
+     * @throws ApiError
+     */
+    public static isAccepted(): CancelablePromise<boolean> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/users/me/allocated/accepted',
+        });
+    }
+
+    /**
+     * Accept Allocation
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static acceptAllocation(): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/users/me/allocated/accepted',
+        });
+    }
+
+    /**
+     * Decline Allocation
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static declineAllocation(): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/users/me/allocated/declined',
+        });
+    }
+
+    /**
+     * Remove Allocatee
+     * @param id
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static removeAllocatee(
+        id: number,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/users/{id}/allocated',
+            path: {
+                'id': id,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
         });
     }
 
@@ -104,6 +186,18 @@ export class AllocationService {
             errors: {
                 422: `Validation Error`,
             },
+        });
+    }
+
+    /**
+     * Read Conflicted
+     * @returns ProjectRead Successful Response
+     * @throws ApiError
+     */
+    public static readConflicted(): CancelablePromise<Array<ProjectRead>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/projects/conflicted',
         });
     }
 

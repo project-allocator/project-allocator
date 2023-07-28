@@ -2,7 +2,8 @@ import { AllocationService, ProjectRead, ShortlistService } from '@/api';
 import { ProjectView } from '@/components/ProjectView';
 import { CheckOutlined, HeartOutlined } from '@ant-design/icons';
 import { Button, Divider, Empty, Space, Tooltip, Typography } from "antd";
-import { useLoaderData, useRevalidator } from 'react-router-dom';
+import { useState } from 'react';
+import { useLoaderData } from 'react-router-dom';
 
 const { Title } = Typography;
 
@@ -14,7 +15,7 @@ export async function allocatedLoader() {
 
 export default function Allocated() {
   const [project, isShortlisted] = useLoaderData() as [ProjectRead, boolean];
-  const revalidator = useRevalidator();
+  const [isShortlistedState, setIsShortlistedState] = useState(isShortlisted);
 
   return (
     <>
@@ -35,12 +36,12 @@ export default function Allocated() {
               <Button
                 shape="circle"
                 icon={<HeartOutlined />}
-                type={isShortlisted ? "primary" : "default"}
-                onClick={async () => {
-                  await !isShortlisted
+                type={isShortlistedState ? "primary" : "default"}
+                onClick={() => {
+                  !isShortlistedState
                     ? ShortlistService.setShortlisted(project.id)
                     : ShortlistService.unsetShortlisted(project.id);
-                  revalidator.revalidate();
+                  setIsShortlistedState(isShortlistedState);
                 }}
               />
             </Tooltip>

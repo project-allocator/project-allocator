@@ -1,4 +1,5 @@
-import { AdminService, AllocationService } from "@/api";
+import { AdminService, AllocationService, ProjectRead } from "@/api";
+import { ProjectsTable } from "@/components/ProjectTable";
 import { useMessageContext } from "@/contexts/MessageContext";
 import { Button, Divider, Switch, Typography } from "antd";
 import { useLoaderData } from "react-router-dom";
@@ -8,11 +9,13 @@ const { Title, Paragraph } = Typography;
 export async function adminLoader() {
   const areProposalsShutdown = await AdminService.areProposalsShutdown();
   const areShortlistsShutdown = await AdminService.areShortlistsShutdown();
-  return [areProposalsShutdown, areShortlistsShutdown];
+  const conflicted = await AllocationService.readConflicted();
+  return [areProposalsShutdown, areShortlistsShutdown, conflicted];
 }
 
 export default function Admin() {
-  const [areProposalsShutdown, areShortlistsShutdown] = useLoaderData() as [boolean, boolean];
+  const [areProposalsShutdown, areShortlistsShutdown, conflicted]
+    = useLoaderData() as [boolean, boolean, ProjectRead[]];
   const { messageSuccess } = useMessageContext();
 
   return (
@@ -62,6 +65,11 @@ export default function Admin() {
       }}>
         Deallocate
       </Button>
+      <Title level={4}>Conflicting Projects</Title>
+      <Paragraph className="text-slate-500">
+        Projects with students who have not accepted or declined their allocation will be shown here.
+      </Paragraph>
+      <ProjectsTable projects={conflicted} />
     </>
   );
 }
