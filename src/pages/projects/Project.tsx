@@ -166,8 +166,9 @@ export default function Project() {
               ({ label: `${student.name} (${student.email})`, value: index }))}
             filterOption={(inputValue, option) => {
               if (!option) return false;
+              const target = inputValue.toLowerCase();
               const student = students[option!.value];
-              return [student.email, student.name].some((item) => item.toLowerCase().includes(inputValue));
+              return [student.email, student.name].some((item) => item.toLowerCase().includes(target));
             }}
             onChange={(indices: number[]) => {
               setSelectedUsers(indices.map((index) => students[index]))
