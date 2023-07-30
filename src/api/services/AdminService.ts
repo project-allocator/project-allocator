@@ -116,4 +116,64 @@ export class AdminService {
         });
     }
 
+    /**
+     * Are Undos Shutdown
+     * @returns boolean Successful Response
+     * @throws ApiError
+     */
+    public static areUndosShutdown(): CancelablePromise<boolean> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/undos/shutdown',
+        });
+    }
+
+    /**
+     * Set Undos Shutdown
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static setUndosShutdown(): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/projects/undos/shutdown',
+        });
+    }
+
+    /**
+     * Unset Undos Shutdown
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static unsetUndosShutdown(): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/projects/undos/shutdown',
+        });
+    }
+
+    /**
+     * Export Json
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static exportJson(): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/projects/export/json',
+        });
+    }
+
+    /**
+     * Export Csv
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static exportCsv(): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/projects/export/csv',
+        });
+    }
+
 }

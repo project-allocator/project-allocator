@@ -28,7 +28,7 @@ export default function HeaderLayout({ children }: HeaderLayoutProps) {
         .then((notifications) => setNotifications(notifications as NotificationRead[]));
     }
     fetchNotifications();
-    setInterval(fetchNotifications, 60000);
+    setInterval(fetchNotifications, 60 * 1000);
   }, []);
 
   return (

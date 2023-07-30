@@ -5,11 +5,11 @@ import dayjs from 'dayjs';
 
 const { Title, Paragraph } = Typography;
 
-interface ProjectViewProps {
+interface ProjectContentProps {
   project: ProjectRead;
 }
 
-export function ProjectView({ project }: ProjectViewProps) {
+export function ProjectContent({ project }: ProjectContentProps) {
   return (
     <>
       <Title level={4}>{project.title}</Title>

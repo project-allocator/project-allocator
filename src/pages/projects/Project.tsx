@@ -1,155 +1,45 @@
-import { AllocationService, ProjectRead, ProjectService, ProposalService, ShortlistService, UserRead, UserService } from "@/api";
-import { ProjectView } from "@/components/ProjectView";
-import { useMessageContext } from "@/contexts/MessageContext";
+import { AllocationService, ProjectRead, ProjectService, ShortlistService, UserRead, UserService } from "@/api";
+import { ProjectContent } from "@/components/ProjectContent";
+import ProjectHeader from "@/components/ProjectHeader";
 import StaffRoute from "@/routes/StaffRoute";
-import StudentRoute from "@/routes/StudentRoute";
 import { getInitialLetters } from "@/utils";
-import { CheckOutlined, DeleteOutlined, EditOutlined, HeartOutlined, PlusOutlined } from '@ant-design/icons';
-import { Alert, Avatar, Button, Divider, List, Select, Space, Tooltip, Typography } from "antd";
+import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { Avatar, Button, Divider, List, Select, Tooltip, Typography } from "antd";
 import { useEffect, useState } from "react";
-import { Link, useLoaderData, useLocation, useNavigate, useParams, type LoaderFunctionArgs } from 'react-router-dom';
+import { Link, useLoaderData, type LoaderFunctionArgs } from 'react-router-dom';
 
 const { Title, Paragraph, Text } = Typography;
 
 export async function projectLoader({ params }: LoaderFunctionArgs) {
   const id = parseInt(params.id!);
   const project = await ProjectService.readProject(id);
-  const isProposed = await ProposalService.isProposed(id);
-  const isAllocated = await AllocationService.isAllocated(id);
-  const isAccepted = await AllocationService.isAccepted();
-  const isShortlisted = await ShortlistService.isShortlisted(id);
-  return [project, isProposed, isAllocated, isAccepted, isShortlisted];
+  const students = await UserService.readUsers("student");
+  const shortlisters = await ShortlistService.readShortlisters(id);
+  const allocatees = await AllocationService.readAllocatees(id)
+  return [project, students, shortlisters, allocatees];
 }
 
 export default function Project() {
-  const [project, isProposed, isAllocated, isAccepted, isShortlisted]
-    = useLoaderData() as [ProjectRead, boolean, boolean, boolean, boolean];
-  // Use isShortlisted in state to show the change immediagely in the UI.
-  const [isShortlistedState, setIsShortlistedState] = useState(isShortlisted);
-  const navigate = useNavigate();
-  const params = useParams();
-  const location = useLocation();
-  const { messageSuccess, messageError } = useMessageContext();
+  const [project, students, shortlisters, initialAllocatees]
+    = useLoaderData() as [ProjectRead, UserRead[], UserRead[], UserRead[]];
 
-  // Avoid using React Router's data loader
-  // to speed up UI by showing project details first.
-  const [students, setStudents] = useState<UserRead[]>([]);
-  const [allocatees, setAllocatees] = useState<UserRead[]>([]);
-  const [shortlisters, setShortlisters] = useState<UserRead[]>([]);
-  const [selectedUsers, setSelectedUsers] = useState<UserRead[]>([]);
-  useEffect(() => {
-    const id = parseInt(params.id!);
-    UserService.readUsers("student")
-      .then((students) => setStudents(students));
-    AllocationService.readAllocatees(id)
-      .then((allocatees) => setAllocatees(allocatees));
-    ShortlistService.readShortlisters(id)
-      .then((shortlisters) => setShortlisters(shortlisters));
-  }, []);
+  const [allocatees, setAllocatees] = useState<UserRead[]>(initialAllocatees);
+  const [extraAllocateeIndices, setExtraAllocateeIndices] = useState<number[]>([]);
+
+  const [hasConflict, setHasConflict] = useState<boolean | null>(null);
+  const updateHasConflict = (allocatees: UserRead[]) =>
+    setHasConflict(!allocatees.every((allocatee) => allocatee.accepted))
+  useEffect(() => updateHasConflict(allocatees), []);
 
   return (
     <>
-      <StudentRoute>
-        {isAccepted === null
-          ? (
-            <Alert
-              type="info"
-              showIcon
-              message="You have been allocated to this project."
-              description="Please accept or decline this project allocation."
-              action={
-                <Space direction="vertical">
-                  <Button
-                    size="small"
-                    type="primary"
-                    onClick={() => AllocationService.acceptAllocation()
-                      .then(() => messageSuccess("Successfully accepted project allocation."))
-                      .catch(() => messageError("Failed to accept project allocation."))}
-                  >
-                    Accept
-                  </Button>
-                  <Button
-                    size="small"
-                    onClick={() => AllocationService.acceptAllocation()
-                      .then(() => messageSuccess("Successfully declined project allocation."))
-                      .catch(() => messageError("Failed to decline project allocation."))}
-                  >
-                    Decline
-                  </Button>
-                </Space>
-              }
-            />
-          ) : (
-            <Alert
-              type="info"
-              showIcon
-              closable
-              message={isAccepted
-                ? "You have accepted project allcoation"
-                : "You have rejected project allocation"}
-              description="Contact your administrators for further information."
-            />
-          )}
-      </StudentRoute>
-      <Space className="flex items-end justify-between">
-        <Title level={3} className="mb-0">
-          Project #{project.id}
-        </Title>
-        <StudentRoute>
-          <Space>
-            {isAllocated &&
-              <Tooltip title="Allocated">
-                <Button
-                  shape="circle"
-                  type="primary"
-                  icon={<CheckOutlined />}
-                />
-              </Tooltip>}
-            <Tooltip title="Shortlist">
-              <Button
-                shape="circle"
-                icon={<HeartOutlined />}
-                type={isShortlistedState ? "primary" : "default"}
-                onClick={() => {
-                  !isShortlistedState
-                    ? ShortlistService.setShortlisted(project.id)
-                    : ShortlistService.unsetShortlisted(project.id);
-                  messageSuccess(isShortlistedState
-                    ? "Successfully unshortlisted project."
-                    : "Successfully shortlisted project.");
-                  setIsShortlistedState(!isShortlistedState);
-                }}
-              />
-            </Tooltip>
-          </Space>
-        </StudentRoute>
-        <StaffRoute>
-          {isProposed &&
-            <Space>
-              <Tooltip title="Edit">
-                <Link to="./edit" >
-                  <Button shape="circle" icon={<EditOutlined />} />
-                </Link>
-              </Tooltip>
-              <Tooltip title="Delete">
-                <Button
-                  shape="circle"
-                  icon={<DeleteOutlined />}
-                  onClick={() => {
-                    ProjectService.deleteProject(project.id);
-                    // Navigate back to either '/projects' or '/proposed'
-                    // or to '/projects' if the history stack is empty.
-                    location.key === 'default'
-                      ? navigate('/projects')
-                      : navigate(-1);
-                  }}
-                />
-              </Tooltip>
-            </Space>}
-        </StaffRoute>
-      </Space>
+      <ProjectHeader
+        title={`Project ${project.id}`}
+        project={project}
+        hasConflict={hasConflict}
+      />
       <Divider />
-      <ProjectView project={project} />
+      <ProjectContent project={project} />
       <StaffRoute>
         <Divider />
         <Title level={4}>Allocated Students</Title>
@@ -162,6 +52,7 @@ export default function Project() {
             allowClear
             className="w-full grow"
             placeholder="Select students to add"
+            value={extraAllocateeIndices}
             options={students.map((student, index) =>
               ({ label: `${student.name} (${student.email})`, value: index }))}
             filterOption={(inputValue, option) => {
@@ -170,17 +61,19 @@ export default function Project() {
               const student = students[option!.value];
               return [student.email, student.name].some((item) => item.toLowerCase().includes(target));
             }}
-            onChange={(indices: number[]) => {
-              setSelectedUsers(indices.map((index) => students[index]))
-            }}
+            onChange={(indices: number[]) => setExtraAllocateeIndices(indices)}
           />
           <Button
             shape="circle"
             className="flex-none"
             icon={<PlusOutlined />}
             onClick={() => {
-              AllocationService.addAllocatees(project.id, selectedUsers);
-              setAllocatees([...selectedUsers, ...allocatees]);
+              const extraAllocatees = extraAllocateeIndices.map((index) => students[index]);
+              AllocationService.addAllocatees(project.id, extraAllocatees);
+              const newAllocatees = [...extraAllocatees, ...allocatees];
+              setAllocatees(newAllocatees);
+              updateHasConflict(newAllocatees);
+              setExtraAllocateeIndices([]);
             }}
           />
         </div>
@@ -197,7 +90,9 @@ export default function Project() {
                     icon={<DeleteOutlined />}
                     onClick={() => {
                       AllocationService.removeAllocatee(allocatee.id);
-                      setAllocatees(allocatees.filter((item) => item.id !== allocatee.id));
+                      const newAllocatees = allocatees.filter((item) => item.id !== allocatee.id);
+                      setAllocatees(newAllocatees);
+                      updateHasConflict(newAllocatees);
                     }}
                   />
                 </Tooltip>

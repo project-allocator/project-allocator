@@ -53,8 +53,8 @@ export class NotificationService {
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/users/me/notifications/{id}',
-            query: {
+            url: '/api/users/me/notifications/{notification_id}',
+            path: {
                 'notification_id': notificationId,
             },
             errors: {

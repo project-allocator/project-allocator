@@ -33,8 +33,8 @@ export class ProposalService {
     ): CancelablePromise<boolean> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/users/me/proposed/{id}',
-            query: {
+            url: '/api/users/me/proposed/{project_id}',
+            path: {
                 'project_id': projectId,
             },
             errors: {

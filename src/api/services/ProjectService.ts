@@ -55,8 +55,8 @@ export class ProjectService {
     ): CancelablePromise<ProjectRead> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/projects/{id}',
-            query: {
+            url: '/api/projects/{project_id}',
+            path: {
                 'project_id': projectId,
             },
             errors: {
@@ -78,8 +78,8 @@ export class ProjectService {
     ): CancelablePromise<ProjectRead> {
         return __request(OpenAPI, {
             method: 'PUT',
-            url: '/api/projects/{id}',
-            query: {
+            url: '/api/projects/{project_id}',
+            path: {
                 'project_id': projectId,
             },
             body: requestBody,
@@ -101,8 +101,8 @@ export class ProjectService {
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/projects/{id}',
-            query: {
+            url: '/api/projects/{project_id}',
+            path: {
                 'project_id': projectId,
             },
             errors: {

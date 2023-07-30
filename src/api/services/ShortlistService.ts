@@ -45,18 +45,18 @@ export class ShortlistService {
 
     /**
      * Is Shortlisted
-     * @param id
+     * @param projectId
      * @returns boolean Successful Response
      * @throws ApiError
      */
     public static isShortlisted(
-        id: number,
+        projectId: number,
     ): CancelablePromise<boolean> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/users/me/shortlisted/{id}',
-            path: {
-                'id': id,
+            url: '/api/users/me/shortlisted/{project__id}',
+            query: {
+                'project_id': projectId,
             },
             errors: {
                 422: `Validation Error`,
@@ -75,8 +75,8 @@ export class ShortlistService {
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/users/me/shortlisted/{id}',
-            query: {
+            url: '/api/users/me/shortlisted/{project_id}',
+            path: {
                 'project_id': projectId,
             },
             errors: {
@@ -96,8 +96,8 @@ export class ShortlistService {
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/users/me/shortlisted/{id}',
-            query: {
+            url: '/api/users/me/shortlisted/{project_id}',
+            path: {
                 'project_id': projectId,
             },
             errors: {
@@ -117,8 +117,8 @@ export class ShortlistService {
     ): CancelablePromise<Array<UserRead>> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/projects/{id}/shortlisters',
-            query: {
+            url: '/api/projects/{project_id}/shortlisters',
+            path: {
                 'project_id': projectId,
             },
             errors: {
