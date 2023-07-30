@@ -15,7 +15,7 @@ export function ProjectContent({ project }: ProjectContentProps) {
       <Title level={4}>{project.title}</Title>
       <Paragraph>{project.description}</Paragraph>
       <Divider />
-      {config.project.details.map((detail) => (
+      {config.projects.details.map((detail) => (
         <div key={detail.name}>
           <Title level={4}>{detail.title}</Title>
           <Paragraph className="text-slate-500">{detail.description}</Paragraph>

@@ -25,7 +25,9 @@ export default function HeaderLayout({ children }: HeaderLayoutProps) {
   useEffect(() => {
     const fetchNotifications = () => {
       NotificationService.readNotifications()
-        .then((notifications) => setNotifications(notifications as NotificationRead[]));
+        .then((notifications) => setNotifications(notifications as NotificationRead[]))
+        // Ignore error as failing to fetch notification should not stop rendering.
+        .catch((error) => console.error(error));
     }
     fetchNotifications();
     setInterval(fetchNotifications, 60 * 1000);

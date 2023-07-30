@@ -67,7 +67,7 @@ interface ProjectDetailsFormProps {
 
 function ProjectDetailsForm({ initProject }: ProjectDetailsFormProps) {
   return (
-    config.project.details.map((detail) => (
+    config.projects.details.map((detail) => (
       <Form.Item
         key={detail.name}
         name={detail.name}

@@ -15,7 +15,7 @@ export async function projectLoader({ params }: LoaderFunctionArgs) {
   const project = await ProjectService.readProject(id);
   const students = await UserService.readUsers("student");
   const shortlisters = await ShortlistService.readShortlisters(id);
-  const allocatees = await AllocationService.readAllocatees(id)
+  const allocatees = await AllocationService.readAllocatees(id);
   return [project, students, shortlisters, allocatees];
 }
 
@@ -28,7 +28,7 @@ export default function Project() {
 
   const [hasConflict, setHasConflict] = useState<boolean | null>(null);
   const updateHasConflict = (allocatees: UserRead[]) =>
-    setHasConflict(!allocatees.every((allocatee) => allocatee.accepted))
+    setHasConflict(!allocatees?.every((allocatee) => allocatee.accepted))
   useEffect(() => updateHasConflict(allocatees), []);
 
   return (

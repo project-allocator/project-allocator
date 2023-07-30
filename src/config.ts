@@ -1,7 +1,7 @@
 import config from '../config.yaml';
 
 export interface Config {
-  project: {
+  projects: {
     details: {
       name: string;
       title: string;

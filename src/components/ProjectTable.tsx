@@ -71,7 +71,7 @@ export function ProjectsTable({ projects }: ProjectsTableProps) {
               project.title,
               project.description,
               ...project.categories
-            ].some((text) => text.includes(searchText)))
+            ].some((text) => text.toLowerCase().includes(searchText.toLowerCase())))
             .map((project: ProjectRead) => ({
               ...project,
               key: project.id,

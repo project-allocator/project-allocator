@@ -21,6 +21,7 @@ import Projects, { projectsLoader } from './pages/projects/Projects';
 import Proposed, { proposedLoader } from './pages/proposals/Proposed';
 import Shortlisted, { shortlistedLoader } from './pages/shortlists/Shortlisted';
 import User, { currentUserLoader, userLoader } from './pages/users/User';
+import { UserEdit, userEditAction, userEditLoader } from './pages/users/UserEdit';
 import AdminRoute from './routes/AdminRoute';
 import AuthRoute from './routes/AuthRoute';
 import GuestRoute from './routes/GuestRoute';
@@ -134,9 +135,26 @@ const router = createBrowserRouter([
         loader: currentUserLoader,
       },
       {
-        path: "users/:id",
-        element: <User />,
-        loader: userLoader,
+        path: "users",
+        element: (
+          <AdminRoute fallback="/">
+            <Outlet />
+          </AdminRoute>
+        ),
+        children: [
+          {
+            path: ":id",
+            element: <User />,
+            loader: userLoader,
+          },
+          {
+            path: ":id/edit",
+            element: <UserEdit />,
+            loader: userEditLoader,
+            action: userEditAction,
+          }
+        ]
+
       },
     ],
   },

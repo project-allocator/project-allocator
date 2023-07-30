@@ -1,7 +1,10 @@
 import { UserRead, UserService } from "@/api";
-import { getInitialLetters, toCapitalCase } from "@/utils";
-import { Avatar, Divider, Space, Typography } from "antd";
-import { LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
+import { useMessageContext } from "@/contexts/MessageContext";
+import AdminRoute from "@/routes/AdminRoute";
+import { toCapitalCase } from "@/utils";
+import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { Button, Divider, Space, Tooltip, Typography } from "antd";
+import { Link, LoaderFunctionArgs, useLoaderData, useNavigate } from 'react-router-dom';
 
 const { Title, Paragraph } = Typography;
 
@@ -15,14 +18,36 @@ export async function currentUserLoader() {
 
 export default function User() {
   const user = useLoaderData() as UserRead;
+  const navigate = useNavigate();
+  const { messageSuccess, messageError } = useMessageContext();
 
   return (
     <>
       <Space className="flex items-end justify-between">
         <Title level={3} className="mb-0">
-          Profile
+          User #{user.id}
         </Title>
-        <Avatar>{getInitialLetters(user.name)}</Avatar>
+        <AdminRoute>
+          <Space>
+            <Tooltip title="Edit">
+              <Link to="./edit" >
+                <Button shape="circle" icon={<EditOutlined />} />
+              </Link>
+            </Tooltip>
+            <Tooltip title="Delete">
+              <Button
+                shape="circle"
+                icon={<DeleteOutlined />}
+                onClick={() => {
+                  UserService.deleteUser(user.id)
+                    .then(() => messageSuccess(`Successfully deleted user #${user.id}.`))
+                    .catch(() => messageError(`Failed to delete user #${user.id}.`));
+                  navigate("/admin");
+                }}
+              />
+            </Tooltip>
+          </Space>
+        </AdminRoute>
       </Space>
       <Divider />
       <Title level={4}>Name</Title>

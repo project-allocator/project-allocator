@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { UserRead } from '../models/UserRead';
+import type { UserUpdate } from '../models/UserUpdate';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -75,6 +76,52 @@ export class UserService {
     ): CancelablePromise<UserRead> {
         return __request(OpenAPI, {
             method: 'GET',
+            url: '/api/users/{user_id}',
+            path: {
+                'user_id': userId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Update User
+     * @param userId
+     * @param requestBody
+     * @returns UserRead Successful Response
+     * @throws ApiError
+     */
+    public static updateUser(
+        userId: number,
+        requestBody: UserUpdate,
+    ): CancelablePromise<UserRead> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/users/{user_id}',
+            path: {
+                'user_id': userId,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Delete User
+     * @param userId
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static deleteUser(
+        userId: number,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
             url: '/api/users/{user_id}',
             path: {
                 'user_id': userId,

@@ -18,9 +18,9 @@ interface ProjectHeaderProps {
 export default function ProjectHeader({ title, project, hasConflict }: ProjectHeaderProps) {
   // Set values in state to show the change immediagely in the UI.
   const [isProposed, setIsProposed] = useState(false);
-  const [isShortlisted, setIsShortlisted] = useState<boolean>(false);
   const [isAllocated, setIsAllocated] = useState<boolean>(false);
   const [isAccepted, setIsAccepted] = useState<boolean | null>(null);
+  const [isShortlisted, setIsShortlisted] = useState<boolean | null>(null);
   const [areUndosShutdown, setAreUndosShutdown] = useState<boolean>(false);
 
   // Avoid using React Router's data loader
@@ -41,26 +41,28 @@ export default function ProjectHeader({ title, project, hasConflict }: ProjectHe
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { messageSuccess } = useMessageContext();
+  const { messageSuccess, messageError } = useMessageContext();
 
   return (
     <>
       <StaffRoute>
-        {hasConflict !== null && (
+        {hasConflict !== null &&
           hasConflict
-            ? <Alert
+          ? (
+            <Alert
               type="error"
               showIcon
               message="This project allocation has a conflict."
               description="There are students who declined or did not respond to this project allocation."
             />
-            : <Alert
+          ) : (
+            <Alert
               type="success"
               showIcon
               message="This project allocation has no conflict."
               description="Every student allocated to this project has accepted this project allocation."
             />
-        )}
+          )}
       </StaffRoute>
       <StudentRoute>
         {isAllocated &&
@@ -124,25 +126,29 @@ export default function ProjectHeader({ title, project, hasConflict }: ProjectHe
         <Title level={3} className="mb-0">
           {title}
         </Title>
-        <StudentRoute>
-          <Tooltip title="Shortlist">
-            <Button
-              shape="circle"
-              icon={<HeartOutlined />}
-              type={isShortlisted ? "primary" : "default"}
-              onClick={() => {
-                if (!project) return;
-                !isShortlisted
-                  ? ShortlistService.setShortlisted(project.id)
-                  : ShortlistService.unsetShortlisted(project.id);
-                messageSuccess(isShortlisted
-                  ? "Successfully unshortlisted project."
-                  : "Successfully shortlisted project.");
-                setIsShortlisted(!isShortlisted);
-              }}
-            />
-          </Tooltip>
-        </StudentRoute>
+        {isShortlisted !== null &&
+          <StudentRoute>
+            <Tooltip title="Shortlist">
+              <Button
+                shape="circle"
+                icon={<HeartOutlined />}
+                type={isShortlisted ? "primary" : "default"}
+                onClick={() => {
+                  if (!project) return;
+                  (!isShortlisted
+                    ? ShortlistService.setShortlisted(project.id)
+                    : ShortlistService.unsetShortlisted(project.id))
+                    .then(() => messageSuccess(isShortlisted
+                      ? `Successfully unshortlisted project #${project.id}.`
+                      : `Successfully shortlisted project #${project.id}.`))
+                    .catch(() => messageError(isShortlisted
+                      ? `Failed to unshortlist project #${project.id}.`
+                      : `Failed to shortlist project #${project.id}.`));
+                  setIsShortlisted(!isShortlisted);
+                }}
+              />
+            </Tooltip>
+          </StudentRoute>}
         <StaffRoute>
           {isProposed &&
             <Space>
@@ -157,7 +163,9 @@ export default function ProjectHeader({ title, project, hasConflict }: ProjectHe
                   icon={<DeleteOutlined />}
                   onClick={() => {
                     if (!project) return;
-                    ProjectService.deleteProject(project.id);
+                    ProjectService.deleteProject(project.id)
+                      .then(() => messageSuccess(`Successfully deleted project #${project.id}.`))
+                      .catch(() => messageError(`Failed to delete project #${project.id}.`));
                     // Navigate back to either '/projects' or '/proposed'
                     // or to '/projects' if the history stack is empty.
                     location.key === 'default'

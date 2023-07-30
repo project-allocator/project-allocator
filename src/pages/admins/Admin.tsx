@@ -1,11 +1,13 @@
-import { AdminService, AllocationService, ProjectRead } from "@/api";
+import { AdminService, AllocationService, ProjectRead, UserRead, UserService } from "@/api";
 import { ProjectsTable } from "@/components/ProjectTable";
 import { useMessageContext } from "@/contexts/MessageContext";
+import { getInitialLetters } from "@/utils";
 import { CheckOutlined, CloseOutlined, DownloadOutlined } from '@ant-design/icons';
-import { Button, Divider, Select, Space, Switch, Typography } from "antd";
+import { Avatar, Button, Divider, Input, List, Select, Space, Switch, Typography } from "antd";
 import { useState } from "react";
-import { useLoaderData } from "react-router-dom";
+import { Link, useLoaderData } from "react-router-dom";
 
+const { Search } = Input;
 const { Title, Paragraph } = Typography;
 
 export async function adminLoader() {
@@ -13,13 +15,15 @@ export async function adminLoader() {
   const areShortlistsShutdown = await AdminService.areShortlistsShutdown();
   const areUndosShutdown = await AdminService.areUndosShutdown();
   const conflicted = await AllocationService.readConflicting();
-  return [areProposalsShutdown, areShortlistsShutdown, areUndosShutdown, conflicted];
+  const users = await UserService.readUsers();
+  return [areProposalsShutdown, areShortlistsShutdown, areUndosShutdown, conflicted, users];
 }
 
 export default function Admin() {
-  const [areProposalsShutdown, areShortlistsShutdown, areUndosShutdown, conflicted]
-    = useLoaderData() as [boolean, boolean, boolean, ProjectRead[]];
-  const [exportType, setExportType] = useState<string>("json")
+  const [areProposalsShutdown, areShortlistsShutdown, areUndosShutdown, conflicted, users]
+    = useLoaderData() as [boolean, boolean, boolean, ProjectRead[], UserRead[]];
+  const [exportType, setExportType] = useState<string>("json");
+  const [searchText, setSearchText] = useState('');
   const { messageSuccess, messageError } = useMessageContext();
 
   return (
@@ -124,6 +128,35 @@ export default function Admin() {
           Download
         </Button>
       </Space>
+      <Divider />
+      <Title level={4}>Manage Users</Title>
+      <Paragraph className="text-slate-500">
+        Search for users and click on the link to view, edit and delete them.
+      </Paragraph>
+      <Search
+        className="w-64 mb-4"
+        placeholder="Enter search text"
+        onChange={(event) => setSearchText(event.target.value)}
+        onSearch={(searchText) => setSearchText(searchText)}
+      />
+      <List
+        itemLayout="horizontal"
+        pagination={users.length > 0 && { position: "bottom" }}
+        dataSource={users.filter((user) => [
+          user.name,
+          user.email,
+          user.role,
+        ].some((text) => text.toLowerCase().includes(searchText.toLowerCase())))}
+        renderItem={(user) => (
+          <List.Item>
+            <List.Item.Meta
+              avatar={<Avatar>{getInitialLetters(user.name)}</Avatar>}
+              title={<Link to={`/users/${user.id}`}>{user.name}</Link>}
+              description={user.email}
+            />
+          </List.Item>
+        )}
+      />
       <Divider />
       <Title level={4}>Conflicting Projects</Title>
       <Paragraph className="text-slate-500">

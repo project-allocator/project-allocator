@@ -13,6 +13,7 @@ export type { ProjectCreate } from './models/ProjectCreate';
 export type { ProjectRead } from './models/ProjectRead';
 export type { ProjectUpdate } from './models/ProjectUpdate';
 export type { UserRead } from './models/UserRead';
+export type { UserUpdate } from './models/UserUpdate';
 export type { ValidationError } from './models/ValidationError';
 
 export { AdminService } from './services/AdminService';
