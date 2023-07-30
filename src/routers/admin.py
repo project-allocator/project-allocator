@@ -1,29 +1,30 @@
+import io
+import csv
+import json
 from fastapi import APIRouter, Depends, Security
-from sqlmodel import Session
+from sqlmodel import Session, select
 
-from ..models import Status
+from ..models import Project, Status
 from ..dependencies import check_admin, get_session, send_notifications
 
 router = APIRouter(tags=["admin"])
 
 
-@router.get(
-    "/proposals/shutdown",
-    response_model=bool,
-    dependencies=[Security(check_admin)],
-)
+@router.get("/proposals/shutdown", response_model=bool)
 async def are_proposals_shutdown(session: Session = Depends(get_session)):
     status = session.get(Status, "proposals.shutdown")
     return status.value == "true"
 
 
-@router.get(
-    "/shortlists/shutdown",
-    response_model=bool,
-    dependencies=[Security(check_admin)],
-)
+@router.get("/shortlists/shutdown", response_model=bool)
 async def are_shortlists_shutdown(session: Session = Depends(get_session)):
     status = session.get(Status, "shortlists.shutdown")
+    return status.value == "true"
+
+
+@router.get("/undos/shutdown", response_model=bool)
+async def are_undos_shutdown(session: Session = Depends(get_session)):
+    status = session.get(Status, "undos.shutdown")
     return status.value == "true"
 
 
@@ -103,11 +104,81 @@ async def set_shortlists_shutdown(session: Session = Depends(get_session)):
         ),
     ],
 )
-async def unset_shortlists_shutdown(
-    session: Session = Depends(get_session),
-):
+async def unset_shortlists_shutdown(session: Session = Depends(get_session)):
     status = session.get(Status, "shortlists.shutdown")
     status.value = "false"
     session.add(status)
     session.commit()
     return {"ok": True}
+
+
+@router.post(
+    "/projects/undos/shutdown",
+    dependencies=[Security(check_admin)],
+)
+async def set_undos_shutdown(session: Session = Depends(get_session)):
+    status = session.get(Status, "undos.shutdown")
+    status.value = "true"
+    session.add(status)
+    session.commit()
+    return {"ok": True}
+
+
+@router.delete(
+    "/projects/undos/shutdown",
+    dependencies=[Security(check_admin)],
+)
+async def unset_undos_shutdown(session: Session = Depends(get_session)):
+    status = session.get(Status, "undos.shutdown")
+    status.value = "false"
+    session.add(status)
+    session.commit()
+    return {"ok": True}
+
+
+@router.get(
+    "/projects/export/json",
+    dependencies=[Security(check_admin)],
+)
+async def export_json(session: Session = Depends(get_session)):
+    output = []
+    projects = session.exec(select(Project)).all()
+    for project in projects:
+        data = json.loads(project.json())
+        data["proposer"] = json.loads(project.proposer.json())
+        # fmt: off
+        data["allocatees"] = list(map(lambda allocatee: json.loads(allocatee.json()), project.allocatees))        
+        output.append(data)
+    return json.dumps(output)
+
+
+@router.get(
+    "/projects/export/csv",
+    dependencies=[Security(check_admin)],
+)
+async def export_csv(session: Session = Depends(get_session)):
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow(
+        [
+            "Project ID",
+            "Project Title",
+            "Project Description",
+            "Student Names",
+            "Student Emails",
+        ]
+    )
+    projects = session.exec(select(Project)).all()
+    for project in projects:
+        names = list(map(lambda allocatee: allocatee.name, project.allocatees))
+        emails = list(map(lambda allocatee: allocatee.email, project.allocatees))
+        writer.writerow(
+            [
+                project.id,
+                project.title,
+                project.description,
+                ",".join(names),
+                ",".join(emails),
+            ]
+        )
+    return output.getvalue()

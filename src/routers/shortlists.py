@@ -34,21 +34,21 @@ async def read_shortlisted(
 
 
 @router.get(
-    "/users/me/shortlisted/{id}",
+    "/users/me/shortlisted/{project__id}",
     response_model=bool,
     dependencies=[Security(check_student)],
 )
 async def is_shortlisted(
-    id: int,
+    project_id: int,
     user: User = Depends(get_user),
     session: Session = Depends(get_session),
 ):
-    shortlist = session.get(Shortlist, (user.id, id))
+    shortlist = session.get(Shortlist, (user.id, project_id))
     return bool(shortlist)
 
 
 @router.post(
-    "/users/me/shortlisted/{id}",
+    "/users/me/shortlisted/{project_id}",
     dependencies=[Security(check_student), Security(block_shortlists_if_shutdown)],
 )
 async def set_shortlisted(
@@ -71,7 +71,7 @@ async def set_shortlisted(
 
 
 @router.delete(
-    "/users/me/shortlisted/{id}",
+    "/users/me/shortlisted/{project_id}",
     dependencies=[Security(check_student), Security(block_shortlists_if_shutdown)],
 )
 async def unset_shortlisted(
@@ -113,7 +113,7 @@ async def reorder_shortlisted(
 
 
 @router.get(
-    "/projects/{id}/shortlisters",
+    "/projects/{project_id}/shortlisters",
     response_model=List[UserRead],
     dependencies=[Security(check_staff)],
 )

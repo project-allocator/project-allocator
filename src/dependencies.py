@@ -68,6 +68,15 @@ def block_shortlists_if_shutdown(session: Session = Depends(get_session)):
         )
 
 
+def block_undos_if_shutdown(session: Session = Depends(get_session)):
+    status = session.get(Status, "undos.shutdown")
+    if status.value == "true":
+        raise HTTPException(
+            status_code=403,
+            detail="Undos are currently shutdown.",
+        )
+
+
 def send_notifications(
     title: str,
     description: str,

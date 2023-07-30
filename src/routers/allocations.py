@@ -5,6 +5,7 @@ from sqlmodel import Session, select
 
 from ..config import config
 from ..dependencies import (
+    block_undos_if_shutdown,
     check_admin,
     check_staff,
     check_student,
@@ -60,6 +61,12 @@ async def allocate_projects(session: Session = Depends(get_session)):
             )
             session.add(project)
             session.commit()
+    # Reset student's acceptance status
+    students = session.exec(select(User).where(User.role == "student")).all()
+    for student in students:
+        student.accepted = None
+        session.add(student)
+        session.commit()
     return {"ok": True}
 
 
@@ -82,29 +89,12 @@ async def deallocate_projects(session: Session = Depends(get_session)):
         project.allocatees = []
         session.add(project)
         session.commit()
+    students = session.exec(select(User).where(User.role == "student")).all()
+    for student in students:
+        student.accepted = None
+        session.add(student)
+        session.commit()
     return {"ok": True}
-
-
-@router.get(
-    "/projects/{id}/allocatees",
-    response_model=List[UserRead],
-    dependencies=[Security(check_staff)],
-)
-async def read_allocatees(
-    project_id: int,
-    session: Session = Depends(get_session),
-):
-    project = session.get(Project, project_id)
-    return project.allocatees
-
-
-@router.get(
-    "/users/me/allocated",
-    response_model=ProjectRead | None,
-    dependencies=[Security(check_student)],
-)
-async def read_allocated(user: User = Depends(get_user)):
-    return user.allocated
 
 
 @router.post(
@@ -135,6 +125,33 @@ async def decline_allocation(
     return {"ok": True}
 
 
+@router.post(
+    "/users/me/allocated/undo",
+    dependencies=[Security(check_student), Security(block_undos_if_shutdown)],
+)
+async def undo_allocation(
+    user: User = Depends(get_user),
+    session: Session = Depends(get_session),
+):
+    user.accepted = None
+    session.add(user)
+    session.commit()
+    return {"ok": True}
+
+
+@router.get(
+    "/projects/{project_id}/allocatees",
+    response_model=List[UserRead],
+    dependencies=[Security(check_staff)],
+)
+async def read_allocatees(
+    project_id: int,
+    session: Session = Depends(get_session),
+):
+    project = session.get(Project, project_id)
+    return project.allocatees
+
+
 @router.get(
     "/users/me/allocated/accepted",
     response_model=bool | None,
@@ -145,7 +162,7 @@ async def is_accepted(user: User = Depends(get_user)):
 
 
 @router.post(
-    "/projects/{id}/allocatees",
+    "/projects/{project_id}/allocatees",
     dependencies=[Security(check_admin)],
 )
 async def add_allocatees(
@@ -157,13 +174,14 @@ async def add_allocatees(
     for user in users:
         user = session.get(User, user.id)
         user.allocated = project
+        user.accepted = None
         session.add(project)
         session.commit()
     return {"ok": True}
 
 
 @router.delete(
-    "/users/{id}/allocated",
+    "/users/{user_id}/allocated",
     dependencies=[Security(check_admin)],
 )
 async def remove_allocatee(
@@ -172,13 +190,23 @@ async def remove_allocatee(
 ):
     user = session.get(User, user_id)
     user.allocated = None
+    user.accepted = None
     session.add(user)
     session.commit()
     return {"ok": True}
 
 
 @router.get(
-    "/users/me/allocated/{id}",
+    "/users/me/allocated",
+    response_model=ProjectRead | None,
+    dependencies=[Security(check_student)],
+)
+async def read_allocated(user: User = Depends(get_user)):
+    return user.allocated
+
+
+@router.get(
+    "/users/me/allocated/{project_id}",
     response_model=bool,
     dependencies=[Security(check_student)],
 )
@@ -190,11 +218,11 @@ async def is_allocated(
 
 
 @router.get(
-    "/projects/conflicted",
+    "/projects/conflicting",
     response_model=List[ProjectRead],
     dependencies=[Security(check_admin)],
 )
-async def read_conflicted(session: Session = Depends(get_session)):
+async def read_conflicting(session: Session = Depends(get_session)):
     projects = session.exec(select(Project)).all()
     conflicted = []
     for project in projects:

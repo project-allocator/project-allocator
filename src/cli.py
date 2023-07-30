@@ -78,5 +78,6 @@ def seed():
     with Session(engine) as session:
         session.add(Status(key="proposals.shutdown", value="false"))
         session.add(Status(key="shortlists.shutdown", value="false"))
+        session.add(Status(key="undos.shutdown", value="false"))
         session.commit()
     print("✨[green]Successfully seeded the database.")

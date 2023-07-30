@@ -33,7 +33,7 @@ async def mark_notifications(
     return {"ok": True}
 
 
-@router.delete("/users/me/notifications/{id}")
+@router.delete("/users/me/notifications/{notification_id}")
 async def delete_notification(
     notification_id: int,
     user: User = Depends(get_user),

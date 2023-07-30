@@ -26,7 +26,7 @@ async def read_projects(session: Session = Depends(get_session)):
     return projects
 
 
-@router.get("/projects/{id}", response_model=ProjectRead)
+@router.get("/projects/{project_id}", response_model=ProjectRead)
 async def read_project(
     project_id: int,
     session: Session = Depends(get_session),
@@ -52,7 +52,7 @@ async def create_project(
 
 
 @router.put(
-    "/projects/{id}",
+    "/projects/{project_id}",
     response_model=ProjectRead,
     dependencies=[Security(check_staff), Security(block_proposals_if_shutdown)],
 )
@@ -76,7 +76,7 @@ async def update_project(
 
 
 @router.delete(
-    "/projects/{id}",
+    "/projects/{project_id}",
     dependencies=[Security(check_staff), Security(block_proposals_if_shutdown)],
 )
 async def delete_project(

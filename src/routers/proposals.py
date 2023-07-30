@@ -21,7 +21,7 @@ async def read_proposed(
 
 
 @router.get(
-    "/users/me/proposed/{id}",
+    "/users/me/proposed/{project_id}",
     response_model=bool,
     dependencies=[Security(check_staff)],
 )
