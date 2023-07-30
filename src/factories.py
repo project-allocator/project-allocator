@@ -62,7 +62,7 @@ class ProjectFactory(ModelFactory):
 
 # TODO: Dynamically customize factory methods according to the YAML config
 # https://stackoverflow.com/questions/285061/how-do-you-programmatically-set-an-attribute
-for detail in config["project"]["details"]:
+for detail in config["projects"]["details"]:
     if detail["type"] in ["select", "checkbox", "radio"]:
         setattr(
             ProjectFactory,

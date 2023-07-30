@@ -55,6 +55,10 @@ class UserRead(UserBase):
     id: int
 
 
+class UserUpdate(UserBase):
+    pass
+
+
 ################################################################################
 #                               Project Models                                 #
 ################################################################################
@@ -81,7 +85,7 @@ ProjectBase = create_model(
             "checkbox": (List[str], Field(sa_column=Column(JSON))),
             "radio": (str, ...),
         }[detail["type"]]
-        for detail in config["project"]["details"]
+        for detail in config["projects"]["details"]
     },
 )
 

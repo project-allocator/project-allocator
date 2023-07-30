@@ -32,7 +32,7 @@ router = APIRouter(tags=["allocation"])
     ],
 )
 async def allocate_projects(session: Session = Depends(get_session)):
-    count = config["project"]["allocations"]["students"]
+    count = config["projects"]["allocations"]["students"]
     projects = session.exec(select(Project)).all()
     # Allocate shortlisted students to projects
     for project in projects:

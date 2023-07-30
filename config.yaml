@@ -1,4 +1,7 @@
-project:
+users:
+  admins:
+    - rbc@ic.ac.uk
+projects:
   allocations:
     students: 4
   details:

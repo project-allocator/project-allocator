@@ -1,10 +1,17 @@
 from typing import List
 import requests
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlmodel import Session, select
 
-from ..models import User, UserRead
-from ..dependencies import get_session, get_token, get_user, get_user_or_none
+from ..config import config
+from ..models import User, UserRead, UserUpdate
+from ..dependencies import (
+    check_admin,
+    get_session,
+    get_token,
+    get_user,
+    get_user_or_none,
+)
 
 router = APIRouter(tags=["user"])
 
@@ -47,12 +54,56 @@ async def create_user(
         "https://graph.microsoft.com/v1.0/me",
         headers={"Authorization": f"Bearer {token}"},
     ).json()
+    # Find out the user role based on response.
+    role = "staff"
+    if res["jobTitle"] == "Undergraduate":
+        role = "student"
+    if res["userPrincipalName"] in config["users"]["admins"]:
+        role = "admin"
+    # Create a new user and store it in the database.
     user = User(
         email=res["userPrincipalName"],
         name=f"{res['givenName']} {res['surname']}",
-        role="student" if res["jobTitle"] == "Undergraduate" else "staff",
+        role=role,
     )
     session.add(user)
     session.commit()
     session.refresh(user)
     return user
+
+
+@router.put(
+    "/users/{user_id}",
+    response_model=UserRead,
+    dependencies=[Security(check_admin)],
+)
+async def update_user(
+    user_id: int,
+    user_data: UserUpdate,
+    session: Session = Depends(get_session),
+):
+    user = session.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user_data.role not in ["admin", "staff", "student"]:
+        raise HTTPException(status_code=400, detail="Invalid user role")
+    user.role = user_data.role
+    session.add(user)
+    session.commit()
+    return user
+
+
+@router.delete(
+    "/users/{user_id}",
+    dependencies=[Security(check_admin)],
+)
+async def delete_user(
+    user_id: int,
+    session: Session = Depends(get_session),
+):
+    user = session.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    session.delete(user)
+    session.commit()
+    return {"ok": True}
