@@ -83,7 +83,7 @@ export default function HeaderLayout({ children }: HeaderLayoutProps) {
         open={open}
         onClose={() => {
           NotificationService.markNotifications(notifications.filter((item) => !item.seen));
-          setNotifications(notifications.map((item) => ({ ...item, seen: false })))
+          setNotifications(notifications.map((item) => ({ ...item, seen: true })));
           setOpen(false);
         }}
       >
