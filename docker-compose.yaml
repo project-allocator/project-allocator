@@ -1,0 +1,32 @@
+services:
+  frontend:
+    build: ../project-allocator-frontend
+    volumes:
+      - ../project-allocator-frontend:/app
+      - node_modules:/app/node_modules
+    ports:
+      - 3000:3000
+  backend:
+    build: ../project-allocator-backend
+    volumes:
+      - ../project-allocator-backend:/app
+    ports:
+      - 8000:8000
+    depends_on:
+      - db
+    environment:
+      FLASK_DEBUG: true
+  db:
+    image: postgres:14.1-alpine
+    restart: always
+    environment:
+      - POSTGRES_DB=default
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+volumes:
+  node_modules:
+  postgresql-data:
