@@ -10,4 +10,11 @@ This is the repository that contains:
 
 ## Tech Stack
 
+* React with TypeScript
+* Vite for development server
+* Yarn for package manager
+* Ant Design for UI components
+* Tailwind CSS for custom styling
+* React Router v6 for routing
+
 ## Code Structure
