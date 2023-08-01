@@ -1,0 +1,21 @@
+FROM python:3.11
+
+WORKDIR /app
+
+COPY poetry.lock pyproject.toml ./
+RUN pip install poetry==1.5.1 && \
+    poetry config virtualenvs.create false && \
+    poetry install --no-root --no-dev
+
+COPY --chown=app:app . .
+
+RUN groupadd -g 999 app && \
+    useradd -m -d /app -r -u 999 -g app app
+RUN chown -R app:app /app && chmod -R 755 /app
+
+USER 999
+EXPOSE 8000
+ENV FASTAPI_ENV=production
+# Install the CLI commands
+RUN poetry install
+CMD uvicorn src.main:app --reload --port 8000 --host 0.0.0.0
