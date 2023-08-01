@@ -39,8 +39,8 @@ function setup_dev() {
 
   # Clone the repositories
   echo "Cloning repositories..."
-  git clone git@github.com:Digital-Garage-ICL/project-allocator-frontend.git
-  git clone git@github.com:Digital-Garage-ICL/project-allocator-backend.git
+  (cd ../ && git clone git@github.com:Digital-Garage-ICL/project-allocator-frontend.git)
+  (cd ../ && git clone git@github.com:Digital-Garage-ICL/project-allocator-backend.git)
 
   # Build and run the docker containers
   echo "Building and running containers..."
@@ -50,7 +50,7 @@ function setup_dev() {
   echo "Waiting for the backend server to be ready..."
   sleep 5
   echo "Generating the frontend client scripts..."
-  (cd ../project-allocator-frontend && (npm run generate || yarn generate)); wait
+  (cd ../project-allocator-frontend && (npm run generate || yarn generate))
 
   # Create tables in the database
   echo "Creating database tables..."
