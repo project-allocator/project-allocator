@@ -77,7 +77,7 @@ Finally, you can check if everything is working by visiting [http://localhost:30
 
 ## Setting up the GitHub workflow
 
-You can setup the GitHub workflow for this `project-allocator-deploy` repository lets you automatically deploy your application using Wayfinder.
+You can setup the GitHub workflow for this `project-allocator-deploy` repository, which can automatically deploy your application using Wayfinder.
 The deployment will be triggered every time you push to this repository on the `main` branch.
 
 First, you need to clone this repository with `git clone https://github.com/Digital-Garage-ICL/project-allocator-deploy`.
@@ -110,3 +110,7 @@ This will complete the following tasks for you:
 * Store the configuration of your Wayfinder application to this repository's GitHub variables.
 * Obtain a Wayfinder access token and store it in this repository's GitHub secrets.
 * Store the GitHub personal access token to Kubernetes secrets so that the Kubernetes cluster can pull your Docker images.
+
+## Setting up the Microsoft SSO
+
+TODO: Tutorial on how to setup Azure app registrations
