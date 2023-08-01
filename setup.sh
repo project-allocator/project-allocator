@@ -129,9 +129,9 @@ function setup_repo() {
     fi
     read -rp "Enter Wayfinder workspace name (2-5 unique alphanumeric): " workspace_name
     read -rp "Enter Wayfinder workspace summary (human readable string): " workspace_summary
-    echo "Creating workspace $workspace_name..."
+    echo "Creating a workspace $workspace_name..."
     wf create "$workspace_name" summary="$workspace_summary"
-    echo "Successfully created workspace. Please visit the Wayfinder UI and create your application."
+    echo "Successfully created a workspace. Please visit the Wayfinder UI and create your application."
     exit 0
   fi
   read -rp "Enter Wayfinder application name: " application_name

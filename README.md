@@ -1,85 +1,112 @@
 # Project Allocator v3
 
-## Frontend
+Welcome to Project Allocator v3!
 
-## Backend 
+This is the repository that contains:
 
-### Entering the container
+* GitHub workflow to deploy the Docker images in the cloud.
+* Scripts to setup development environment.
+* `docker-compose.yaml` to build and run the Docker images locally.
 
-```bash
-~$ docker compose up -d frontend
-~$ docker compose up -d backend
-~$ docker compose exec -it backend /bin/bash
-```
+## Setting up the Development Environment
 
-### Seeding the database
+### Using the Setup Script
 
-Enter the `backend` container.
+First, you need to clone this repository with `git clone https://github.com/Digital-Garage-ICL/project-allocator-deploy`.
 
-First create tables in the database by running:
-
-```bash
-~$ poetry run db create
-```
-
-This creates tables based on the models you defined in `models.py`.
-
-You can now seed the database using the following command:
+Inside the cloned repository you will find the `setup.sh` script. 
+You can run it as follows:
 
 ```bash
-~$ poetry run db seed
+./setup.sh dev
 ```
 
-### Auto-generating migrations
+This will complete the following tasks for you:
 
-Enter the `backend` container.
+* Clone the required repositories.
+    * From the same GitHub account/orgnaisation which this repository was cloned from.
+* Build and run the Docker images specified in `docker-compose.yaml`.
+* Initialise and seed the database running in the Docker container.
 
-First you need to check the database connection:
+If you encounter an error, you will need to manually setup your development environment. 
+See the "Manual Setup" for more details.
+
+Once it runs successfully you're reay to start coding! 
+Visit the repositories for the frontend/backed for detailed instructions on how to get started.
+
+### Manual Setup (Not Recommended)
+
+If you wish to manually setup the development environment, you can start by cloning the required repositories:
 
 ```bash
-~$ poetry run alembic current
+mkdir project-allocator && cd project-allocator
+git clone https://github.com/Digital-Garage-ICL/project-allocator-deploy
+git clone https://github.com/Digital-Garage-ICL/project-allocator-frontend
+git clone https://github.com/Digital-Garage-ICL/project-allocator-backend
 ```
 
-If you want to generate the initial migration, make sure the database is empty, otherwise Alembic skips the generation:
+After running these commands successfully, your directory structure should look like:
+
+```
+- project-allocator/
+    - project-allocator-deploy/
+    - project-allocator-frontend/
+    - project-allocator-backend/
+```
+
+Now you need to build and run the Docker images with `docker compose up --build -d`.
+This will take a while to complete if you are running it for the first time.
+You will also see some warnings but you can ignore them as long as the containers are up and running.
+
+Once the Docker containers are ready, you need to initialize and seed the database with random data:
 
 ```bash
-~$ poetry run db drop
+docker compose exec -it backend poetry run db reset --yes
+docker compose exec -it backend poetry run db seed --yes
 ```
 
-Now run the following command to auto-generate migrations:
+For those who are curious - `db` is a custom command which comes with utility functions for managing the database in development.
+
+Now you need to move onto the `project-allocator-frontend` repository and generate the frontend client scripts, which will be used by the React components to call the backend API:
 
 ```bash
-~$ poetry run alembic revision --autogenerate -m "Initial migration"
+cd ../project-allocator-frontend && yarn generate
 ```
 
-### Creating new migrations
+Finally, you can check if everything is working by visiting [http://localhost:3000](http://localhost:3000) on your browser. You can also visit [http://localhost:8000/docs](http://localhost:8000/docs) to check the backend's Open API documentation.
 
-You can create a new revision and upgrade the database by:
+## Setting up the GitHub workflow
+
+You can setup the GitHub workflow for this `project-allocator-deploy` repository lets you automatically deploy your application using Wayfinder.
+The deployment will be triggered every time you push to this repository on the `main` branch.
+
+First, you need to clone this repository with `git clone https://github.com/Digital-Garage-ICL/project-allocator-deploy`.
+
+To setup this workflow, check if you have a Wayfinder workspace created to deploy this application. 
+If not, you can create a new workspace with the `setup.sh` script, which you will find in the cloned repository:
 
 ```bash
-~$ poetry run alembic revision -m "Your Revision Message"
-~$ poetry run alembic upgrade head
-~$ poetry run alembic history
+./setup.sh repo
 ```
 
-To downgrade the database, simply run:
+When it prompts "Do you already have a Wayfinder workspace (yes/no)?", type "yes", and it will ask you for the necessary information and create a workspace for you.
+Note that the workspace name must consist of 2-5 alphanumeric characters and must be unique within the Wayfinder cluster.
+
+Now you can navigate to the Wayfinder UI at [https://portal-20-0-245-170.go.wayfinder.run/](https://portal-20-0-245-170.go.wayfinder.run/) and start creating your Wayfinder application.
+The URL of your workspace should be output by the `setup.sh` script.
+
+TODO: Tutorial on how to setup Wayfinder components
+
+Finally, you are ready to setup your GitHub workflow! Simply run the `setup.sh` script as follows:
 
 ```bash
-~$ poetry run downgrade -1
-~$ poetry run downgrade base
+./setup.sh repo
 ```
 
-### Useful links
+and when it prompts "Do you already have a Wayfinder workspace (yes/no)?", type "no" to continue.
 
-https://fastapi.tiangolo.com/deployment/docker/
-https://fastapi.tiangolo.com/tutorial/bigger-applications/
-https://sqlmodel.tiangolo.com/tutorial/select/
-https://github.com/tiangolo/sqlmodel/issues/85#issuecomment-917228849
+This will complete the following tasks for you:
 
-https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/Overview/appId/7792be17-89fd-4934-9917-6ac583c592a8
-https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationMenuBlade/~/Overview/appId/63a21108-fc4f-4c7d-a2cb-ec8836bbbcfd
-
-https://intility.github.io/fastapi-azure-auth/single-tenant/fastapi_configuration#adding-authentication-to-our-view
-https://intility.github.io/fastapi-azure-auth/usage-and-faq/calling_your_apis_from_python
-https://learn.microsoft.com/en-us/azure/active-directory/develop/single-page-app-tutorial-01-register-app
-https://github.com/Azure-Samples/ms-identity-javascript-react-tutorial/tree/main/3-Authorization-II/1-call-api
+* Store the configuration of your Wayfinder application to this repository's GitHub variables.
+* Obtain a Wayfinder access token and store it in this repository's GitHub secrets.
+* Store the GitHub personal access token to Kubernetes secrets so that the Kubernetes cluster can pull your Docker images.
