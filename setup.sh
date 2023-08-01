@@ -47,7 +47,7 @@ function setup_dev() {
 
   # Build and run the docker containers
   echo "Building and running containers..."
-  docker compose up --build -d
+  docker compose up -f docker-compose.yaml --build -d
 
   # Create tables in the database
   echo "Creating database tables..."
