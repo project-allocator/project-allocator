@@ -23,5 +23,5 @@ RUN touch /var/run/nginx.pid && \
     chown -R app:app /var/run/nginx.pid
 
 USER 999
-EXPOSE 80
+EXPOSE 8080
 CMD nginx -g "daemon off;"
