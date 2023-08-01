@@ -36,6 +36,7 @@ jobs:
         id: docker-digest
         with:
           context: .
+          file: Dockerfile.production
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
