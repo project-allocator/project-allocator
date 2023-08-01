@@ -10,6 +10,13 @@ This is the repository that contains:
 
 ## Tech Stack
 
+* FastAPI
+* Poetry for package manager and tooling
+* SQLModel for ORM
+* Polyfactory for database seeding
+* Alembic for database migration
+* Typer for database utility CLI
+
 ## Code Structure
 
 ## Useful Commands
