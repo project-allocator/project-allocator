@@ -26,11 +26,11 @@ function setup_dev() {
 
   # Check if the commands are installed.
   if ! command -v docker &>/dev/null; then
-    echo 'Error: Docker is not installed.' >&2
+    echo "Error: The 'docker' command is not installed." >&2
     exit 1
   fi
   if ! docker compose version &> /dev/null; then
-    echo 'Error: Docker compose is not installed.' >&2
+    echo "Error: The 'docker compose' plugin is not installed." >&2
     exit 1
   fi
 
@@ -39,26 +39,27 @@ function setup_dev() {
 
   # Clone the repositories
   echo "Cloning repositories..."
-  (cd ../ && git clone git@github.com:Digital-Garage-ICL/project-allocator-frontend.git)
-  (cd ../ && git clone git@github.com:Digital-Garage-ICL/project-allocator-backend.git)
+  repository_url=$(git config --get remote.origin.url)
+  frontend_repository_url="${repository_url/project-allocator-deploy/project-allocator-frontend}"
+  backend_repository_url="${repository_url/project-allocator-deploy/project-allocator-backend}"
+  (cd ../ && git clone "$frontend_repository_url")
+  (cd ../ && git clone "$backend_repository_url")
 
   # Build and run the docker containers
   echo "Building and running containers..."
   docker compose up --build -d
 
-  # Generate the frontend client scripts
-  echo "Waiting for the backend server to be ready..."
-  sleep 5
-  echo "Generating the frontend client scripts..."
-  (cd ../project-allocator-frontend && (npm run generate || yarn generate))
-
   # Create tables in the database
   echo "Creating database tables..."
-  docker compose exec -it backend poetry run db create --yes
+  docker compose exec -it backend poetry run db reset --yes
 
   # Seed the tables in the database
   echo "Seeding the database tables..."
   docker compose exec -it backend poetry run db seed --yes
+
+  # Auto-generate the frontend client scripts
+  echo "Generating the frontend client scripts..."
+  (cd ../project-allocator-frontend && (npm run generate || yarn generate))
 
   # Open the browser
   echo "Lauching the Open API documentation in browser..."
@@ -88,15 +89,15 @@ function setup_repo() {
   # Check if the commands are installed.
   echo "Checking requirements..."
   if ! command -v jq > /dev/null; then
-    echo "Error: 'jq' command is not installed."
+    echo "Error: The 'jq' command is not installed."
     exit 1
   fi
   if ! command -v gh > /dev/null; then
-    echo "Error: Github CLI command is not installed."
+    echo "Error: The 'gh' Github CLI command is not installed."
     exit 1
   fi
   if ! command -v wf > /dev/null; then
-    echo "Error: Wayfinder CLI command is not installed."
+    echo "Error: The 'wf' Wayfinder CLI command is not installed."
     exit 1
   fi
 
@@ -138,11 +139,9 @@ function setup_repo() {
   read -rp "Enter Wayfinder frontend component name: " frontend_component_name
   read -rp "Enter Wayfinder backend component name: " backend_component_name
   read -rp "Enter GitHub personal access token (classic with read-package scope): " github_token
-  read -rp "Enter GitHub deploy reposity URL: " repository_url
-  while [[ $repository_url != "https://"* ]]; do
-    echo "Error: GitHub deploy repository URL must start with https://"
-    read -rp "Enter GitHub deploy reposity URL: " repository_url
-  done
+
+  # Find out the URL of the deploy repository
+  repository_url=$(git config --get remote.origin.url)
   repository_name=$(echo "$repository_url" | cut -d '/' -f 5)
   full_repository_name=$(echo "$repository_url" | cut -d '/' -f 4,5)
 
