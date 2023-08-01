@@ -18,36 +18,42 @@ def callback():
 
 
 @app.command()
-def create():
-    print("❗[red]This command should not be run in production.")
-    if not typer.confirm("Are you sure to create all tables in the database?"):
-        return
+def create(yes: bool = typer.Option(False, help="Skip confirmation.")):
+    if not yes:
+        print("❗[red]This command should not be run in production.")
+        if not typer.confirm("Are you sure to create all tables in the database?"):
+            return
     SQLModel.metadata.create_all(engine)
     print("✨[green]Successfully created all tables in the database.")
 
 
 @app.command()
-def drop():
-    print("❗[red]This command should not be run in production.")
-    if not typer.confirm("Are you sure to delete all tables in the database?"):
-        return
+def drop(yes: bool = typer.Option(False, help="Skip confirmation.")):
+    if not yes:
+        print("❗[red]This command should not be run in production.")
+        if not typer.confirm("Are you sure to delete all tables in the database?"):
+            return
     SQLModel.metadata.drop_all(engine)
     print("✨[green]Successfully dropped all tables in the database.")
 
 
 @app.command()
-def reset():
-    print("❗[red]This command should not be run in production.")
-    if not typer.confirm("Are you sure to reset the database?"):
-        return
+def reset(yes: bool = typer.Option(False, help="Skip confirmation.")):
+    if not yes:
+        print("❗[red]This command should not be run in production.")
+        if not typer.confirm("Are you sure to reset the database?"):
+            return
     SQLModel.metadata.drop_all(engine)
     SQLModel.metadata.create_all(engine)
     print("✨[green]Successfully reset the database.")
 
 
 @app.command()
-def seed():
-    print("❗[red]This command should not be run in production.")
+def seed(yes: bool = typer.Option(False, help="Skip confirmation.")):
+    if not yes:
+        print("❗[red]This command should not be run in production.")
+        if not typer.confirm("Are you sure to seed the database?"):
+            return
     projects: List[Project] = []
     for _ in track(range(10), description="Seeding staff..."):
         # Nest session inside for loop  so the progress can be checked.

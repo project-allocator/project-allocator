@@ -1,12 +1,10 @@
 FROM python:3.11
 
-RUN groupadd -g 999 app && \
-    useradd -m -r -u 999 -g app app
-RUN chown -R app:app /home/app
-WORKDIR /home/app
-
 RUN apt-get update && apt-get install -y zsh
-RUN touch .zshrc
+
+RUN groupadd -g 999 app && \
+    useradd -m -d /app -r -u 999 -g app app
+WORKDIR /app
 
 COPY --chown=app:app poetry.lock pyproject.toml ./
 RUN pip install poetry==1.5.1

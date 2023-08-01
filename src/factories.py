@@ -24,7 +24,7 @@ class UserFactory(ModelFactory):
 
     @classmethod
     def email(cls) -> str:
-        return cls.__faker__.safe_email()
+        return cls.__faker__.unique.safe_email()
 
     @classmethod
     def name(cls) -> str:
@@ -57,7 +57,7 @@ class ProjectFactory(ModelFactory):
 
     @classmethod
     def categories(cls) -> List[str]:
-        return [cls.__faker__.word() for _ in range(5)]
+        return list(set([cls.__faker__.word() for _ in range(5)]))
 
 
 # TODO: Dynamically customize factory methods according to the YAML config
