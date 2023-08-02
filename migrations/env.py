@@ -21,7 +21,11 @@ if config.config_file_name is not None:
 
 # Load database url from environment
 load_dotenv()
-config.set_main_option("sqlalchemy.url", os.environ.get("DATABASE_URL"))
+DATABASE_USERNAME = os.environ.get("DATABASE_USERNAME")
+DATABASE_PASSWORD = os.environ.get("DATABASE_PASSWORD")
+DATABASE_DOMAIN = os.environ.get("DATABASE_DOMAIN")
+DATABASE_URL = f"postgresql://{DATABASE_USERNAME}:{DATABASE_PASSWORD}@{DATABASE_DOMAIN}:5432/default"
+config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
 # add your model's MetaData object here
 # for 'autogenerate' support
