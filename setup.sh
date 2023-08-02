@@ -18,7 +18,7 @@ function setup_dev() {
   echo "* You have Docker Daemon running in the background (e.g. Docker Desktop)."
   echo "* You have setup SSH key for your GitHub account."
 
-  read -rp "Do you wish to continue (yes/no)?: " should_continue
+  read -rp "Do you wish to continue (y/n)?: " should_continue
   if [[ ! "$should_continue" =~ ^[Yy]$ ]]; then
     echo "Aborting..."
     exit 1
@@ -80,7 +80,7 @@ function setup_repo() {
   echo "* You have installed and logged in to the 'wf' Wayfinder CLI command."
   echo "* You have installed the 'kubctl' command."
   
-  read -rp "Do you wish to continue (yes/no)?: " should_continue
+  read -rp "Do you wish to continue (y/n)?: " should_continue
   if [[ ! "$should_continue" =~ ^[Yy]$ ]]; then
     echo "Aborting..."
     exit 1
@@ -116,13 +116,13 @@ function setup_repo() {
   set -e
 
   # Get the inputs from terminal.
-  read -rp "Do you already have a Wayfinder workspace (yes/no)?: " has_workspace
+  read -rp "Do you already have a Wayfinder workspace (y/n)?: " has_workspace
   if [[ "$has_workspace" =~ ^[Yy]$ ]]; then
     echo "Now you are ready to setup your GitHub repository!"
     read -rp "Enter Wayfinder workspace name (2-5 unique alphanumeric): " workspace_name
   else
     echo "This script will create a Wayfinder workspace for you."
-    read -rp "Do you wish to continue (yes/no)?: " should_continue
+    read -rp "Do you wish to continue (y/n)?: " should_continue
     if [[ ! "$should_continue" =~ ^[Yy]$ ]]; then
       echo "Aborting..."
       exit 1
@@ -142,6 +142,7 @@ function setup_repo() {
 
   # Find out the URL of the deploy repository
   repository_url=$(git config --get remote.origin.url)
+  repository_url="${repository_url/\.git/}"
   repository_name=$(echo "$repository_url" | cut -d '/' -f 5)
   full_repository_name=$(echo "$repository_url" | cut -d '/' -f 4,5)
 
