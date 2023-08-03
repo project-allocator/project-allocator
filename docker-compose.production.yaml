@@ -16,11 +16,11 @@ services:
     depends_on:
       - db
   db:
-    image: postgres:14.1-alpine
+    image: postgres:14-alpine
     restart: always
     environment:
       - POSTGRES_DB=default
-      - POSTGRES_USER=postgres
+      - POSTGRES_USER=postgres@db
       - POSTGRES_PASSWORD=postgres
     volumes:
       - postgresql-data:/var/lib/postgresql/data
