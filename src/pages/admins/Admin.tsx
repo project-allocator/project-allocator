@@ -148,10 +148,10 @@ export default function Admin() {
           onClick={() => {
             setCheckMissingUsersLoading(true);
             const reader = new FileReader();
-            reader.onload = async (event) => {
-              const content = event.target?.result as string;
-              // TODO: Handle import data
-            }
+            // reader.onload = async (event) => {
+            //   const content = event.target?.result as string;
+            //   // TODO: Handle import data
+            // }
             reader.readAsText(checkMissingUsersFiles[0] as RcFile);
           }}
         >
