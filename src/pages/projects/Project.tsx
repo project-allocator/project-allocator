@@ -37,6 +37,7 @@ export default function Project() {
         title={`Project ${project.id}`}
         project={project}
         hasConflict={hasConflict}
+        hasAllocatees={allocatees?.length > 0}
       />
       <Divider />
       <ProjectContent project={project} />

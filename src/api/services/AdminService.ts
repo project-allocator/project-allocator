@@ -176,4 +176,24 @@ export class AdminService {
         });
     }
 
+    /**
+     * Check Missing Users
+     * @param requestBody
+     * @returns string Successful Response
+     * @throws ApiError
+     */
+    public static checkMissingUsers(
+        requestBody: Array<string>,
+    ): CancelablePromise<Array<string>> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/users/missing',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
 }

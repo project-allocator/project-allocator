@@ -7,6 +7,7 @@ export type ProjectCreate = {
     title: string;
     description: string;
     categories: Array<string>;
+    approved?: boolean;
     lorem1: string;
     lorem2: string;
     lorem3: number;

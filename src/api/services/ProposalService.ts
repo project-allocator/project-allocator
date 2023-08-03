@@ -43,4 +43,79 @@ export class ProposalService {
         });
     }
 
+    /**
+     * Approve Proposal
+     * @param projectId
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static approveProposal(
+        projectId: number,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/projects/{project_id}/approved',
+            path: {
+                'project_id': projectId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Reject Proposal
+     * @param projectId
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static rejectProposal(
+        projectId: number,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/projects/{project_id}/reject',
+            path: {
+                'project_id': projectId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Undo Proposal
+     * @param projectId
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static undoProposal(
+        projectId: number,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/projects/{project_id}/undo',
+            path: {
+                'project_id': projectId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Read Non Approved
+     * @returns ProjectRead Successful Response
+     * @throws ApiError
+     */
+    public static readNonApproved(): CancelablePromise<Array<ProjectRead>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/projects/non-approved',
+        });
+    }
+
 }

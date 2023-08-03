@@ -1,10 +1,8 @@
 import { ProjectRead } from "@/api";
-import { Input, Space, Table, Tag } from "antd";
+import { AutoComplete, Space, Table, Tag } from "antd";
 import { useState } from "react";
 import Highlighter from 'react-highlight-words';
 import { Link } from "react-router-dom";
-
-const { Search } = Input;
 
 interface ProjectsTableProps {
   projects: ProjectRead[];
@@ -57,25 +55,30 @@ export function ProjectsTable({ projects }: ProjectsTableProps) {
 
   return (
     <>
-      <Search
+      <AutoComplete
         className="w-64 mb-4"
-        placeholder="Enter search text"
-        onChange={(event) => setSearchText(event.target.value)}
+        placeholder="Enter se arch text"
+        options={
+          projects.map((project) => project.categories).flat()
+            .filter((option) => option.toLowerCase().includes(searchText.toLowerCase()))
+            .map((option) => ({ value: option }))
+        }
+        value={searchText}
+        onChange={(searchText) => setSearchText(searchText)}
         onSearch={(searchText) => setSearchText(searchText)}
       />
       <Table
         columns={columns}
         dataSource={
-          projects
-            .filter((project) => [
-              project.title,
-              project.description,
-              ...project.categories
-            ].some((text) => text.toLowerCase().includes(searchText.toLowerCase())))
-            .map((project: ProjectRead) => ({
-              ...project,
-              key: project.id,
-            }))
+          projects.filter((project) => [
+            project.title,
+            project.description,
+            ...project.categories
+          ].some((text) => text.toLowerCase().includes(searchText.toLowerCase()))
+          ).map((project: ProjectRead) => ({
+            ...project,
+            key: project.id,
+          }))
         }
       />
     </>

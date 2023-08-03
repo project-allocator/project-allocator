@@ -1,5 +1,6 @@
 import { AdminService, AllocationService, ProjectRead, ProjectService, ProposalService, ShortlistService } from "@/api";
 import { useMessageContext } from "@/contexts/MessageContext";
+import AdminRoute from "@/routes/AdminRoute";
 import StaffRoute from "@/routes/StaffRoute";
 import StudentRoute from "@/routes/StudentRoute";
 import { DeleteOutlined, EditOutlined, HeartOutlined } from '@ant-design/icons';
@@ -13,13 +14,15 @@ interface ProjectHeaderProps {
   title: string,
   project: ProjectRead | null;
   hasConflict?: boolean | null;
+  hasAllocatees?: boolean;
 }
 
-export default function ProjectHeader({ title, project, hasConflict }: ProjectHeaderProps) {
+export default function ProjectHeader({ title, project, hasConflict, hasAllocatees }: ProjectHeaderProps) {
   // Set values in state to show the change immediagely in the UI.
   const [isProposed, setIsProposed] = useState(false);
   const [isAllocated, setIsAllocated] = useState<boolean>(false);
   const [isAccepted, setIsAccepted] = useState<boolean | null>(null);
+  const [isApproved, setIsApproved] = useState<boolean | null>(project?.approved || null);
   const [isShortlisted, setIsShortlisted] = useState<boolean | null>(null);
   const [areUndosShutdown, setAreUndosShutdown] = useState<boolean>(false);
 
@@ -45,24 +48,82 @@ export default function ProjectHeader({ title, project, hasConflict }: ProjectHe
 
   return (
     <>
-      <StaffRoute>
-        {hasConflict !== null &&
-          hasConflict
+      <AdminRoute>
+        {isApproved === null
           ? (
             <Alert
-              type="error"
+              type="warning"
               showIcon
-              message="This project allocation has a conflict."
-              description="There are students who declined or did not respond to this project allocation."
+              message="This project allocation has not been approved."
+              description="Administrators must approve or reject this project proposal."
+              action={
+                <Space direction="vertical">
+                  <Button
+                    size="small"
+                    type="primary"
+                    className="w-20"
+                    onClick={() => {
+                      ProposalService.approveProposal(project!.id);
+                      setIsApproved(true);
+                    }}
+                  >
+                    Approve
+                  </Button>
+                  <Button
+                    size="small"
+                    className="w-20"
+                    onClick={() => {
+                      ProposalService.rejectProposal(project!.id);
+                      setIsApproved(false);
+                    }}
+                  >
+                    Reject
+                  </Button>
+                </Space>
+              }
             />
           ) : (
             <Alert
-              type="success"
+              type="info"
               showIcon
-              message="This project allocation has no conflict."
-              description="Every student allocated to this project has accepted this project allocation."
+              message={isApproved
+                ? "You have approved this project proposal."
+                : "You have rejected this project proposal."}
+              description="Staff member who proposed this project will be notified shortly."
+              action={
+                <Button
+                  size="small"
+                  type="primary"
+                  className="w-20"
+                  onClick={() => {
+                    ProposalService.undoProposal(project!.id);
+                    setIsApproved(null);
+                  }}
+                >
+                  Undo
+                </Button>
+              }
             />
           )}
+      </AdminRoute>
+      <StaffRoute>
+        {(hasAllocatees && hasConflict !== null) &&
+          (hasConflict
+            ? (
+              <Alert
+                type="error"
+                showIcon
+                message="This project allocation has a conflict."
+                description="There are students who declined or did not respond to this project allocation."
+              />
+            ) : (
+              <Alert
+                type="success"
+                showIcon
+                message="This project allocation has no conflict."
+                description="Every student allocated to this project has accepted this project allocation."
+              />
+            ))}
       </StaffRoute>
       <StudentRoute>
         {isAllocated &&
@@ -78,6 +139,7 @@ export default function ProjectHeader({ title, project, hasConflict }: ProjectHe
                     <Button
                       size="small"
                       type="primary"
+                      className="w-20"
                       onClick={() => {
                         AllocationService.acceptAllocation();
                         setIsAccepted(true);
@@ -87,6 +149,7 @@ export default function ProjectHeader({ title, project, hasConflict }: ProjectHe
                     </Button>
                     <Button
                       size="small"
+                      className="w-20"
                       onClick={() => {
                         AllocationService.declineAllocation();
                         setIsAccepted(false);
@@ -106,11 +169,11 @@ export default function ProjectHeader({ title, project, hasConflict }: ProjectHe
                   : "You have declined this project allocation."}
                 description="Contact your administrators for further information."
                 action={
-                  areUndosShutdown &&
+                  !areUndosShutdown &&
                   <Button
                     size="small"
                     type="primary"
-                    className="my-4"
+                    className="w-20"
                     onClick={() => {
                       AllocationService.undoAllocation();
                       setIsAccepted(null);
