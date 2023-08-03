@@ -56,6 +56,10 @@ async def set_shortlisted(
     user: User = Depends(get_user),
     session: Session = Depends(get_session),
 ):
+    # Cannot shortlist to non approved projects
+    project = session.get(Project, project_id)
+    if not project.approved:
+        raise HTTPException(status_code=404, detail="Project not approved")
     shortlists = session.exec(
         select(Shortlist).where(Shortlist.user_id == user.id)
     ).all()

@@ -1,11 +1,13 @@
 import io
 import csv
 import json
+from typing import List
 from fastapi import APIRouter, Depends, Security
+import requests
 from sqlmodel import Session, select
 
-from ..models import Project, Status
-from ..dependencies import check_admin, get_session, send_notifications
+from ..models import Project, Status, User
+from ..dependencies import check_admin, get_session, get_token, send_notifications
 
 router = APIRouter(tags=["admin"])
 
@@ -13,19 +15,19 @@ router = APIRouter(tags=["admin"])
 @router.get("/proposals/shutdown", response_model=bool)
 async def are_proposals_shutdown(session: Session = Depends(get_session)):
     status = session.get(Status, "proposals.shutdown")
-    return status.value == "true"
+    return status.value
 
 
 @router.get("/shortlists/shutdown", response_model=bool)
 async def are_shortlists_shutdown(session: Session = Depends(get_session)):
     status = session.get(Status, "shortlists.shutdown")
-    return status.value == "true"
+    return status.value
 
 
 @router.get("/undos/shutdown", response_model=bool)
 async def are_undos_shutdown(session: Session = Depends(get_session)):
     status = session.get(Status, "undos.shutdown")
-    return status.value == "true"
+    return status.value
 
 
 @router.post(
@@ -43,7 +45,7 @@ async def are_undos_shutdown(session: Session = Depends(get_session)):
 )
 async def set_proposals_shutdown(session: Session = Depends(get_session)):
     status = session.get(Status, "proposals.shutdown")
-    status.value = "true"
+    status.value = True
     session.add(status)
     session.commit()
     return {"ok": True}
@@ -64,7 +66,7 @@ async def set_proposals_shutdown(session: Session = Depends(get_session)):
 )
 async def unset_proposals_shutdown(session: Session = Depends(get_session)):
     status = session.get(Status, "proposals.shutdown")
-    status.value = "false"
+    status.value = False
     session.add(status)
     session.commit()
     return {"ok": True}
@@ -85,7 +87,7 @@ async def unset_proposals_shutdown(session: Session = Depends(get_session)):
 )
 async def set_shortlists_shutdown(session: Session = Depends(get_session)):
     status = session.get(Status, "shortlists.shutdown")
-    status.value = "true"
+    status.value = True
     session.add(status)
     session.commit()
     return {"ok": True}
@@ -106,7 +108,7 @@ async def set_shortlists_shutdown(session: Session = Depends(get_session)):
 )
 async def unset_shortlists_shutdown(session: Session = Depends(get_session)):
     status = session.get(Status, "shortlists.shutdown")
-    status.value = "false"
+    status.value = False
     session.add(status)
     session.commit()
     return {"ok": True}
@@ -118,7 +120,7 @@ async def unset_shortlists_shutdown(session: Session = Depends(get_session)):
 )
 async def set_undos_shutdown(session: Session = Depends(get_session)):
     status = session.get(Status, "undos.shutdown")
-    status.value = "true"
+    status.value = True
     session.add(status)
     session.commit()
     return {"ok": True}
@@ -130,7 +132,7 @@ async def set_undos_shutdown(session: Session = Depends(get_session)):
 )
 async def unset_undos_shutdown(session: Session = Depends(get_session)):
     status = session.get(Status, "undos.shutdown")
-    status.value = "false"
+    status.value = False
     session.add(status)
     session.commit()
     return {"ok": True}
@@ -182,3 +184,20 @@ async def export_csv(session: Session = Depends(get_session)):
             ]
         )
     return output.getvalue()
+
+
+@router.post(
+    "/users/missing",
+    response_model=List[str],
+    dependencies=[Security(check_admin)],
+)
+async def check_missing_users(
+    emails: List[str],
+    session: Session = Depends(get_session),
+):
+    missing = []
+    for email in emails:
+        user = session.exec(select(User).where(User.email == email)).one_or_none()
+        if not user:
+            missing.append(email)
+    return missing

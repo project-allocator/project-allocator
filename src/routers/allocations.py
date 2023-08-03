@@ -1,6 +1,6 @@
 import random
 from typing import List
-from fastapi import APIRouter, Depends, Security
+from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlmodel import Session, select
 
 from ..config import config
@@ -13,7 +13,7 @@ from ..dependencies import (
     get_user,
     send_notifications,
 )
-from ..models import Project, ProjectRead, Shortlist, User, UserRead
+from ..models import Project, ProjectRead, Shortlist, Status, User, UserRead
 
 router = APIRouter(tags=["allocation"])
 
@@ -32,8 +32,12 @@ router = APIRouter(tags=["allocation"])
     ],
 )
 async def allocate_projects(session: Session = Depends(get_session)):
+    # Number of students per project
     count = config["projects"]["allocations"]["students"]
-    projects = session.exec(select(Project)).all()
+    # Only allocate students to approved projects
+    # 'Project.approved == True' does seem to be redundant
+    # but is required by SQLModel to construct a valid query.
+    projects = session.exec(select(Project).where(Project.approved == True)).all()
     # Allocate shortlisted students to projects
     for project in projects:
         shortlists = session.exec(
@@ -170,7 +174,10 @@ async def add_allocatees(
     users: List[UserRead],
     session: Session = Depends(get_session),
 ):
+    # Cannot add students to non approved projects
     project = session.get(Project, project_id)
+    if not project.approved:
+        raise HTTPException(status_code=404, detail="Project not approved")
     for user in users:
         user = session.get(User, user.id)
         user.allocated = project
@@ -223,11 +230,14 @@ async def is_allocated(
     dependencies=[Security(check_admin)],
 )
 async def read_conflicting(session: Session = Depends(get_session)):
-    projects = session.exec(select(Project)).all()
-    conflicted = []
+    # Only show approved projects.
+    # 'Project.approved == True' does seem to be redundant
+    # but is required by SQLModel to construct a valid query.
+    projects = session.exec(select(Project).where(Project.approved == True)).all()
+    conflicting = []
     for project in projects:
         # fmt: off
         resolved = any(list(map(lambda allocatee: allocatee.accepted, project.allocatees)))
         if not resolved:
-            conflicted.append(project)
-    return conflicted
+            conflicting.append(project)
+    return conflicting

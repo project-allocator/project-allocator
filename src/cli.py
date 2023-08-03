@@ -82,8 +82,8 @@ def seed(yes: bool = typer.Option(False, help="Skip confirmation.")):
             session.commit()
     print("Seeding status...")
     with Session(engine) as session:
-        session.add(Status(key="proposals.shutdown", value="false"))
-        session.add(Status(key="shortlists.shutdown", value="false"))
-        session.add(Status(key="undos.shutdown", value="false"))
+        session.add(Status(key="proposals.shutdown", value=False))
+        session.add(Status(key="shortlists.shutdown", value=False))
+        session.add(Status(key="undos.shutdown", value=False))
         session.commit()
     print("✨[green]Successfully seeded the database.")

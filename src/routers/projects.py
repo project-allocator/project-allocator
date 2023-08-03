@@ -21,7 +21,11 @@ router = APIRouter(tags=["project"])
 
 @router.get("/projects", response_model=List[ProjectRead])
 async def read_projects(session: Session = Depends(get_session)):
-    projects = session.exec(select(Project)).all()
+    # Only show approved projects.
+    # 'Project.approved == True' does seem to be redundant
+    # but is required by SQLModel to construct a valid query.
+    projects = session.exec(select(Project).where(Project.approved == True)).all()
+    # Put the latest updated projects first.
     projects.sort(key=lambda project: project.updated_at, reverse=True)
     return projects
 
@@ -65,9 +69,10 @@ async def update_project(
     project = session.get(Project, project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
+    # Only project proposer can edit the project.
     if project.proposer != user:
         raise HTTPException(status_code=401, detail="Project not owned by user")
-    # Update project
+    # Update each property of the project.
     for key, value in project_data.dict(exclude_unset=True).items():
         setattr(project, key, value)
     session.add(project)
@@ -87,6 +92,7 @@ async def delete_project(
     project = session.get(Project, project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
+    # Only project proposer can delete the project.
     if project.proposer != user:
         raise HTTPException(status_code=401, detail="Project not owned by user")
     session.delete(project)
