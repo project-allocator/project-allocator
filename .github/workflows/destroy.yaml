@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  destroy:
     runs-on: ubuntu-latest
 
     container:
@@ -28,10 +28,10 @@ jobs:
         run: |
           # Wait until there are no running pods in the namespace.
           wf access env project-allocator dev
-          while true; do
-            count="$(kubectl get pods --field-selector=status.phase==Running | wc -l | xargs)"
-            if [ "$count" == 1 ]; then
-              break
-            fi
+          while [ "$count" != 0 ]; do
+            echo "Attempting in 10 seconds..."
             sleep 10
+            count=$(kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Failed --output json | jq -j ".items | length")
+            echo "$count pods running."
           done
+          echo "All pods have been stopped."
