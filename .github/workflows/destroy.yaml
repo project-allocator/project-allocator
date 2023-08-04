@@ -20,13 +20,18 @@ jobs:
 
       - name: Destroy Application
         run: |
-          wf deploy component project-allocator dev --component frontend --remove
-          wf deploy component project-allocator dev --component backend --remove
-          wf deploy component project-allocator dev --component db --remove
+          wf deploy component project-allocator dev --component frontend --remove --force
+          wf deploy component project-allocator dev --component backend --remove --force
+          wf deploy component project-allocator dev --component db --remove --force
 
       - name: Wait for Completion
         run: |
           # Wait until there are no running pods in the namespace.
-          while [ "$(kubectl get pods --field-selector=status.phase==Running | wc -l | xargs)" != 1 ]; do
+          wf access env project-allocator dev
+          while true; do
+            count="$(kubectl get pods --field-selector=status.phase==Running | wc -l | xargs)"
+            if [ "$count" == 1 ]; then
+              break
+            fi
             sleep 10
           done

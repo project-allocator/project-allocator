@@ -41,10 +41,12 @@ jobs:
 
       - name: Patch Network Policy
         run: |
+          wf access env project-allocator dev
           kubectl apply -f wayfinder/backend-policy.yaml
 
       - name: Patch Ingress
         run: |
+          wf access env project-allocator dev
           kubectl patch ingress frontend-ingress --type json --patch "$(cat wayfinder/ingress-patch.json)"
 
       - name: Print Application URL
