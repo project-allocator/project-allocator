@@ -1,3 +1,35 @@
+# name: Deploy Application
+
+# on: [push]
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+
+#     container:
+#       image: quay.io/appvia-wayfinder/wftoolbox:v2.1.2
+#       env:
+#         WAYFINDER_TOKEN: ${{ secrets.WAYFINDER_TOKEN }}
+#         WAYFINDER_SERVER: ${{ vars.WAYFINDER_SERVER }}
+#         WAYFINDER_WORKSPACE: ${{ vars.WAYFINDER_WORKSPACE }}
+
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v3
+
+#       - name: Deploy Application
+#         run: wf deploy app ${{ vars.WAYFINDER_APPLICATION }} ${{ vars.WAYFINDER_ENVIRONMENT }} --image-tag refs-heads-main
+
+#       - name: Patch Secrets
+#         run: |
+#           # We need to give kubelet credentials to pull images from ghcr.io
+#           # this needs to be done using kubectl at the moment
+#           # but in a future version of Wayfinder we will be able to do this using wf
+#           namespace=${{ vars.WAYFINDER_WORKSPACE }}-${{ vars.WAYFINDER_APPLICATION }}-${{ vars.WAYFINDER_ENVIRONMENT }}
+#           wf access env ${{ vars.WAYFINDER_APPLICATION }} ${{ vars.WAYFINDER_ENVIRONMENT }}
+#           kubectl patch deployment ${{ vars.WAYFINDER_FRONTEND_COMPONENT }} -n "$namespace" --patch '{"spec":{"template":{"spec":{"imagePullSecrets":[{"name":"ghcr-login-secret"}]}}}}'
+#           kubectl patch deployment ${{ vars.WAYFINDER_BACKEND_COMPONENT }} -n "$namespace" --patch '{"spec":{"template":{"spec":{"imagePullSecrets":[{"name":"ghcr-login-secret"}]}}}}'
+
 name: Deploy Application
 
 on: [push]
@@ -17,15 +49,31 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Apply Wayfinder Configuration
+        run: |
+          wf apply -f wayfinder/app.yaml
+          wf apply -f wayfinder/env.yaml
+          wf apply -f wayfinder/db.yaml
+          wf apply -f wayfinder/backend.yaml
+          wf apply -f wayfinder/frontend.yaml
+          kubectl apply -f wayfinder/backend-policy.yaml
+          kubectl patch ingress frontend-ingress --type json --patch "$(cat wayfinder/ingress-patch.json)"
+
       - name: Deploy Application
-        run: wf deploy app ${{ vars.WAYFINDER_APPLICATION }} ${{ vars.WAYFINDER_ENVIRONMENT }} --image-tag refs-heads-main
+        run: |
+          wf deploy app project-allocator dev --image-tag refs-heads-main
 
       - name: Patch Secrets
         run: |
           # We need to give kubelet credentials to pull images from ghcr.io
           # this needs to be done using kubectl at the moment
           # but in a future version of Wayfinder we will be able to do this using wf
-          namespace=${{ vars.WAYFINDER_WORKSPACE }}-${{ vars.WAYFINDER_APPLICATION }}-${{ vars.WAYFINDER_ENVIRONMENT }}
-          wf access env ${{ vars.WAYFINDER_APPLICATION }} ${{ vars.WAYFINDER_ENVIRONMENT }}
-          kubectl patch deployment ${{ vars.WAYFINDER_FRONTEND_COMPONENT }} -n "$namespace" --patch '{"spec":{"template":{"spec":{"imagePullSecrets":[{"name":"ghcr-login-secret"}]}}}}'
-          kubectl patch deployment ${{ vars.WAYFINDER_BACKEND_COMPONENT }} -n "$namespace" --patch '{"spec":{"template":{"spec":{"imagePullSecrets":[{"name":"ghcr-login-secret"}]}}}}'
+          namespace=${{ vars.WAYFINDER_WORKSPACE }}-project-allocator-dev
+          wf access env project-allocator dev
+          kubectl patch deployment frontend -n "$namespace" --patch '{"spec":{"template":{"spec":{"imagePullSecrets":[{"name":"ghcr-login-secret"}]}}}}'
+          kubectl patch deployment backend -n "$namespace" --patch '{"spec":{"template":{"spec":{"imagePullSecrets":[{"name":"ghcr-login-secret"}]}}}}'
+
+      - name: Find Ingress
+        run: |
+          wf access env project-allocator dev
+          kubectl get ingress

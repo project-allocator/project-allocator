@@ -1,0 +1,37 @@
+apiVersion: app.appvia.io/v2beta1
+kind: AppComponent
+metadata:
+  name: backend
+spec:
+  application: project-allocator
+  container:
+    containers:
+      - env:
+          - fromCloudResourceOutput:
+              componentName: db
+              output: SERVER_FQDN
+            name: DATABASE_DOMAIN
+          - fromCloudResourceOutput:
+              componentName: db
+              output: ADMINISTRATOR_LOGIN
+            name: DATABASE_USERNAME
+          - fromCloudResourceOutput:
+              componentName: db
+              output: ADMINISTRATOR_PASSWORD
+            name: DATABASE_PASSWORD
+          - name: DATABASE_SSL
+            value: "true"
+        image: ghcr.io/digital-garage-icl/project-allocator-backend:refs-heads-main
+        name: backend-1
+        ports:
+          - containerPort: 8000
+            name: backend-1-0
+            protocol: TCP
+            expose: true
+        securityContext:
+          runAsGroup: 999
+          runAsUser: 999
+  dependsOn:
+    - db
+  name: backend
+  type: Container

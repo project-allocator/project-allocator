@@ -115,7 +115,7 @@ function setup_repo() {
   # Set the -e option to exit if any subsequent command fails
   set -e
 
-  # Get the inputs from terminal.
+  # Find out the workspace name from user input.
   read -rp "Do you already have a Wayfinder workspace (y/n)?: " has_workspace
   if [[ "$has_workspace" =~ ^[Yy]$ ]]; then
     echo "Now you are ready to setup your GitHub repository!"
@@ -134,13 +134,11 @@ function setup_repo() {
     echo "Successfully created a workspace. Please visit the Wayfinder UI and create your application."
     exit 0
   fi
-  read -rp "Enter Wayfinder application name: " application_name
-  read -rp "Enter Wayfinder environment name: " environment_name
-  read -rp "Enter Wayfinder frontend component name: " frontend_component_name
-  read -rp "Enter Wayfinder backend component name: " backend_component_name
+
+  # Find out the GitHub PAT from user input.
   read -rp "Enter GitHub personal access token (classic with read-package scope): " github_token
 
-  # Find out the URL of the deploy repository
+  # Find out the URL of the deploy repository.
   repository_url=$(git config --get remote.origin.url)
   repository_url="${repository_url/\.git/}"
   repository_name=$(echo "$repository_url" | cut -d '/' -f 5)
@@ -154,10 +152,6 @@ function setup_repo() {
   gh variable set WAYFINDER_VERSION --repo "$full_repository_name" --body "$version"
   gh variable set WAYFINDER_SERVER --repo "$full_repository_name" --body "$server"
   gh variable set WAYFINDER_WORKSPACE --repo "$full_repository_name" --body "$workspace_name"
-  gh variable set WAYFINDER_APPLICATION --repo "$full_repository_name" --body "$application_name"
-  gh variable set WAYFINDER_ENVIRONMENT --repo "$full_repository_name" --body "$environment_name"
-  gh variable set WAYFINDER_FRONTEND_COMPONENT --repo "$full_repository_name" --body "$frontend_component_name"
-  gh variable set WAYFINDER_BACKEND_COMPONENT --repo "$full_repository_name" --body "$backend_component_name"
   gh secret set WAYFINDER_TOKEN --repo "$full_repository_name" --body "$token"
 
   # Set the default Wayfinder workspace.
@@ -172,17 +166,17 @@ function setup_repo() {
   wf assign wayfinderrole --workspace "$workspace_name" --workspace-access-token "$repository_name" --role workspace.appdeployer
 
   wf assign accessrole --workspace "$workspace_name" --workspace-access-token "$repository_name" --role cluster.deployment --cluster aks-stdnt1
-  wf assign accessrole --workspace "$workspace_name" --workspace-access-token "$repository_name" --role namespace.deployment --cluster aks-stdnt1 --namespace "$workspace_name"-"$application_name"-"$environment_name"  
+  wf assign accessrole --workspace "$workspace_name" --workspace-access-token "$repository_name" --role namespace.deployment --cluster aks-stdnt1 --namespace "$workspace_name"-project-allocator-dev
 
   # Create a Kubernetes secret so that kubelet can pull our container image.
   echo "Creating secrets on the Kubernetes cluster..."
   export GITHUB_TOKEN=$github_token
   username=$(gh api user | jq -r '.login')
   # Get access to the kuberenetes namespace in order to create a Kubernetes secret.
-  wf access cluster to1.aks-stdnt1 --role namespace.admin --namespace "$workspace_name"-"$application_name"-"$environment_name"
+  wf access cluster to1.aks-stdnt1 --role namespace.admin --namespace "$workspace_name"-project-allocator-dev
   # Delete the secret first in case it already exists.
-  kubectl delete secret ghcr-login-secret --namespace "$workspace_name"-"$application_name"-"$environment_name" > /dev/null 2>&1 || true
-  kubectl create secret docker-registry ghcr-login-secret --namespace "$workspace_name"-"$application_name"-"$environment_name" --docker-username="$username" --docker-password="$github_token" --docker-server=ghcr.io
+  kubectl delete secret ghcr-login-secret --namespace "$workspace_name"-project-allocator-dev > /dev/null 2>&1 || true
+  kubectl create secret docker-registry ghcr-login-secret --namespace "$workspace_name"-project-allocator-dev --docker-username="$username" --docker-password="$github_token" --docker-server=ghcr.io
 
   echo "GitHub repository setup complete!"
   return 0

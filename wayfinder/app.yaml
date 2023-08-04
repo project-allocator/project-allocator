@@ -1,0 +1,7 @@
+apiVersion: app.appvia.io/v2beta1
+kind: Application
+metadata:
+  name: project-allocator
+spec:
+  cloud: azure
+  name: project-allocator

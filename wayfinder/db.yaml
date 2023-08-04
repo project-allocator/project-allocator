@@ -1,0 +1,15 @@
+apiVersion: app.appvia.io/v2beta1
+kind: AppComponent
+metadata:
+  name: db
+spec:
+  application: project-allocator
+  cloudResource:
+    plan: azure-azurerm-postgresql
+    variables:
+      server_name: hu732igdvxjq
+      administrator_login: h7p1mxic5l2t
+      administrator_password: P593b22mXo3wOhX3ciiFhskl0yD66Bl12
+  key: storage
+  name: db
+  type: CloudResource

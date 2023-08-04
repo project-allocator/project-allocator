@@ -1,0 +1,22 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: backend-ingress
+  labels:
+    app.kubernetes.io/component: backend
+    app.kubernetes.io/instance: dev
+    app.kubernetes.io/name: project-allocator
+    k8slens-edit-resource-version: v1
+status: {}
+spec:
+  podSelector: {}
+  ingress:
+    - ports:
+        - protocol: TCP
+          port: 8000
+      from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress
+  policyTypes:
+    - Ingress
