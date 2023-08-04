@@ -39,7 +39,7 @@ function setup_dev() {
 
   # Clone the repositories
   echo "Cloning repositories..."
-  repository_url=$(git config --get remote.origin.url)
+  repository_url="$(git config --get remote.origin.url)"
   frontend_repository_url="${repository_url/project-allocator-deploy/project-allocator-frontend}"
   backend_repository_url="${repository_url/project-allocator-deploy/project-allocator-backend}"
   (cd ../ && git clone "$frontend_repository_url")
@@ -139,16 +139,16 @@ function setup_repo() {
   read -rp "Enter GitHub personal access token (classic with read-package scope): " github_token
 
   # Find out the URL of the deploy repository.
-  repository_url=$(git config --get remote.origin.url)
+  repository_url="$(git config --get remote.origin.url)"
   repository_url="${repository_url/\.git/}"
-  repository_name=$(echo "$repository_url" | cut -d '/' -f 5)
-  full_repository_name=$(echo "$repository_url" | cut -d '/' -f 4,5)
+  repository_name="$(echo "$repository_url" | cut -d '/' -f 5)"
+  full_repository_name="$(echo "$repository_url" | cut -d '/' -f 4,5)"
 
   # Set the variables and secrets in GitHub Actions.
   echo "Creating variables and secrets on GitHub repository..."
-  version=$(wf serverinfo -o json | jq -r .version.release)
-  server=$(wf profiles show -o json | jq -r .endpoint)
-  token=$(wf create wat "$repository_name" -w "$workspace_name" --reset-token --show-token)
+  version="$(wf serverinfo -o json | jq -r .version.release)"
+  server="$(wf profiles show -o json | jq -r .endpoint)"
+  token="$(wf create wat "$repository_name" -w "$workspace_name" --reset-token --show-token)"
   gh variable set WAYFINDER_VERSION --repo "$full_repository_name" --body "$version"
   gh variable set WAYFINDER_SERVER --repo "$full_repository_name" --body "$server"
   gh variable set WAYFINDER_WORKSPACE --repo "$full_repository_name" --body "$workspace_name"
@@ -171,7 +171,7 @@ function setup_repo() {
   # Create a Kubernetes secret so that kubelet can pull our container image.
   echo "Creating secrets on the Kubernetes cluster..."
   export GITHUB_TOKEN=$github_token
-  username=$(gh api user | jq -r '.login')
+  username="$(gh api user | jq -r '.login')"
   # Get access to the kuberenetes namespace in order to create a Kubernetes secret.
   wf access cluster to1.aks-stdnt1 --role namespace.admin --namespace "$workspace_name"-project-allocator-dev
   # Delete the secret first in case it already exists.

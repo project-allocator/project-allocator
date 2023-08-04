@@ -27,7 +27,7 @@ jobs:
 
       - name: Deploy Application
         run: |
-          wf deploy app project-allocator dev --image-tag refs-heads-main
+          wf deploy app project-allocator dev --image-tag refs-heads-main --force
 
       - name: Patch Secrets
         run: |
@@ -44,7 +44,8 @@ jobs:
           kubectl apply -f wayfinder/backend-policy.yaml
           kubectl patch ingress frontend-ingress --type json --patch "$(cat wayfinder/ingress-patch.json)"
 
-      - name: Find Ingress
+      - name: Print Application URL
         run: |
           wf access env project-allocator dev
-          kubectl get ingress
+          url="$(kubectl get ingress | tail -n 1 | tr -s ' ' | cut -d ' ' -f 3)"
+          echo "Your application is deployed at: https://$url"
