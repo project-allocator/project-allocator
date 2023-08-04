@@ -114,20 +114,3 @@ This will complete the following tasks for you:
 ## Setting up the Microsoft SSO
 
 TODO: Tutorial on how to setup Azure app registrations
-
-
-```
-wf apply -f wayfinder/app.yaml
-wf apply -f wayfinder/env.yaml
-wf apply -f wayfinder/db.yaml
-wf apply -f wayfinder/backend.yaml
-wf apply -f wayfinder/frontend.yaml
-kubectl apply -f wayfinder/backend-policy.yaml
-
-wf deploy app project-allocator dev
-kubectl patch deployment frontend -n sajri-project-allocator-dev --patch '{"spec":{"template":{"spec":{"imagePullSecrets":[{"name":"ghcr-login-secret"}]}}}}'
-kubectl patch deployment backend -n sajri-project-allocator-dev --patch '{"spec":{"template":{"spec":{"imagePullSecrets":[{"name":"ghcr-login-secret"}]}}}}'
-kubectl create secret docker-registry ghcr-login-secret --namespace sajri-project-allocator-dev --docker-username=taichimaeda --docker-password=<GITHUB_SECRET_HERE> --docker-server=ghcr.io
-
-kubectl patch ingress frontend-ingress --type json --patch "$(cat wayfinder/ingress-patch.json)"
-```
