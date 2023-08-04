@@ -24,8 +24,6 @@ jobs:
           wf apply -f wayfinder/db.yaml
           wf apply -f wayfinder/backend.yaml
           wf apply -f wayfinder/frontend.yaml
-          kubectl apply -f wayfinder/backend-policy.yaml
-          kubectl patch ingress frontend-ingress --type json --patch "$(cat wayfinder/ingress-patch.json)"
 
       - name: Deploy Application
         run: |
@@ -40,6 +38,11 @@ jobs:
           wf access env project-allocator dev
           kubectl patch deployment frontend -n "$namespace" --patch '{"spec":{"template":{"spec":{"imagePullSecrets":[{"name":"ghcr-login-secret"}]}}}}'
           kubectl patch deployment backend -n "$namespace" --patch '{"spec":{"template":{"spec":{"imagePullSecrets":[{"name":"ghcr-login-secret"}]}}}}'
+
+      - name: Configure Networks
+        run: |
+          kubectl apply -f wayfinder/backend-policy.yaml
+          kubectl patch ingress frontend-ingress --type json --patch "$(cat wayfinder/ingress-patch.json)"
 
       - name: Find Ingress
         run: |
