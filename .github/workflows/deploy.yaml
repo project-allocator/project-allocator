@@ -55,9 +55,9 @@ jobs:
           while true; do
             echo "Attempting in 10 seconds..."
             sleep 10
-            frontend_running="$(kubectl get pods --selector=app.kubernetes.io/component=frontend --field-selector=status.phase=Running)"
-            backend_running="$(kubectl get pods --selector=app.kubernetes.io/component=backend --field-selector=status.phase=Running)"
-            db_not_succeeded="$(kubectl get pods --selector=app.kubernetes.io/component=db --field-selector=status.phase!=Succeeded)"
+            frontend_running="$(kubectl get pods --selector=app.kubernetes.io/component=frontend --field-selector=status.phase=Running --output json | jq -j '.items | length')"
+            backend_running="$(kubectl get pods --selector=app.kubernetes.io/component=backend --field-selector=status.phase=Running --output json | jq -j '.items | length')"
+            db_not_succeeded="$(kubectl get pods --selector=app.kubernetes.io/component=db --field-selector=status.phase!=Succeeded --output json | jq -j '.items | length')"
             if [ "$frontend_running" -eq 0 ]; then
               echo "No frontend pods running."
               continue

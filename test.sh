@@ -4,8 +4,8 @@ wf access env project-allocator dev
 while true; do
   echo "Attempting in 10 seconds..."
   sleep 10
-  pods_failed="$(kubectl get pods --field-selector=status.phase=Failed --output json | jq -j ".items | length")"
-  pods_active="$(kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Failed --output json | jq -j ".items | length")"
+  pods_failed="$(kubectl get pods --field-selector=status.phase=Failed --output json | jq -j '.items | length')"
+  pods_active="$(kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Failed --output json | jq -j '.items | length')"
   if [ "$pods_failed" -gt 0 ]; then
     echo "Some pods have failed."
     break
