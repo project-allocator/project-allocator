@@ -7,9 +7,9 @@ spec:
   cloudResource:
     plan: azure-azurerm-postgresql
     variables:
-      server_name: hcm1yi0kjus9nw1d
-      administrator_login: twey0qq6pmeelopn
-      administrator_password: FxHC3XMu9ZzhDbFWTKxjqG6mZCjWy4N3
+      server_name: <SERVER_NAME>
+      administrator_login: <ADMINISTRATOR_LOGIN>
+      administrator_password: <ADMINISTRATOR_PASSWORD>
   key: storage
   name: db
   type: CloudResource
