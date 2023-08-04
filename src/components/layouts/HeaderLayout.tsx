@@ -30,7 +30,8 @@ export default function HeaderLayout({ children }: HeaderLayoutProps) {
         .catch((error) => console.error(error));
     }
     fetchNotifications();
-    setInterval(fetchNotifications, 60 * 1000);
+    const timer = setInterval(fetchNotifications, 60 * 1000);
+    return () => clearTimeout(timer);
   }, []);
 
   return (
