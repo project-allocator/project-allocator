@@ -1,0 +1,32 @@
+name: Destroy Application
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    container:
+      image: quay.io/appvia-wayfinder/wftoolbox:${{ vars.WAYFINDER_VERSION }}
+      env:
+        WAYFINDER_TOKEN: ${{ secrets.WAYFINDER_TOKEN }}
+        WAYFINDER_SERVER: ${{ vars.WAYFINDER_SERVER }}
+        WAYFINDER_WORKSPACE: ${{ vars.WAYFINDER_WORKSPACE }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Destroy Application
+        run: |
+          wf deploy component project-allocator dev --component frontend --remove
+          wf deploy component project-allocator dev --component backend --remove
+          wf deploy component project-allocator dev --component db --remove
+
+      - name: Wait for Completion
+        run: |
+          # Wait until there are no running pods in the namespace.
+          while [ "$(kubectl get pods --field-selector=status.phase==Running | wc -l | xargs)" != 1 ]; do
+            sleep 10
+          done
