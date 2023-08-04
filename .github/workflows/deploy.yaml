@@ -25,20 +25,9 @@ jobs:
           wf apply -f wayfinder/backend.yaml
           wf apply -f wayfinder/frontend.yaml
 
-      - name: Destroy Wayfinder Components
+      - name: Deploy Application
         run: |
-          # Some components must be destroyed before others to make changes happen.
-          # For example, if you make changes to db it cannot be deployed unless backend gives up access.
-          # Alternatively, this ordering can be ensured using Kubernetes' StatefulSet.
-          wf deploy component project-allocator dev --component frontend --remove
-          wf deploy component project-allocator dev --component backend --remove
-          wf deploy component project-allocator dev --component db --remove
-
-      - name: Deploy Wayfinder Components
-        run: |
-          wf deploy component project-allocator dev --component db
-          wf deploy component project-allocator dev --component backend --image-tag refs-heads-main
-          wf deploy component project-allocator dev --component frontend --image-tag refs-heads-main
+          wf deploy app project-allocator dev --image-tag refs-heads-main --force
 
       - name: Patch Secret
         run: |
