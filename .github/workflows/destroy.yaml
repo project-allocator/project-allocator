@@ -26,12 +26,18 @@ jobs:
 
       - name: Wait for Completion
         run: |
-          # Wait until there are no running pods in the namespace.
           wf access env project-allocator dev
-          while [ "$count" != 0 ]; do
+          while true; do
             echo "Attempting in 10 seconds..."
             sleep 10
-            count=$(kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Failed --output json | jq -j ".items | length")
-            echo "$count pods running."
+            pods_failed="$(kubectl get pods --field-selector=status.phase=Failed --output json | jq -j ".items | length")"
+            pods_active="$(kubectl get pods --field-selector=status.phase!=Succeeded,status.phase!=Failed --output json | jq -j ".items | length")"
+            if [ "$pods_failed" -gt 0 ]; then
+              echo "Some pods have failed."
+              break
+            fi
+            if [ "$pods_active" -eq 0 ]; then
+              echo "All pods have been stopped."
+              break
+            fi
           done
-          echo "All pods have been stopped."
