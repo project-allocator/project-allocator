@@ -26,7 +26,7 @@ jobs:
           server_name=${{ secrets.DATABASE_SERVER_NAME }}
           administrator_login=${{ secrets.DATABASE_ADMINISTRATOR_LOGIN }}
           administrator_password=${{ secrets.DATABASE_ADMINISTRATOR_PASSWORD }}
-          sed "s/<SERVER_NAME>/$server_name/g;s/<ADMINISTRATOR_LOGIN>/$administrator_login/g;s/<ADMINISTRATOR_PASSWORD>/$administrator_password/g" manifests/db-template.yaml > manifests/db.yaml
+          sed -i -e "s/<SERVER_NAME>/$server_name/g;s/<ADMINISTRATOR_LOGIN>/$administrator_login/g;s/<ADMINISTRATOR_PASSWORD>/$administrator_password/g" manifests/db.yaml
           wf apply -f manifests/db.yaml
           wf apply -f manifests/backend.yaml
           wf apply -f manifests/frontend.yaml
