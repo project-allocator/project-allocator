@@ -5,17 +5,17 @@ import { redirect, useLoaderData, type ActionFunctionArgs, type LoaderFunctionAr
 
 const { Title } = Typography;
 
-export async function projectEditLoader({ params }: LoaderFunctionArgs) {
+export async function editProjectLoader({ params }: LoaderFunctionArgs) {
   return await ProjectService.readProject(parseInt(params.id!));
 }
 
-export async function projectEditAction({ request, params }: ActionFunctionArgs) {
+export async function editProjectAction({ request, params }: ActionFunctionArgs) {
   const data = await request.json();
   await ProjectService.updateProject(parseInt(params.id!), data);
   return redirect(`/projects/${params.id}`);
 }
 
-export default function ProjectEdit() {
+export default function EditProject() {
   const initialProject = useLoaderData() as ProjectRead;
 
   return (

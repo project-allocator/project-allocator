@@ -12,16 +12,19 @@ import { MessageContextProvider } from './contexts/MessageContext';
 import { UserContextProvider } from './contexts/UserContext';
 import Error from './pages/Error';
 import SignIn from './pages/SignIn';
-import Admin, { adminLoader } from './pages/admins/Admin';
-import Allocated, { allocatedLoader } from './pages/allocations/Allocated';
+import ManageAllocations, { manageAllocationsLoader } from './pages/admins/ManageAllocations';
+import ManageData from './pages/admins/ManageData';
+import ManageProjects, { manageProjectsLoader } from './pages/admins/ManageProjects';
+import ManageUsers, { manageUsersLoader } from './pages/admins/ManageUsers';
+import AllocatedProject, { allocatedProjectLoader } from './pages/allocations/AllocatedProject';
+import AddProject, { addProjectAction } from './pages/projects/AddProject';
+import EditProject, { editProjectAction, editProjectLoader } from './pages/projects/EditProject';
 import Project, { projectLoader } from './pages/projects/Project';
-import ProjectAdd, { projectAddAction } from './pages/projects/ProjectAdd';
-import ProjectEdit, { projectEditAction, projectEditLoader } from './pages/projects/ProjectEdit';
 import Projects, { projectsLoader } from './pages/projects/Projects';
-import Proposed, { proposedLoader } from './pages/proposals/Proposed';
-import Shortlisted, { shortlistedLoader } from './pages/shortlists/Shortlisted';
+import ProposedProject, { proposedProjectLoader } from './pages/proposals/ProposedProject';
+import ShortlistedProjects, { shortlistedProjectsLoader } from './pages/shortlists/ShortlistedProjects';
+import { EditUser, editUserAction, editUserLoader } from './pages/users/EditUser';
 import User, { currentUserLoader, userLoader } from './pages/users/User';
-import { UserEdit, userEditAction, userEditLoader } from './pages/users/UserEdit';
 import AdminRoute from './routes/AdminRoute';
 import AuthRoute from './routes/AuthRoute';
 import GuestRoute from './routes/GuestRoute';
@@ -76,20 +79,20 @@ const router = createBrowserRouter([
             path: "add",
             element: (
               <StaffRoute fallback="/">
-                <ProjectAdd />
+                <AddProject />
               </StaffRoute>
             ),
-            action: projectAddAction,
+            action: addProjectAction,
           },
           {
             path: ":id/edit",
             element: (
               <StaffRoute fallback="/">
-                <ProjectEdit />
+                <EditProject />
               </StaffRoute>
             ),
-            loader: projectEditLoader,
-            action: projectEditAction,
+            loader: editProjectLoader,
+            action: editProjectAction,
           },
         ]
       },
@@ -97,37 +100,57 @@ const router = createBrowserRouter([
         path: "proposed",
         element: (
           <StaffRoute fallback="/">
-            <Proposed />
+            <ProposedProject />
           </StaffRoute>
         ),
-        loader: proposedLoader,
+        loader: proposedProjectLoader,
       },
       {
         path: "shortlisted",
         element: (
           <StudentRoute fallback="/">
-            <Shortlisted />
+            <ShortlistedProjects />
           </StudentRoute>
         ),
-        loader: shortlistedLoader,
+        loader: shortlistedProjectsLoader,
       },
       {
         path: "allocated",
         element: (
           <StudentRoute fallback="/">
-            <Allocated />
+            <AllocatedProject />
           </StudentRoute>
         ),
-        loader: allocatedLoader,
+        loader: allocatedProjectLoader,
       },
       {
         path: "admin",
         element: (
           <AdminRoute fallback="/">
-            <Admin />
+            <Outlet />
           </AdminRoute>
         ),
-        loader: adminLoader,
+        children: [
+          {
+            path: "users",
+            element: <ManageUsers />,
+            loader: manageUsersLoader,
+          },
+          {
+            path: "projects",
+            element: <ManageProjects />,
+            loader: manageProjectsLoader,
+          },
+          {
+            path: "allocations",
+            element: <ManageAllocations />,
+            loader: manageAllocationsLoader,
+          },
+          {
+            path: "data",
+            element: <ManageData />
+          }
+        ]
       },
       {
         path: "profile",
@@ -149,12 +172,11 @@ const router = createBrowserRouter([
           },
           {
             path: ":id/edit",
-            element: <UserEdit />,
-            loader: userEditLoader,
-            action: userEditAction,
+            element: <EditUser />,
+            loader: editUserLoader,
+            action: editUserAction,
           }
         ]
-
       },
     ],
   },

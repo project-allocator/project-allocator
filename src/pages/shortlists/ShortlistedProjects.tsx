@@ -7,11 +7,11 @@ import { Link, useLoaderData } from "react-router-dom";
 
 const { Title, Text } = Typography;
 
-export async function shortlistedLoader() {
+export async function shortlistedProjectsLoader() {
   return await ShortlistService.readShortlisted();
 }
 
-export default function Shortlisted() {
+export default function ShortlistedProjects() {
   const projects = useLoaderData() as ProjectRead[];
 
   // Framer Motion's Reorder component only works with primitive values

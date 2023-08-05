@@ -7,11 +7,11 @@ import { Link, useLoaderData } from "react-router-dom";
 
 const { Title } = Typography;
 
-export async function proposedLoader() {
+export async function proposedProjectLoader() {
   return await ProposalService.readProposed()
 }
 
-export default function Proposed() {
+export default function ProposedProject() {
   const projects = useLoaderData() as ProjectRead[];
 
   return (

@@ -4,18 +4,18 @@ import { ActionFunctionArgs, LoaderFunctionArgs, redirect, useLoaderData, useSub
 
 const { Title } = Typography;
 
-export async function userEditLoader({ params }: LoaderFunctionArgs) {
+export async function editUserLoader({ params }: LoaderFunctionArgs) {
   return await UserService.readUser(parseInt(params.id!));
 }
 
-export async function userEditAction({ request, params }: ActionFunctionArgs) {
+export async function editUserAction({ request, params }: ActionFunctionArgs) {
   const data = await request.json();
   await UserService.updateUser(parseInt(params.id!), data);
   return redirect(`/users/${params.id}`);
 }
 
 
-export function UserEdit() {
+export function EditUser() {
   const user = useLoaderData() as UserRead;
   const submit = useSubmit();
 

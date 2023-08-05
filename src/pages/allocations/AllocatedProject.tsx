@@ -4,11 +4,11 @@ import ProjectHeader from '@/components/ProjectHeader';
 import { Divider, Empty } from "antd";
 import { useLoaderData } from 'react-router-dom';
 
-export async function allocatedLoader() {
+export async function allocatedProjectLoader() {
   return await AllocationService.readAllocated();
 }
 
-export default function Allocated() {
+export default function AllocatedProject() {
   const project = useLoaderData() as ProjectRead;
 
   return (

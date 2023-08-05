@@ -27,36 +27,57 @@ export default function SiderLayout({ children }: SiderLayoutProps) {
           mode="inline"
           items={[
             {
-              key: 'projects',
+              key: '/projects',
               icon: <FileTextOutlined />,
               label: <Link to="/projects">All Projects</Link>,
             },
             (user?.role === 'staff' || user?.role === 'admin') &&
             {
-              key: 'proposed',
+              key: '/proposed',
               icon: <FileAddOutlined />,
               label: <Link to="/proposed">Proposed Projects</Link>,
             },
             user?.role === 'student' &&
             {
-              key: 'allocated',
+              key: '/allocated',
               icon: <FileDoneOutlined />,
               label: <Link to="/allocated">Allocated Project</Link>,
             },
             user?.role === 'student' &&
             {
-              key: 'shortlisted',
+              key: '/shortlisted',
               icon: <FileDoneOutlined />,
               label: <Link to="/shortlisted">Shortlisted Projects</Link>,
             },
             user?.role === 'admin' &&
             {
-              key: 'admin',
               icon: <LockOutlined />,
-              label: <Link to="/admin">Administration</Link>,
+              label: "Administration",
+              children: [
+                {
+                  key: '/admin/users',
+                  icon: <LockOutlined />,
+                  label: <Link to="/admin/users">Manage Users</Link>,
+                },
+                {
+                  key: '/admin/projects',
+                  icon: <LockOutlined />,
+                  label: <Link to="/admin/projects">Manage Projects</Link>,
+                },
+                {
+                  key: '/admin/allocations',
+                  icon: <LockOutlined />,
+                  label: <Link to="/admin/allocations">Manage Allocations</Link>,
+                },
+                {
+                  key: '/admin/data',
+                  icon: <LockOutlined />,
+                  label: <Link to="/admin/data">Import/Export Data</Link>,
+                },
+              ]
             }
           ] as ItemType<MenuItemType>[]}
-          defaultSelectedKeys={[dirnames[0]]}
+          defaultSelectedKeys={[pathname]}
           className='h-full'
         />
       </Sider>

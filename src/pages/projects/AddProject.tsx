@@ -5,13 +5,13 @@ import { redirect, type ActionFunctionArgs } from 'react-router-dom';
 
 const { Title } = Typography;
 
-export async function projectAddAction({ request }: ActionFunctionArgs) {
+export async function addProjectAction({ request }: ActionFunctionArgs) {
   const data = await request.json();
   await ProjectService.createProject(data);
   return redirect('/projects');
 }
 
-export default function ProjectAdd() {
+export default function AddProject() {
   return (
     <>
       <Title level={3}>
