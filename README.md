@@ -75,18 +75,18 @@ cd ../project-allocator-frontend && yarn generate
 
 Finally, you can check if everything is working by visiting [http://localhost:3000](http://localhost:3000) on your browser. You can also visit [http://localhost:8000/docs](http://localhost:8000/docs) to check the backend's Open API documentation.
 
-## Setting up the GitHub workflow
+## Setting up the Production Environment
 
-You can setup the GitHub workflow for this `project-allocator-deploy` repository, which can automatically deploy your application using Wayfinder.
+You can setup the production environment and enable automatic deployment of your application using Wayfinder.
 The deployment will be triggered every time you push to this repository on the `main` branch.
 
 First, you need to clone this repository with `git clone https://github.com/Digital-Garage-ICL/project-allocator-deploy`.
 
-To setup this workflow, check if you have a Wayfinder workspace created to deploy this application. 
+To begin with, check if you have a Wayfinder workspace created to deploy this application. 
 If not, you can create a new workspace with the `setup.sh` script, which you will find in the cloned repository:
 
 ```bash
-./scripts/setup_repo.sh
+./scripts/setup_prod.sh
 ```
 
 When it prompts "Do you already have a Wayfinder workspace (yes/no)?", type "yes", and it will ask you for the necessary information and create a workspace for you.
@@ -94,8 +94,6 @@ Note that the workspace name must consist of 2-5 alphanumeric characters and mus
 
 Now you can navigate to the Wayfinder UI at [https://portal-20-0-245-170.go.wayfinder.run/](https://portal-20-0-245-170.go.wayfinder.run/) and start creating your Wayfinder application.
 The URL of your workspace should be output by the `setup.sh` script.
-
-TODO: Tutorial on how to setup Wayfinder components
 
 Finally, you are ready to setup your GitHub workflow! Simply run the `setup.sh` script as follows:
 
