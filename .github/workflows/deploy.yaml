@@ -52,8 +52,9 @@ jobs:
       - name: Wait for Completion
         run: |
           wf access env project-allocator dev
+          # Bash is not installed in Appvia's wftoolbox image.
           apk add --no-cache bash
-          bash scripts/wait_deploy.sh
+          bash .github/scripts/wait_deploy.sh
 
       - name: Print Application URL
         run: |

@@ -27,4 +27,6 @@ jobs:
       - name: Wait for Completion
         run: |
           wf access env project-allocator dev
-          ./scripts/wait_destroy.sh
+          # Bash is not installed in Appvia's wftoolbox image.
+          apk add --no-cache bash
+          bash .github/scripts/wait_destroy.sh
