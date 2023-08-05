@@ -83,6 +83,12 @@ repository_url="${repository_url/\.git/}"
 repository_name="$(echo "$repository_url" | cut -d '/' -f 5)"
 full_repository_name="$(echo "$repository_url" | cut -d '/' -f 4,5)"
 
+# Store the GitHub personal access token in GitHub Actions secrets
+# so that deployment workflow can find out the latest sha of packages.
+echo "Storing the GitHub personal access token in GitHub Actions secrets..."
+# GitHub Actions secrets cannot start with GITHUB
+gh secrets set PERSONAL_ACCESS_TOKEN --repo "$full_repository_name" --body "$github_token"
+
 # Store the Wayfinder configuration in GitHub Actions variables.
 echo "Storing the Wayfinder configuration in GitHub Actions variables..."
 version="$(wf serverinfo -o json | jq -r .version.release)"

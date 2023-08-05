@@ -15,6 +15,7 @@ jobs:
         WAYFINDER_TOKEN: ${{ secrets.WAYFINDER_TOKEN }}
         WAYFINDER_SERVER: ${{ vars.WAYFINDER_SERVER }}
         WAYFINDER_WORKSPACE: ${{ vars.WAYFINDER_WORKSPACE }}
+        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
     steps:
       - name: Checkout
@@ -35,11 +36,9 @@ jobs:
           wf apply -f manifests/frontend.yaml
 
       - name: Deploy Application
-        # env:
-        # GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         run: |
-          frontend_tag="$(GITHUB_TOKEN=${{ secrets.PERSONAL_ACCESS_TOKEN }} gh api orgs/${{ github.repository_owner }}/packages/container/project-allocator-frontend/versions | jq -r '.[0].metadata.container.tags[0]')"
-          backend_tag="$(GITHUB_TOKEN=${{ secrets.PERSONAL_ACCESS_TOKEN }} gh api orgs/${{ github.repository_owner }}/packages/container/project-allocator-backend/versions | jq -r '.[0].metadata.container.tags[0]')"
+          frontend_tag="$(gh api orgs/${{ github.repository_owner }}/packages/container/project-allocator-frontend/versions | jq -r '.[0].metadata.container.tags[0]')"
+          backend_tag="$(gh api orgs/${{ github.repository_owner }}/packages/container/project-allocator-backend/versions | jq -r '.[0].metadata.container.tags[0]')"
           wf deploy component project-allocator dev --component frontend --image-tag "$frontend_tag" --force
           wf deploy component project-allocator dev --component backend --image-tag "$backend_tag" --force
           wf deploy component project-allocator dev --component db --force
