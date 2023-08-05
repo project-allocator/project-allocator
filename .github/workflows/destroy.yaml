@@ -24,6 +24,11 @@ jobs:
           wf deploy component project-allocator dev --component backend --remove --force
           wf deploy component project-allocator dev --component db --remove --force
 
+      - name: Remove Network Policy
+        run: |
+          wf access env project-allocator dev
+          kubectl delete networkpolicy backend-ingress
+
       - name: Wait for Completion
         run: |
           wf access env project-allocator dev

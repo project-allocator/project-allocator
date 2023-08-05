@@ -45,15 +45,15 @@ jobs:
           kubectl patch deployment frontend -n "$namespace" --patch "$(cat manifests/secret-patch.json)"
           kubectl patch deployment backend -n "$namespace" --patch "$(cat manifests/secret-patch.json)"
 
-      - name: Patch Network Policy
-        run: |
-          wf access env project-allocator dev
-          kubectl apply -f manifests/backend-policy.yaml
-
       - name: Patch Ingress
         run: |
           wf access env project-allocator dev
           kubectl patch ingress frontend-ingress --type json --patch "$(cat manifests/ingress-patch.json)"
+
+      - name: Create Network Policy
+        run: |
+          wf access env project-allocator dev
+          kubectl apply -f manifests/backend-policy.yaml
 
       - name: Wait for Completion
         run: |
