@@ -1,6 +1,9 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, APIRouter, Security, Depends
 from fastapi_azure_auth.user import User
+from sqlmodel import SQLModel
 
+from .db import engine
 from .auth import swagger_scheme, azure_scheme
 from .routers import (
     projects,
@@ -12,15 +15,21 @@ from .routers import (
     notifications,
 )
 
-# For Open API authentication
-app = FastAPI(**swagger_scheme)
 
-
-# Load config for Open API
-@app.on_event("startup")
-async def load_config() -> None:
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Create database tables if they do not exist on startup.
+    # This does not recreate tables already present in the database.
+    SQLModel.metadata.create_all(engine)
+    # Load config for Open API
     await azure_scheme.openid_config.load_config()
+    yield
 
+
+app = FastAPI(
+    lifespan=lifespan,
+    **swagger_scheme,
+)
 
 router = APIRouter(
     prefix="/api",
@@ -40,14 +49,14 @@ router.include_router(users.router)
 router.include_router(notifications.router)
 
 
-@router.get("/")
-async def root():
-    return {"message": "Hello World"}
+@router.get("/test/guest")
+async def test_guest():
+    return {"ok": True}
 
 
-@router.get("/test")
-async def test(user: User = Depends(azure_scheme)):
-    return user.dict()
+@router.get("/test/auth")
+async def test_auth(user: User = Depends(azure_scheme)):
+    return {"ok": True, **user.dict()}
 
 
 # Add this router after path operations
