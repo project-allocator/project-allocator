@@ -12,6 +12,7 @@ jobs:
         WAYFINDER_TOKEN: ${{ secrets.WAYFINDER_TOKEN }}
         WAYFINDER_SERVER: ${{ vars.WAYFINDER_SERVER }}
         WAYFINDER_WORKSPACE: ${{ vars.WAYFINDER_WORKSPACE }}
+        GH_TOKEN: ${{ github.token }}
 
     steps:
       - name: Checkout
