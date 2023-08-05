@@ -29,8 +29,12 @@ if ! command -v kubectl > /dev/null; then
   exit 1
 fi
 
+# Get access to the application environment.
+echo "Getting access to the application environment..."
+wf access env project-allocator dev --role namespace.admin
+
 # Get secrets from the cluster and decode them.
-echo "Retrieving secrets from Kubernetes cluster..."
+echo "Getting secrets from Kubernetes cluster..."
 domain="$(kubectl get secret db-outputs -o jsonpath='{.data.SERVER_FQDN}' | base64 --decode)"
 login="$(kubectl get secret db-outputs -o jsonpath='{.data.ADMINISTRATOR_LOGIN}' | base64 --decode)"
 password="$(kubectl get secret db-outputs -o jsonpath='{.data.ADMINISTRATOR_PASSWORD}'  | base64 --decode)"

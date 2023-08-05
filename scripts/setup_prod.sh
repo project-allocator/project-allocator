@@ -133,6 +133,7 @@ echo "Creating secrets on the Kubernetes cluster..."
 export GITHUB_TOKEN="$github_token"
 username="$(gh api user | jq -r '.login')"
 # Get access to the kuberenetes namespace in order to create a Kubernetes secret.
+# We cannot run 'wf access env' as Wayfinder application has not been created yet.
 wf access cluster to1.aks-stdnt1 --role namespace.admin --namespace "$workspace_name"-project-allocator-dev
 # Delete the secret first in case it already exists.
 kubectl delete secret ghcr-login-secret --namespace "$workspace_name"-project-allocator-dev > /dev/null 2>&1 || true
