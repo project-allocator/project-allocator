@@ -25,16 +25,13 @@ export default function HeaderLayout({ children }: HeaderLayoutProps) {
   useEffect(() => {
     const fetchNotifications = () => {
       NotificationService.readNotifications()
-        // Prevent notifiations from being null.
-        // Otherwise the entire website will be down when the API returns null for whatever reasons.
-        // because almost all pages use this header layout.
-        .then((notifications) => setNotifications(notifications || [] as NotificationRead[]))
+        .then((notifications) => setNotifications(notifications as NotificationRead[]))
         // Ignore error as failing to fetch notification should not stop rendering.
         .catch((error) => console.error(error));
     }
     fetchNotifications();
     const timer = setInterval(fetchNotifications, 60 * 1000);
-    return () => clearTimeout(timer);
+    return () => clearInterval(timer);
   }, []);
 
   return (
