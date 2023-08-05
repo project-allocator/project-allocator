@@ -5,7 +5,6 @@ function open_url() {
   xdg-open "$1" || sensible-browser "$1" || x-www-browser "$1" || gnome-open "$1" || open "$1" \
   || echo "Error: Cannot open browser from the terminal."
   echo "Try opening $1 with the browser of your choice."
-  return 0
 }
 
 function setup_dev() {
@@ -68,7 +67,6 @@ function setup_dev() {
   open_url http://localhost:3000
 
   echo "Development environment setup complete!"
-  return 0
 }
 
 function setup_repo() {
@@ -194,7 +192,6 @@ function setup_repo() {
   sed "s/<SERVER_NAME>/$server_name/g;s/<ADMINISTRATOR_LOGIN>/$administrator_login/g;s/<ADMINISTRATOR_PASSWORD>/$administrator_password/g" wayfinder/db-template.yaml > wayfinder/db.yaml
   
   echo "GitHub repository setup complete!"
-  return 0
 }
 
 echo "Project Allocator Setup Script"

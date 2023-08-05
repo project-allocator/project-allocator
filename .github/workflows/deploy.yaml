@@ -52,27 +52,7 @@ jobs:
       - name: Wait for Completion
         run: |
           wf access env project-allocator dev
-          while true; do
-            echo "Attempting in 10 seconds..."
-            sleep 10
-            frontend_running="$(kubectl get pods --selector=app.kubernetes.io/component=frontend --field-selector=status.phase=Running --output json | jq -j '.items | length')"
-            backend_running="$(kubectl get pods --selector=app.kubernetes.io/component=backend --field-selector=status.phase=Running --output json | jq -j '.items | length')"
-            db_not_succeeded="$(kubectl get pods --selector=app.kubernetes.io/component=db --field-selector=status.phase!=Succeeded --output json | jq -j '.items | length')"
-            if [ "$frontend_running" -eq 0 ]; then
-              echo "No frontend pods running."
-              continue
-            fi
-            if [ "$backend_running" -eq 0 ]; then
-              echo "No backend pods running."
-              continue
-            fi
-            if [ "$db_not_succeeded" -gt 0 ]; then
-              echo "Not all DB pods have succeeded."
-              continue
-            fi
-            echo "Deployment successeful."
-            break
-          done
+          ./wayfinder/wait_deploy.sh
 
       - name: Print Application URL
         run: |
