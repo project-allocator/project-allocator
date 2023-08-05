@@ -1,12 +1,11 @@
 #!/bin/bash
 
-echo "Project Allocator Setup Script for GitHub Repository"
+echo "Project Allocator Setup Script for Production Environment"
 echo "v1.0"
 echo "------------------------------------------------------------"
 
-
-echo "This script will setup your GitHub Repository"
-echo "to enable automatic deployment with Wayfinder and GitHub Workflow."
+echo "This script will setup your production environment"
+echo "with Wayfinder to enable automatic deployment using GitHub Workflow."
 
 echo "Please make sure you have met the following requirements:"
 echo "* You have installed the 'jq' command."
@@ -132,4 +131,4 @@ wf access cluster to1.aks-stdnt1 --role namespace.admin --namespace "$workspace_
 kubectl delete secret ghcr-login-secret --namespace "$workspace_name"-project-allocator-dev > /dev/null 2>&1 || true
 kubectl create secret docker-registry ghcr-login-secret --namespace "$workspace_name"-project-allocator-dev --docker-username="$username" --docker-password="$github_token" --docker-server=ghcr.io
 
-echo "GitHub repository setup complete!"
+echo "Production environment setup complete!"
