@@ -1,9 +1,10 @@
+from enum import Enum
 import random
-from typing import List
+from typing import Annotated, List
 import typer
 from rich import print
 from rich.progress import track
-from sqlmodel import SQLModel, Session
+from sqlmodel import SQLModel, Session, select
 
 from .db import engine
 from .models import Project, Shortlist, Status, User
@@ -18,7 +19,7 @@ def callback():
 
 
 @app.command()
-def create(yes: bool = typer.Option(False, help="Skip confirmation.")):
+def create(yes: Annotated[bool, typer.Option(help="Skip confirmation.")] = False):
     if not yes:
         print("❗[red]This command should not be run in production.")
         if not typer.confirm("Are you sure to create all tables in the database?"):
@@ -28,7 +29,7 @@ def create(yes: bool = typer.Option(False, help="Skip confirmation.")):
 
 
 @app.command()
-def drop(yes: bool = typer.Option(False, help="Skip confirmation.")):
+def drop(yes: Annotated[bool, typer.Option(help="Skip confirmation.")] = False):
     if not yes:
         print("❗[red]This command should not be run in production.")
         if not typer.confirm("Are you sure to delete all tables in the database?"):
@@ -38,7 +39,7 @@ def drop(yes: bool = typer.Option(False, help="Skip confirmation.")):
 
 
 @app.command()
-def reset(yes: bool = typer.Option(False, help="Skip confirmation.")):
+def reset(yes: Annotated[bool, typer.Option(help="Skip confirmation.")] = False):
     if not yes:
         print("❗[red]This command should not be run in production.")
         if not typer.confirm("Are you sure to reset the database?"):
@@ -49,7 +50,7 @@ def reset(yes: bool = typer.Option(False, help="Skip confirmation.")):
 
 
 @app.command()
-def seed(yes: bool = typer.Option(False, help="Skip confirmation.")):
+def seed(yes: Annotated[bool, typer.Option(help="Skip confirmation.")] = False):
     if not yes:
         print("❗[red]This command should not be run in production.")
         if not typer.confirm("Are you sure to seed the database?"):
@@ -87,3 +88,25 @@ def seed(yes: bool = typer.Option(False, help="Skip confirmation.")):
         session.add(Status(key="undos.shutdown", value=False))
         session.commit()
     print("✨[green]Successfully seeded the database.")
+
+
+class Role(str, Enum):
+    admin = "admin"
+    staff = "staff"
+    student = "student"
+
+
+@app.command()
+def role(
+    email: Annotated[str, typer.Argument(help="The email of the user")],
+    role: Annotated[Role, typer.Argument(help="The new role of the user")],
+):
+    with Session(engine) as session:
+        user = session.exec(select(User).where(User.email == email)).one_or_none()
+        if not user:
+            print(f"❌[red]User with the given email {email} does not exist!")
+            raise typer.Exit()
+        user.role = role
+        session.add(user)
+        session.commit()
+    print(f"✨[green]Successfully updated the user {email} to role '{role.value}'.")
