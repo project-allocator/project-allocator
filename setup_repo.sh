@@ -83,15 +83,33 @@ repository_url="${repository_url/\.git/}"
 repository_name="$(echo "$repository_url" | cut -d '/' -f 5)"
 full_repository_name="$(echo "$repository_url" | cut -d '/' -f 4,5)"
 
-# Set the variables and secrets in GitHub Actions.
-echo "Creating variables and secrets on GitHub repository..."
+# Store the Wayfinder configuration in GitHub Actions variables.
+echo "Storing the Wayfinder configuration in GitHub Actions variables..."
 version="$(wf serverinfo -o json | jq -r .version.release)"
 server="$(wf profiles show -o json | jq -r .endpoint)"
-token="$(wf create wat "$repository_name" -w "$workspace_name" --reset-token --show-token)"
 gh variable set WAYFINDER_VERSION --repo "$full_repository_name" --body "$version"
 gh variable set WAYFINDER_SERVER --repo "$full_repository_name" --body "$server"
 gh variable set WAYFINDER_WORKSPACE --repo "$full_repository_name" --body "$workspace_name"
+
+# Generate a Wayfinder token and store it in GitHub Action secrets.
+echo "Generating and storing the Wayfinder token in GitHub Actions secrets..."
+token="$(wf create wat "$repository_name" -w "$workspace_name" --reset-token --show-token)"
 gh secret set WAYFINDER_TOKEN --repo "$full_repository_name" --body "$token"
+
+# Generate random database credentials and store them in GitHub Actions secrets.
+echo "Generating and storing database credentials in GitHub Actions secrets..."
+# # Server name must be lowercase alphanumeric.
+# server_name="$(pwgen -Ans 16 1)"
+# # Administrator login must be lowercase alphanumeric and cannot start with a number.
+# administrator_login="$(pwgen -As 1 1)$(pwgen -Ans 15 1)"
+# # Administrator password must be alphanumeric and contain uppercase letters.
+# administrator_password="$(pwgen -cns 32 1)"
+server_name=hcm1yi0kjus9nw1d
+administrator_login=twey0qq6pmeelopn
+administrator_password=FxHC3XMu9ZzhDbFWTKxjqG6mZCjWy4N3
+gh secret set DATABASE_SERVER_NAME --repo "$full_repository_name" --body "$server_name"
+gh secret set DATABASE_ADMINISTRATOR_LOGIN --repo "$full_repository_name" --body "$administrator_login"
+gh secret set DATABASE_ADMINISTRATOR_PASSWORD --repo "$full_repository_name" --body "$administrator_password"
 
 # Set the default Wayfinder workspace.
 echo "Setting the default Wayfinder workspace..."
@@ -116,15 +134,5 @@ wf access cluster to1.aks-stdnt1 --role namespace.admin --namespace "$workspace_
 # Delete the secret first in case it already exists.
 kubectl delete secret ghcr-login-secret --namespace "$workspace_name"-project-allocator-dev > /dev/null 2>&1 || true
 kubectl create secret docker-registry ghcr-login-secret --namespace "$workspace_name"-project-allocator-dev --docker-username="$username" --docker-password="$github_token" --docker-server=ghcr.io
-
-# Generate and save random database credentials for Azure PostgreSQL.
-echo "Generating and saving database credentials..."
-# Server name must be lowercase alphanumeric.
-server_name="$(pwgen -Ans 16 1)"
-# Administrator login must be lowercase alphanumeric and cannot start with a number.
-administrator_login="$(pwgen -As 1 1)$(pwgen -Ans 15 1)"
-# Administrator password must be alphanumeric and contain uppercase letters.
-administrator_password="$(pwgen -cns 32 1)"
-sed "s/<SERVER_NAME>/$server_name/g;s/<ADMINISTRATOR_LOGIN>/$administrator_login/g;s/<ADMINISTRATOR_PASSWORD>/$administrator_password/g" wayfinder/db-template.yaml > wayfinder/db.yaml
 
 echo "GitHub repository setup complete!"
