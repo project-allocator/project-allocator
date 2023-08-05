@@ -18,7 +18,7 @@ Inside the cloned repository you will find the `setup.sh` script.
 You can run it as follows:
 
 ```bash
-./setup_dev.sh
+./scripts/setup_dev.sh
 ```
 
 This will complete the following tasks for you:
@@ -86,7 +86,7 @@ To setup this workflow, check if you have a Wayfinder workspace created to deplo
 If not, you can create a new workspace with the `setup.sh` script, which you will find in the cloned repository:
 
 ```bash
-./setup_repo.sh
+./scripts/setup_repo.sh
 ```
 
 When it prompts "Do you already have a Wayfinder workspace (yes/no)?", type "yes", and it will ask you for the necessary information and create a workspace for you.
@@ -100,7 +100,7 @@ TODO: Tutorial on how to setup Wayfinder components
 Finally, you are ready to setup your GitHub workflow! Simply run the `setup.sh` script as follows:
 
 ```bash
-./setup.sh repo
+./scripts/setup_repo.sh
 ```
 
 and when it prompts "Do you already have a Wayfinder workspace (yes/no)?", type "no" to continue.
@@ -114,3 +114,11 @@ This will complete the following tasks for you:
 ## Setting up the Microsoft SSO
 
 TODO: Tutorial on how to setup Azure app registrations
+
+## Connecting to the Azure Database
+
+TODO: Tutorial on how to connect to the Azure database.
+
+```bash
+./scripts/connect_db.sh
+```
