@@ -21,7 +21,7 @@ spec:
             name: DATABASE_PASSWORD
           - name: DATABASE_SSL
             value: "true"
-        image: ghcr.io/digital-garage-icl/project-allocator-backend:refs-heads-main
+        image: ghcr.io/digital-garage-icl/project-allocator-backend:latest
         name: backend-1
         ports:
           - containerPort: 8000
