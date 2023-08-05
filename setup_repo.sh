@@ -2,7 +2,7 @@
 
 echo "Project Allocator Setup Script for GitHub Repository"
 echo "v1.0"
-echo "----------------------------------------"
+echo "------------------------------------------------------------"
 
 
 echo "This script will setup your GitHub Repository"

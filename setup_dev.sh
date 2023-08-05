@@ -2,7 +2,7 @@
 
 echo "Project Allocator Setup Script for Development Environment"
 echo "v1.0"
-echo "----------------------------------------"
+echo "------------------------------------------------------------"
 
 function open_url() {
   # Open the URL with the defaul browser (only works in Linux and Unix)
