@@ -98,15 +98,12 @@ gh secret set WAYFINDER_TOKEN --repo "$full_repository_name" --body "$token"
 
 # Generate random database credentials and store them in GitHub Actions secrets.
 echo "Generating and storing database credentials in GitHub Actions secrets..."
-# # Server name must be lowercase alphanumeric.
-# server_name="$(pwgen -Ans 16 1)"
-# # Administrator login must be lowercase alphanumeric and cannot start with a number.
-# administrator_login="$(pwgen -As 1 1)$(pwgen -Ans 15 1)"
-# # Administrator password must be alphanumeric and contain uppercase letters.
-# administrator_password="$(pwgen -cns 32 1)"
-server_name=hcm1yi0kjus9nw1d
-administrator_login=twey0qq6pmeelopn
-administrator_password=FxHC3XMu9ZzhDbFWTKxjqG6mZCjWy4N3
+# Server name must be lowercase alphanumeric.
+server_name="$(pwgen -Ans 16 1)"
+# Administrator login must be lowercase alphanumeric and cannot start with a number.
+administrator_login="$(pwgen -As 1 1)$(pwgen -Ans 15 1)"
+# Administrator password must be alphanumeric and contain uppercase letters.
+administrator_password="$(pwgen -cns 32 1)"
 gh secret set DATABASE_SERVER_NAME --repo "$full_repository_name" --body "$server_name"
 gh secret set DATABASE_ADMINISTRATOR_LOGIN --repo "$full_repository_name" --body "$administrator_login"
 gh secret set DATABASE_ADMINISTRATOR_PASSWORD --repo "$full_repository_name" --body "$administrator_password"
