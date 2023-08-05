@@ -1,6 +1,7 @@
 #!/bin/bash
 
-echo "Project Allocator Setup Script for Production Environment"
+echo "Project Allocator v3"
+echo "Setup Script for Production Environment"
 echo "v1.0"
 echo "------------------------------------------------------------"
 

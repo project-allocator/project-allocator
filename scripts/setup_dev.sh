@@ -1,6 +1,7 @@
 #!/bin/bash
 
-echo "Project Allocator Setup Script for Development Environment"
+echo "Project Allocator v3"
+echo "Setup Script for Development Environment"
 echo "v1.0"
 echo "------------------------------------------------------------"
 
@@ -23,19 +24,19 @@ echo "* You have setup SSH key for your GitHub account."
 
 read -rp "Do you wish to continue (y/n)?: " should_continue
 if [[ ! "$should_continue" =~ ^[Yy]$ ]]; then
-echo "Aborting..."
-exit 1
+  echo "Aborting..."
+  exit 1
 fi
 
 # Check if the commands are installed.
 echo "Checking requirements..."
 if ! command -v docker &>/dev/null; then
-echo "Error: The 'docker' command is not installed." >&2
-exit 1
+  echo "Error: The 'docker' command is not installed." >&2
+  exit 1
 fi
 if ! docker compose version &> /dev/null; then
-echo "Error: The 'docker compose' plugin is not installed." >&2
-exit 1
+  echo "Error: The 'docker compose' plugin is not installed." >&2
+  exit 1
 fi
 
 # Set the -e option to exit if any subsequent command fails
