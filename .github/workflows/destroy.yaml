@@ -27,4 +27,4 @@ jobs:
       - name: Wait for Completion
         run: |
           wf access env project-allocator dev
-          ./wayfinder/wait_destroy.sh
+          ./scripts/wait_destroy.sh
