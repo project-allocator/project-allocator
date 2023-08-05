@@ -18,7 +18,7 @@ Inside the cloned repository you will find the `setup.sh` script.
 You can run it as follows:
 
 ```bash
-./setup.sh dev
+./setup_dev.sh
 ```
 
 This will complete the following tasks for you:
@@ -86,7 +86,7 @@ To setup this workflow, check if you have a Wayfinder workspace created to deplo
 If not, you can create a new workspace with the `setup.sh` script, which you will find in the cloned repository:
 
 ```bash
-./setup.sh repo
+./setup_repo.sh
 ```
 
 When it prompts "Do you already have a Wayfinder workspace (yes/no)?", type "yes", and it will ask you for the necessary information and create a workspace for you.
