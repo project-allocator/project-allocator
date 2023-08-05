@@ -50,10 +50,10 @@ jobs:
           kubectl patch ingress frontend-ingress --type json --patch "$(cat manifests/ingress-patch.json)"
 
       - name: Wait for Completion
-        working-directory: scripts
+        shell: bash
         run: |
           wf access env project-allocator dev
-          ./wait_deploy.sh
+          ./scripts/wait_deploy.sh
 
       - name: Print Application URL
         run: |
