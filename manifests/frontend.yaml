@@ -6,7 +6,7 @@ spec:
   application: project-allocator
   container:
     containers:
-      - image: ghcr.io/digital-garage-icl/project-allocator-frontend:latest
+      - image: ghcr.io/digital-garage-icl/project-allocator-frontend:refs-heads-main
         name: frontend-1
         ports:
           - containerPort: 8080
