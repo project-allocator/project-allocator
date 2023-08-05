@@ -33,7 +33,11 @@ jobs:
 
       - name: Deploy Application
         run: |
-          wf deploy app project-allocator dev --image-tag refs-heads-main --force
+          frontend_sha="$(gh api repos/${{ github.repository_owner }}/project-allocator-frontend/commits/main | jq -r '.sha')"
+          backend_sha="$(gh api repos/${{ github.repository_owner }}/project-allocator-backend/commits/main | jq -r '.sha')"
+          wf deploy component project-allocator dev --component frontend --image-tag "$frontend_sha" --force
+          wf deploy component project-allocator dev --component backend --image-tag "$backend_sha" --force
+          wf deploy component project-allocator dev --component db --force
 
       - name: Patch Secret
         run: |

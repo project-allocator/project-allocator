@@ -32,7 +32,7 @@ if ! gh auth status > /dev/null; then
   exit 1
 fi
 
-# Find out the location to fork the repositories to from user input.
+# Find out the owner to fork the repositories to from user input.
 read -rp "Do you want to fork the repositories in your organisation account (y/n)?: " use_organisation
 if [[ "$use_organisation" =~ ^[Yy]$ ]]; then
   read -rp "Enter your organisation account name: " organisation_name
@@ -47,23 +47,23 @@ if [[ ! "$should_continue" =~ ^[Yy]$ ]]; then
     exit 1
 fi
 
-# Get the original repository's location.
-echo "Retrieving the original repository's location..."
+# Get the original repository's owner.
+echo "Retrieving the original repository's owner..."
 original_repository_url="$(git config --get remote.origin.url)"
 original_repository_url="${original_repository_url/\.git/}"
-original_location="$(echo "$original_repository_url" | cut -d '/' -f 4)"
+original_owner_name="$(echo "$original_repository_url" | cut -d '/' -f 4)"
 
-# Fork the repositories in the specified location.
-echo "Forking the repositories to the specified location..."
+# Fork the repositories in the specified owner.
+echo "Forking the repositories to the specified owner..."
 option="${organisation_name:+"--org=$orgnaisation_name"}"
-gh repo fork "$original_location/project-allocator-deploy" --clone=false $option
-gh repo fork "$original_location/project-allocator-frontend" --clone=false $option
-gh repo fork "$original_location/project-allocator-backend" --clone=false $option
+gh repo fork "$original_owner_name/project-allocator-deploy" --clone=false $option
+gh repo fork "$original_owner_name/project-allocator-frontend" --clone=false $option
+gh repo fork "$original_owner_name/project-allocator-backend" --clone=false $option
 
 # Set the current repository's origin to a forked repository.
 echo "Updating the origin URL of this cloned repository..."
 account_name="$(gh api user | jq -r '.login')"
-location="${organisation_name:-"$account_name"}"
-git remote set-url origin "git@github.com:$location/project-allocator-deploy.git"
+owner_name="${organisation_name:-"$account_name"}"
+git remote set-url origin "git@github.com:$owner_name/project-allocator-deploy.git"
 
 echo "Forking repositories complete!"
