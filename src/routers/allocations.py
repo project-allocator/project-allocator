@@ -11,7 +11,6 @@ from ..dependencies import (
     check_student,
     get_session,
     get_user,
-    send_notifications,
 )
 from ..models import Project, ProjectRead, Shortlist, User, UserRead
 
@@ -20,16 +19,7 @@ router = APIRouter(tags=["allocation"])
 
 @router.post(
     "/projects/allocatees",
-    dependencies=[
-        Security(check_admin),
-        Depends(
-            send_notifications(
-                title="Projects have been allocated.",
-                description="You can check your allocated project in 'Allocated Project'.",
-                roles=["staff", "admin"],
-            )
-        ),
-    ],
+    dependencies=[Security(check_admin)],
 )
 async def allocate_projects(session: Session = Depends(get_session)):
     # Number of students per project
@@ -76,16 +66,7 @@ async def allocate_projects(session: Session = Depends(get_session)):
 
 @router.delete(
     "/projects/allocatees",
-    dependencies=[
-        Security(check_admin),
-        Depends(
-            send_notifications(
-                title="Projects have been deallocated.",
-                description="Wait for the administrators to allocate projects again.",
-                roles=["staff", "admin"],
-            )
-        ),
-    ],
+    dependencies=[Security(check_admin)],
 )
 async def deallocate_projects(session: Session = Depends(get_session)):
     projects = session.exec(select(Project)).all()

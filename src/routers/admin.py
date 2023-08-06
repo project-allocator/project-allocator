@@ -12,7 +12,7 @@ from ..models import (
     UserImport,
     Status,
 )
-from ..dependencies import check_admin, get_session, send_notifications
+from ..dependencies import check_admin, get_session
 
 router = APIRouter(tags=["admin"])
 
@@ -37,16 +37,7 @@ async def are_undos_shutdown(session: Session = Depends(get_session)):
 
 @router.post(
     "/proposals/shutdown",
-    dependencies=[
-        Security(check_admin),
-        Depends(
-            send_notifications(
-                title="Proposals have been shutdown.",
-                description="You can no longer shortlist projects.",
-                roles=["staff", "admin"],
-            )
-        ),
-    ],
+    dependencies=[Security(check_admin)],
 )
 async def set_proposals_shutdown(session: Session = Depends(get_session)):
     status = session.get(Status, "proposals.shutdown")
@@ -58,16 +49,7 @@ async def set_proposals_shutdown(session: Session = Depends(get_session)):
 
 @router.delete(
     "/proposals/shutdown",
-    dependencies=[
-        Security(check_admin),
-        Depends(
-            send_notifications(
-                title="Proposals have been reopened.",
-                description="You can start creating new project proposals",
-                roles=["staff", "admin"],
-            )
-        ),
-    ],
+    dependencies=[Security(check_admin)],
 )
 async def unset_proposals_shutdown(session: Session = Depends(get_session)):
     status = session.get(Status, "proposals.shutdown")
@@ -79,16 +61,7 @@ async def unset_proposals_shutdown(session: Session = Depends(get_session)):
 
 @router.post(
     "/shortlists/shutdown",
-    dependencies=[
-        Security(check_admin),
-        Depends(
-            send_notifications(
-                title="Shortlists have been shutdown.",
-                description="You can no longer shortlist projects.",
-                roles=["student"],
-            )
-        ),
-    ],
+    dependencies=[Security(check_admin)],
 )
 async def set_shortlists_shutdown(session: Session = Depends(get_session)):
     status = session.get(Status, "shortlists.shutdown")
@@ -100,16 +73,7 @@ async def set_shortlists_shutdown(session: Session = Depends(get_session)):
 
 @router.delete(
     "/shortlists/shutdown",
-    dependencies=[
-        Security(check_admin),
-        Depends(
-            send_notifications(
-                title="Shortlists have been reopened.",
-                description="You can start shortlisting projects.",
-                roles=["student"],
-            )
-        ),
-    ],
+    dependencies=[Security(check_admin)],
 )
 async def unset_shortlists_shutdown(session: Session = Depends(get_session)):
     status = session.get(Status, "shortlists.shutdown")
