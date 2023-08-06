@@ -57,7 +57,7 @@ export function ProjectsTable({ projects }: ProjectsTableProps) {
     <>
       <AutoComplete
         className="w-64 mb-4"
-        placeholder="Enter se arch text"
+        placeholder="Enter search text"
         options={
           projects.map((project) => project.categories).flat()
             .filter((option) => option.toLowerCase().includes(searchText.toLowerCase()))
