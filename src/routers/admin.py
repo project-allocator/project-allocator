@@ -6,7 +6,13 @@ from fastapi import APIRouter, Depends, Security
 import requests
 from sqlmodel import Session, select
 
-from ..models import Project, Status, User
+from ..models import (
+    Project,
+    ProjectImport,
+    User,
+    UserImport,
+    Status,
+)
 from ..dependencies import check_admin, get_session, get_token, send_notifications
 
 router = APIRouter(tags=["admin"])
@@ -139,7 +145,7 @@ async def unset_undos_shutdown(session: Session = Depends(get_session)):
 
 
 @router.get(
-    "/projects/export/json",
+    "/export/json",
     dependencies=[Security(check_admin)],
 )
 async def export_json(session: Session = Depends(get_session)):
@@ -155,7 +161,7 @@ async def export_json(session: Session = Depends(get_session)):
 
 
 @router.get(
-    "/projects/export/csv",
+    "/export/csv",
     dependencies=[Security(check_admin)],
 )
 async def export_csv(session: Session = Depends(get_session)):
@@ -184,6 +190,26 @@ async def export_csv(session: Session = Depends(get_session)):
             ]
         )
     return output.getvalue()
+
+
+@router.post(
+    "/import/json",
+    dependencies=[Security(check_admin)],
+)
+async def import_json(
+    users: List[UserImport],
+    projects: List[ProjectImport],
+    session: Session = Depends(get_session),
+):
+    for user in users:
+        user = User.parse_obj(user)
+        session.add(user)
+        session.commit()
+    for project in projects:
+        project = Project.parse_obj(project)
+        session.add(project)
+        session.commit()
+    return {"ok": True}
 
 
 @router.post(

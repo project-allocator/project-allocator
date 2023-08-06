@@ -66,6 +66,13 @@ class UserUpdate(UserBase):
     pass
 
 
+# Schema used for importing data from JSON.
+# Administrators can specify the allocated project using the existing project IDs.
+class UserImport(UserBase):
+    id: int
+    allocated_id: Optional[int]
+
+
 ################################################################################
 #                               Project Models                                 #
 ################################################################################
@@ -145,7 +152,14 @@ class ProjectCreate(ProjectBase):
 
 
 class ProjectUpdate(ProjectBase):
-    pass
+    proposer_id: int
+
+
+# Schema used for importing data from JSON.
+# Administrators can specify the proposer using the existing user IDs.
+class ProjectImport(ProjectBase):
+    id: int
+    proposer_id: int
 
 
 ################################################################################
