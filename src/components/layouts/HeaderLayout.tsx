@@ -1,5 +1,5 @@
 import { NotificationRead, NotificationService } from "@/api";
-import { useUserContext } from "@/contexts/UserContext";
+import { useUser } from "@/contexts/UserContext";
 import AuthRoute from "@/routes/AuthRoute";
 import { DeleteOutlined, DownOutlined, LogoutOutlined, NotificationOutlined, UserOutlined } from "@ant-design/icons";
 import { useMsal } from "@azure/msal-react";
@@ -16,7 +16,7 @@ interface HeaderLayoutProps {
 
 export default function HeaderLayout({ children }: HeaderLayoutProps) {
   const { instance: msalInstance } = useMsal();
-  const { setUser } = useUserContext();
+  const { setUser } = useUser();
 
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationRead[]>([]);

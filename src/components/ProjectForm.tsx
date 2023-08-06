@@ -1,5 +1,5 @@
 import { ProjectRead } from '@/api';
-import config from '@/config';
+import { useConfig } from '@/contexts/ConfigContext';
 import { PlusOutlined } from '@ant-design/icons';
 import type { InputRef } from 'antd';
 import { Button, Checkbox, DatePicker, Form, Input, InputNumber, Radio, Select, Slider, Space, Switch, Tag, TimePicker } from 'antd';
@@ -66,6 +66,8 @@ interface ProjectDetailsFormProps {
 }
 
 function ProjectDetailsForm({ initProject }: ProjectDetailsFormProps) {
+  const config = useConfig();
+
   return (
     config.projects.details.map((detail) => (
       <Form.Item

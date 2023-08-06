@@ -1,5 +1,5 @@
 import { ProjectRead } from "@/api";
-import config from "@/config";
+import { useConfig } from "@/contexts/ConfigContext";
 import { Divider, Space, Tag, Typography } from "antd";
 import dayjs from 'dayjs';
 
@@ -10,6 +10,8 @@ interface ProjectContentProps {
 }
 
 export function ProjectContent({ project }: ProjectContentProps) {
+  const config = useConfig();
+
   return (
     <>
       <Title level={4}>{project.title}</Title>

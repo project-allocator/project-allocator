@@ -1,4 +1,4 @@
-import { useUserContext } from "@/contexts/UserContext";
+import { useUser } from "@/contexts/UserContext";
 import { Navigate } from "react-router-dom";
 
 interface StaffRouteProps {
@@ -7,7 +7,7 @@ interface StaffRouteProps {
 }
 
 export default function StaffRoute({ children, fallback }: StaffRouteProps) {
-    const { user } = useUserContext();
+    const { user } = useUser();
     if (user?.role !== "staff" && user?.role !== "admin") {
         if (fallback) return <Navigate to={fallback} />;
         return null;

@@ -1,5 +1,5 @@
 import { UserRead, UserService } from "@/api";
-import { useMessageContext } from "@/contexts/MessageContext";
+import { useMessage } from "@/contexts/MessageContext";
 import AdminRoute from "@/routes/AdminRoute";
 import { toCapitalCase } from "@/utils";
 import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
@@ -19,7 +19,7 @@ export async function currentUserLoader() {
 export default function User() {
   const user = useLoaderData() as UserRead;
   const navigate = useNavigate();
-  const { messageSuccess, messageError } = useMessageContext();
+  const { messageSuccess, messageError } = useMessage();
 
   return (
     <>

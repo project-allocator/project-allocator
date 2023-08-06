@@ -1,5 +1,5 @@
 import { AdminService } from "@/api";
-import { useMessageContext } from "@/contexts/MessageContext";
+import { useMessage } from "@/contexts/MessageContext";
 import { CheckOutlined, DownloadOutlined, InfoCircleOutlined, UploadOutlined } from '@ant-design/icons';
 import { Button, Divider, Popover, Select, Space, Typography, Upload, UploadFile } from "antd";
 import { RcFile } from "antd/es/upload";
@@ -40,7 +40,7 @@ export default function ManageData() {
   const [exportType, setExportType] = useState<string>("json");
   const [importFiles, setImportFiles] = useState<UploadFile[]>([]);
   const [importLoading, setImportLoading] = useState<boolean>(false);
-  const { messageSuccess, messageError } = useMessageContext();
+  const { messageSuccess, messageError } = useMessage();
 
   return (
     <>

@@ -1,5 +1,5 @@
 import { AdminService, AllocationService } from "@/api";
-import { useMessageContext } from "@/contexts/MessageContext";
+import { useMessage } from "@/contexts/MessageContext";
 import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
 import { Button, Divider, Switch, Typography } from "antd";
 import { useState } from "react";
@@ -19,7 +19,7 @@ export default function ManageAllocations() {
     = useLoaderData() as [boolean, boolean, boolean];
   const [allocateProjectsLoading, setAllocateProjectsLoading] = useState<boolean>(false);
   const [deallocateProjectsLoading, setDeallocateProjectsLoading] = useState<boolean>(false);
-  const { messageSuccess, messageError } = useMessageContext();
+  const { messageSuccess, messageError } = useMessage();
 
   return (
     <>

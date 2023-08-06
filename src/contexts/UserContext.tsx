@@ -32,10 +32,10 @@ export function UserContextProvider({ children }: UserContextProviderProps) {
   );
 }
 
-export function useUserContext() {
+export function useUser() {
   const context = useContext(UserContext);
   if (!context) {
-    throw new Error("useUserContext() was used outside of its Provider.");
+    throw new Error("useUser() was used outside of its Provider.");
   }
   return context;
 }

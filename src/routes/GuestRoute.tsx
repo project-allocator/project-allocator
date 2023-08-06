@@ -1,4 +1,4 @@
-import { useUserContext } from "@/contexts/UserContext";
+import { useUser } from "@/contexts/UserContext";
 import { Navigate } from "react-router-dom";
 
 interface GuestRouteProps {
@@ -7,7 +7,7 @@ interface GuestRouteProps {
 }
 
 export default function GuestRoute({ children, fallback }: GuestRouteProps) {
-  const { user } = useUserContext();
+  const { user } = useUser();
   if (user) {
     if (fallback) return <Navigate to={fallback} />;
     return null;

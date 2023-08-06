@@ -8,6 +8,7 @@ import { msalInstance } from './auth';
 import CenterLayout from './components/layouts/CenterLayout';
 import HeaderLayout from './components/layouts/HeaderLayout';
 import SiderLayout from './components/layouts/SiderLayout';
+import { ConfigContextProvider } from './contexts/ConfigContext';
 import { MessageContextProvider } from './contexts/MessageContext';
 import { UserContextProvider } from './contexts/UserContext';
 import Error from './pages/Error';
@@ -185,11 +186,13 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <MsalProvider instance={msalInstance}>
-      <UserContextProvider>
-        <MessageContextProvider>
-          <RouterProvider router={router} />
-        </MessageContextProvider>
-      </UserContextProvider>
+      <ConfigContextProvider>
+        <UserContextProvider>
+          <MessageContextProvider>
+            <RouterProvider router={router} />
+          </MessageContextProvider>
+        </UserContextProvider>
+      </ConfigContextProvider>
     </MsalProvider>
   </React.StrictMode>,
 );

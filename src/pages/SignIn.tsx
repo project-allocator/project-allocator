@@ -1,6 +1,6 @@
 import { UserService } from '@/api';
 import { authRequest } from '@/auth';
-import { useUserContext } from '@/contexts/UserContext';
+import { useUser } from '@/contexts/UserContext';
 import { UserOutlined, WindowsOutlined } from '@ant-design/icons';
 import { useMsal } from '@azure/msal-react';
 import { Avatar, Button, Card, Layout, Space, Typography } from "antd";
@@ -9,7 +9,7 @@ const { Title, Paragraph } = Typography;
 
 export default function SignIn() {
   const { instance: msalInstance } = useMsal();
-  const { setUser } = useUserContext();
+  const { setUser } = useUser();
 
   return (
     <Layout className="grid place-content-center">

@@ -1,4 +1,4 @@
-import { useUserContext } from '@/contexts/UserContext';
+import { useUser } from '@/contexts/UserContext';
 import { toCapitalCase } from '@/utils';
 import { FileAddOutlined, FileDoneOutlined, FileTextOutlined, HomeOutlined, LockOutlined } from '@ant-design/icons';
 import { Breadcrumb, Layout, Menu, Skeleton } from 'antd';
@@ -14,7 +14,7 @@ interface SiderLayoutProps {
 
 export default function SiderLayout({ children }: SiderLayoutProps) {
   const navigation = useNavigation();
-  const { user } = useUserContext();
+  const { user } = useUser();
   const { pathname } = useLocation();
   const dirnames: string[] = pathname.split('/').slice(1);
   const pathnames: string[] = dirnames.reduce((pathname: string[], dirname: string) =>

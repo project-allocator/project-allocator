@@ -9,6 +9,18 @@ import { request as __request } from '../core/request';
 export class DefaultService {
 
     /**
+     * Read Config
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static readConfig(): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/config',
+        });
+    }
+
+    /**
      * Test Guest
      * @returns any Successful Response
      * @throws ApiError

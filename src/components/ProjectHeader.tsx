@@ -1,5 +1,5 @@
 import { AdminService, AllocationService, ProjectRead, ProjectService, ProposalService, ShortlistService } from "@/api";
-import { useMessageContext } from "@/contexts/MessageContext";
+import { useMessage } from "@/contexts/MessageContext";
 import AdminRoute from "@/routes/AdminRoute";
 import StaffRoute from "@/routes/StaffRoute";
 import StudentRoute from "@/routes/StudentRoute";
@@ -44,7 +44,7 @@ export default function ProjectHeader({ title, project, hasConflict, hasAllocate
 
   const navigate = useNavigate();
   const location = useLocation();
-  const { messageSuccess, messageError } = useMessageContext();
+  const { messageSuccess, messageError } = useMessage();
 
   return (
     <>
