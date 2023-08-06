@@ -1,6 +1,6 @@
-import { AdminService, AllocationService } from "@/api";
+import { AdminService, AllocationService, NotificationService } from "@/api";
 import { useMessage } from "@/contexts/MessageContext";
-import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import { CheckOutlined, CloseOutlined, SendOutlined } from '@ant-design/icons';
 import { Button, Divider, Switch, Typography } from "antd";
 import { useState } from "react";
 import { useLoaderData } from "react-router-dom";
@@ -19,6 +19,7 @@ export default function ManageAllocations() {
     = useLoaderData() as [boolean, boolean, boolean];
   const [allocateProjectsLoading, setAllocateProjectsLoading] = useState<boolean>(false);
   const [deallocateProjectsLoading, setDeallocateProjectsLoading] = useState<boolean>(false);
+  const [sendNotificationsLoading, setSendNotificationsLoading] = useState<boolean>(false);
   const { messageSuccess, messageError } = useMessage();
 
   return (
@@ -103,6 +104,28 @@ export default function ManageAllocations() {
         }}
       >
         Deallocate
+      </Button>
+      <Divider />
+      <Title level={4}>Send Notifications</Title>
+      <Paragraph className="text-slate-500">
+        Click this to notify students about the project allocation within app and via email.
+      </Paragraph>
+      <Button
+        icon={<SendOutlined />}
+        loading={sendNotificationsLoading}
+        onClick={async () => {
+          setSendNotificationsLoading(true);
+          await NotificationService.sendNotifications(
+            "Projects have been allocated.",
+            "Please accept or decline your project allocation on the Project Allocator.",
+            ["student"],
+          )
+            .then(() => messageSuccess("Successfully sent notifications."))
+            .catch(() => messageError("Failed to send notifications."));
+          setSendNotificationsLoading(false);
+        }}
+      >
+        Send Notifications
       </Button>
     </>
   );

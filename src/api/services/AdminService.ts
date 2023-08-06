@@ -24,43 +24,25 @@ export class AdminService {
 
     /**
      * Set Proposals Shutdown
-     * @param xGraphToken
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static setProposalsShutdown(
-        xGraphToken?: string,
-    ): CancelablePromise<any> {
+    public static setProposalsShutdown(): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/proposals/shutdown',
-            headers: {
-                'x-graph-token': xGraphToken,
-            },
-            errors: {
-                422: `Validation Error`,
-            },
         });
     }
 
     /**
      * Unset Proposals Shutdown
-     * @param xGraphToken
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static unsetProposalsShutdown(
-        xGraphToken?: string,
-    ): CancelablePromise<any> {
+    public static unsetProposalsShutdown(): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'DELETE',
             url: '/api/proposals/shutdown',
-            headers: {
-                'x-graph-token': xGraphToken,
-            },
-            errors: {
-                422: `Validation Error`,
-            },
         });
     }
 
@@ -78,43 +60,25 @@ export class AdminService {
 
     /**
      * Set Shortlists Shutdown
-     * @param xGraphToken
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static setShortlistsShutdown(
-        xGraphToken?: string,
-    ): CancelablePromise<any> {
+    public static setShortlistsShutdown(): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/shortlists/shutdown',
-            headers: {
-                'x-graph-token': xGraphToken,
-            },
-            errors: {
-                422: `Validation Error`,
-            },
         });
     }
 
     /**
      * Unset Shortlists Shutdown
-     * @param xGraphToken
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static unsetShortlistsShutdown(
-        xGraphToken?: string,
-    ): CancelablePromise<any> {
+    public static unsetShortlistsShutdown(): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'DELETE',
             url: '/api/shortlists/shutdown',
-            headers: {
-                'x-graph-token': xGraphToken,
-            },
-            errors: {
-                422: `Validation Error`,
-            },
         });
     }
 

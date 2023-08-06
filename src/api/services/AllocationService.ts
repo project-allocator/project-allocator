@@ -13,43 +13,25 @@ export class AllocationService {
 
     /**
      * Allocate Projects
-     * @param xGraphToken
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static allocateProjects(
-        xGraphToken?: string,
-    ): CancelablePromise<any> {
+    public static allocateProjects(): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/projects/allocatees',
-            headers: {
-                'x-graph-token': xGraphToken,
-            },
-            errors: {
-                422: `Validation Error`,
-            },
         });
     }
 
     /**
      * Deallocate Projects
-     * @param xGraphToken
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static deallocateProjects(
-        xGraphToken?: string,
-    ): CancelablePromise<any> {
+    public static deallocateProjects(): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'DELETE',
             url: '/api/projects/allocatees',
-            headers: {
-                'x-graph-token': xGraphToken,
-            },
-            errors: {
-                422: `Validation Error`,
-            },
         });
     }
 

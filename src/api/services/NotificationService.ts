@@ -63,4 +63,37 @@ export class NotificationService {
         });
     }
 
+    /**
+     * Send Notifications
+     * @param title
+     * @param description
+     * @param requestBody
+     * @param xGraphToken
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static sendNotifications(
+        title: string,
+        description: string,
+        requestBody: Array<string>,
+        xGraphToken?: string,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/users/notifications/',
+            headers: {
+                'x-graph-token': xGraphToken,
+            },
+            query: {
+                'title': title,
+                'description': description,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
 }
