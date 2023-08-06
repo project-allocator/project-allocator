@@ -155,11 +155,6 @@ const router = createBrowserRouter([
       },
       {
         path: "users",
-        element: (
-          <AdminRoute fallback="/">
-            <Outlet />
-          </AdminRoute>
-        ),
         children: [
           {
             path: ":id",
@@ -168,7 +163,11 @@ const router = createBrowserRouter([
           },
           {
             path: ":id/edit",
-            element: <EditUser />,
+            element: (
+              <AdminRoute fallback="/">
+                <EditUser />
+              </AdminRoute>
+            ),
             loader: editUserLoader,
             action: editUserAction,
           }
