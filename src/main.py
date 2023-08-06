@@ -7,6 +7,7 @@ from fastapi_azure_auth.user import User
 from sqlmodel import SQLModel
 
 from .db import engine
+from .config import config
 from .auth import swagger_scheme, azure_scheme
 from .routers import (
     projects,
@@ -61,6 +62,13 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         content={"status_code": 422, "message": str(exc), "data": None},
         status_code=422,
     )
+
+
+@router.get("/config")
+async def read_config():
+    # Make the config accessible from the frontend.
+    # This endpoint allows us to store config in a single location.
+    return config
 
 
 @router.get("/test/guest")
