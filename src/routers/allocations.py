@@ -13,7 +13,7 @@ from ..dependencies import (
     get_user,
     send_notifications,
 )
-from ..models import Project, ProjectRead, Shortlist, Status, User, UserRead
+from ..models import Project, ProjectRead, Shortlist, User, UserRead
 
 router = APIRouter(tags=["allocation"])
 

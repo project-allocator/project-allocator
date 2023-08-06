@@ -3,7 +3,6 @@ import csv
 import json
 from typing import List
 from fastapi import APIRouter, Depends, Security
-import requests
 from sqlmodel import Session, select
 
 from ..models import (
@@ -13,7 +12,7 @@ from ..models import (
     UserImport,
     Status,
 )
-from ..dependencies import check_admin, get_session, get_token, send_notifications
+from ..dependencies import check_admin, get_session, send_notifications
 
 router = APIRouter(tags=["admin"])
 
