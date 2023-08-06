@@ -1,5 +1,5 @@
 import { ProjectRead } from "@/api";
-import { AutoComplete, Space, Table, Tag } from "antd";
+import { AutoComplete, Input, Space, Table, Tag } from "antd";
 import { useState } from "react";
 import Highlighter from 'react-highlight-words';
 import { Link } from "react-router-dom";
@@ -57,7 +57,6 @@ export function ProjectsTable({ projects }: ProjectsTableProps) {
     <>
       <AutoComplete
         className="w-64 mb-4"
-        placeholder="Enter search text"
         options={
           projects.map((project) => project.categories).flat()
             .filter((option) => option.toLowerCase().includes(searchText.toLowerCase()))
@@ -66,7 +65,9 @@ export function ProjectsTable({ projects }: ProjectsTableProps) {
         value={searchText}
         onChange={(searchText) => setSearchText(searchText)}
         onSearch={(searchText) => setSearchText(searchText)}
-      />
+      >
+        <Input.Search placeholder="Enter search text" />
+      </AutoComplete>
       <Table
         columns={columns}
         dataSource={
