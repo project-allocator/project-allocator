@@ -16,7 +16,7 @@ interface HeaderLayoutProps {
 
 export default function HeaderLayout({ children }: HeaderLayoutProps) {
   const { instance: msalInstance } = useMsal();
-  const { setUser } = useUser();
+  const { user, setUser } = useUser();
 
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState<NotificationRead[]>([]);
@@ -46,7 +46,7 @@ export default function HeaderLayout({ children }: HeaderLayoutProps) {
                 items: [
                   {
                     key: "profile",
-                    label: <Link to="/profile">Profile</Link>,
+                    label: <Link to={`/users/${user?.id}`}>Profile</Link>,
                     icon: <UserOutlined />,
                   },
                   {

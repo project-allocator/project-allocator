@@ -25,7 +25,7 @@ import Projects, { projectsLoader } from './pages/projects/Projects';
 import ProposedProject, { proposedProjectLoader } from './pages/proposals/ProposedProject';
 import ShortlistedProjects, { shortlistedProjectsLoader } from './pages/shortlists/ShortlistedProjects';
 import { EditUser, editUserAction, editUserLoader } from './pages/users/EditUser';
-import User, { currentUserLoader, userLoader } from './pages/users/User';
+import User, { userLoader } from './pages/users/User';
 import AdminRoute from './routes/AdminRoute';
 import AuthRoute from './routes/AuthRoute';
 import GuestRoute from './routes/GuestRoute';
@@ -152,11 +152,6 @@ const router = createBrowserRouter([
             element: <ManageData />
           }
         ]
-      },
-      {
-        path: "profile",
-        element: <User />,
-        loader: currentUserLoader,
       },
       {
         path: "users",
