@@ -1,15 +1,46 @@
 import { AdminService } from "@/api";
-import { CheckOutlined, DownloadOutlined, UploadOutlined } from '@ant-design/icons';
-import { Button, Divider, Select, Space, Typography, Upload, UploadFile } from "antd";
+import { useMessageContext } from "@/contexts/MessageContext";
+import { CheckOutlined, DownloadOutlined, InfoCircleOutlined, UploadOutlined } from '@ant-design/icons';
+import { Button, Divider, Popover, Select, Space, Typography, Upload, UploadFile } from "antd";
 import { RcFile } from "antd/es/upload";
 import { useState } from "react";
 
 const { Title, Paragraph } = Typography;
 
+const exampleContent = {
+  "users": [
+    {
+      "id": 1,
+      "name": "Ms Carole Bradley",
+      "email": "whittakeramber@example.com",
+      "role": "admin",
+      "accepted": null,
+      "allocated_id": null,
+    }
+  ],
+  "projects": [
+    {
+      "id": 1,
+      "title": "Dolorum excepturi nostrum ut perspiciatis accusantium.",
+      "description": "Laboriosam reiciendis quas rerum voluptate ducimus corporis. Accusamus excepturi dignissimos molestias dolore modi nisi corporis. Vero ratione atque aliquid odit qui recusandae.",
+      "categories": [
+        "necessitatibus",
+        "accusamus",
+        "similique",
+        "dicta",
+        "dignissimos"
+      ],
+      "approved": true,
+      "proposer_id": 1,
+    }
+  ]
+}
+
 export default function ManageData() {
   const [exportType, setExportType] = useState<string>("json");
   const [importFiles, setImportFiles] = useState<UploadFile[]>([]);
   const [importLoading, setImportLoading] = useState<boolean>(false);
+  const { messageSuccess, messageError } = useMessageContext();
 
   return (
     <>
@@ -23,6 +54,18 @@ export default function ManageData() {
       </Paragraph>
       <Paragraph className="text-slate-500">
         The format of the JSON file should be exactly identical to the file exported by the section below.
+        &nbsp;
+        <Popover
+          trigger="hover"
+          title="Example of JSON Content"
+          content={
+            <pre className="max-w-lg max-h-60 whitespace-pre-wrap overflow-y-scroll">
+              {JSON.stringify(exampleContent, null, 2)}
+            </pre>
+          }
+        >
+          <InfoCircleOutlined />
+        </Popover>
       </Paragraph>
       <Space direction="vertical">
         <Upload
@@ -46,10 +89,14 @@ export default function ManageData() {
           onClick={() => {
             setImportLoading(true);
             const reader = new FileReader();
-            // reader.onload = async (event) => {
-            //   const content = event.target?.result as string;
-            //   // TODO: Handle import data
-            // }
+            reader.onload = (event) => {
+              const content = event.target?.result as string;
+              console.log(JSON.parse(content))
+              AdminService.importJson(JSON.parse(content))
+                .then(() => messageSuccess("Successfully imported JSON data."))
+                .catch((error) => messageError(`Failed to import JSON data. ${error.body.message || ''}`))
+                .finally(() => setImportLoading(false));
+            }
             reader.readAsText(importFiles[0] as RcFile);
           }}
         >

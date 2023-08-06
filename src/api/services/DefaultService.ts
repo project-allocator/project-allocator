@@ -9,26 +9,26 @@ import { request as __request } from '../core/request';
 export class DefaultService {
 
     /**
-     * Root
+     * Test Guest
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static root(): CancelablePromise<any> {
+    public static testGuest(): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/',
+            url: '/api/test/guest',
         });
     }
 
     /**
-     * Test
+     * Test Auth
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static test(): CancelablePromise<any> {
+    public static testAuth(): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/test',
+            url: '/api/test/auth',
         });
     }
 

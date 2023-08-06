@@ -7,11 +7,14 @@ export { CancelablePromise, CancelError } from './core/CancelablePromise';
 export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
+export type { Body_import_json } from './models/Body_import_json';
 export type { HTTPValidationError } from './models/HTTPValidationError';
 export type { NotificationRead } from './models/NotificationRead';
 export type { ProjectCreate } from './models/ProjectCreate';
+export type { ProjectImport } from './models/ProjectImport';
 export type { ProjectRead } from './models/ProjectRead';
 export type { ProjectUpdate } from './models/ProjectUpdate';
+export type { UserImport } from './models/UserImport';
 export type { UserRead } from './models/UserRead';
 export type { UserUpdate } from './models/UserUpdate';
 export type { ValidationError } from './models/ValidationError';

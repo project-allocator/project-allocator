@@ -2,6 +2,8 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { Body_import_json } from '../models/Body_import_json';
+
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
@@ -160,7 +162,7 @@ export class AdminService {
     public static exportJson(): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/projects/export/json',
+            url: '/api/export/json',
         });
     }
 
@@ -172,7 +174,27 @@ export class AdminService {
     public static exportCsv(): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/projects/export/csv',
+            url: '/api/export/csv',
+        });
+    }
+
+    /**
+     * Import Json
+     * @param requestBody
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static importJson(
+        requestBody: Body_import_json,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/import/json',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
         });
     }
 

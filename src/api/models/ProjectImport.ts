@@ -3,7 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type ProjectUpdate = {
+export type ProjectImport = {
     title: string;
     description: string;
     categories: Array<string>;
@@ -18,6 +18,7 @@ export type ProjectUpdate = {
     lorem8: string;
     lorem9: Array<string>;
     lorem10: string;
+    id: number;
     proposer_id: number;
 };
 
