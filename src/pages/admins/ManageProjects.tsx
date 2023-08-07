@@ -17,7 +17,7 @@ export default function ManageProjects() {
   return (
     <>
       <Title level={3}>
-        Administration
+        Manage Projects
       </Title>
       <Divider />
       <Title level={4}>Non-Approved Projects</Title>

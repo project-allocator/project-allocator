@@ -45,7 +45,7 @@ export default function ManageData() {
   return (
     <>
       <Title level={3}>
-        Import/Export Data
+        Manage Data
       </Title>
       <Divider />
       <Title level={4}>Import Data</Title>

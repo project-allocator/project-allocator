@@ -25,7 +25,7 @@ export default function ManageUsers() {
   return (
     <>
       <Title level={3}>
-        Administration
+        Manage Users
       </Title>
       <Divider />
       <Title level={4}>Check Missing Users</Title>

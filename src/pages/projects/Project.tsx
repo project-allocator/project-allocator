@@ -34,7 +34,7 @@ export default function Project() {
   return (
     <>
       <ProjectHeader
-        title={`Project ${project.id}`}
+        title={`Project #${project.id}`}
         project={project}
         hasConflict={hasConflict}
         hasAllocatees={allocatees?.length > 0}

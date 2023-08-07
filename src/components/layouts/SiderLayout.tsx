@@ -70,9 +70,14 @@ export default function SiderLayout({ children }: SiderLayoutProps) {
                   label: <Link to="/admin/allocations">Manage Allocations</Link>,
                 },
                 {
+                  key: '/admin/notifications',
+                  icon: <LockOutlined />,
+                  label: <Link to="/admin/notifications">Manage Notifications</Link>,
+                },
+                {
                   key: '/admin/data',
                   icon: <LockOutlined />,
-                  label: <Link to="/admin/data">Import/Export Data</Link>,
+                  label: <Link to="/admin/data">Manage Data</Link>,
                 },
               ]
             }

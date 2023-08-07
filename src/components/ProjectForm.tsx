@@ -47,7 +47,7 @@ export function ProjectForm({ initProject }: ProjectFormProps) {
           rules={[{ required: true, message: 'Please enter your project description!' }]}
           initialValue={initProject?.description}
         >
-          <TextArea rows={5} maxLength={500} showCount />
+          <TextArea rows={5} maxLength={10000} showCount />
         </Form.Item>
         <ProjectDetailsForm initProject={initProject} />
         <ProjectCategoriesForm initProject={initProject} />
@@ -101,7 +101,7 @@ function ProjectDetailsForm({ initProject }: ProjectDetailsFormProps) {
             case 'textfield':
               return <Input />;
             case 'textarea':
-              return <TextArea rows={5} maxLength={500} showCount />;
+              return <TextArea rows={5} maxLength={10000} showCount />;
             case 'number':
               return <InputNumber className='w-48' />;
             case 'slider':

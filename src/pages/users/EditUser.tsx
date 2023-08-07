@@ -29,13 +29,13 @@ export function EditUser() {
         method="post"
         layout="vertical"
         autoComplete="off"
+        className='ml-6 max-w-xl'
         onFinish={(values) =>
           submit(values, {
             method: 'post',
             encType: "application/json"
           })
         }
-        className='ml-6 max-w-xl'
       >
         <Form.Item
           label="Name"
