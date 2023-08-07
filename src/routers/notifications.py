@@ -65,11 +65,10 @@ def send_notifications(
     session: Session = Depends(get_session),
 ):
     # Get the email template.
-    with open(f"{ROOT_DIR}/src/resources/email-template.html") as f:
-        template = f.read()
-    # Get the target users
-    users = [session.exec(select(User).where(User.email == "tm821@ic.ac.uk")).one()]
-    # users = session.exec(select(User).where(User.role.in_(roles))).all()
+    with open(f"{ROOT_DIR}/src/resources/email-template.html") as file:
+        template = file.read()
+    # Get the target users.
+    users = session.exec(select(User).where(User.role.in_(roles))).all()
     for user in users:
         # Create notification entries in the database.
         notification = Notification(title=title, description=description)
