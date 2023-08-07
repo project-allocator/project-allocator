@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends, HTTPException, Security
 import requests
 from sqlmodel import Session, select
 
+from src.config import ROOT_DIR
+
 from ..dependencies import check_admin, get_session, get_token, get_user
 from ..models import Notification, NotificationRead, User
 
@@ -62,31 +64,41 @@ def send_notifications(
     token: str = Depends(get_token),
     session: Session = Depends(get_session),
 ):
-    # Create notifications in the database.
-    users = session.exec(select(User).where(User.role.in_(roles))).all()
+    # Get the email template.
+    with open(f"{ROOT_DIR}/src/resources/email-template.html") as f:
+        template = f.read()
+    # Get the target users
+    users = [session.exec(select(User).where(User.email == "tm821@ic.ac.uk")).one()]
+    # users = session.exec(select(User).where(User.role.in_(roles))).all()
     for user in users:
+        # Create notification entries in the database.
         notification = Notification(title=title, description=description)
         user.notifications.append(notification)
         session.add(user)
         session.commit()
         session.refresh(user)
-    # Send email to every user as admin.
-    data = {
-        "message": {
-            "subject": title,
-            "body": {"contentType": "Text", "content": description},
-            "toRecipients": [],
-            # "toRecipients": [{"emailAddress": {"address": "tm821@ic.ac.uk"}}],
-            # "toRecipients": [{"emailAddress": {"address": user.email}} for user in users],
-        },
-        "saveToSentItems": "false",
-    }
-    requests.post(
-        "https://graph.microsoft.com/v1.0/me/sendMail",
-        data=json.dumps(data),
-        headers={
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json",
-        },
-        timeout=30,
-    )
+        # Send email to every user as admin.
+        data = {
+            "message": {
+                "subject": f"[Project Allocator] {title}",
+                "body": {
+                    "contentType": "HTML",
+                    "content": template.format(
+                        name=user.name,
+                        title=title,
+                        description=description,
+                    ),
+                },
+                "toRecipients": [{"emailAddress": {"address": user.email}}],
+            },
+            "saveToSentItems": "false",
+        }
+        requests.post(
+            "https://graph.microsoft.com/v1.0/me/sendMail",
+            data=json.dumps(data),
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+            },
+            timeout=30,
+        )
