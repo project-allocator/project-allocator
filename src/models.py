@@ -24,8 +24,15 @@ class UserBase(SQLModel):
 class User(UserBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
 
-    created_at: datetime = Field(default=datetime.utcnow())
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(
+        nullable=False,
+        default_factory=datetime.utcnow,
+    )
+    updated_at: datetime = Field(
+        nullable=False,
+        default_factory=datetime.utcnow,
+        sa_column_kwargs={"onupdate": datetime.utcnow},
+    )
 
     # Specify foreign keys using 'sa_relationship_kwargs'
     # as there are multiple relationships mapping from Project to User model.
@@ -114,8 +121,15 @@ ProjectBase = create_model(
 class Project(ProjectBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
 
-    created_at: datetime = Field(default=datetime.utcnow())
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(
+        nullable=False,
+        default_factory=datetime.utcnow,
+    )
+    updated_at: datetime = Field(
+        nullable=False,
+        default_factory=datetime.utcnow,
+        sa_column_kwargs={"onupdate": datetime.utcnow},
+    )
 
     # Set user_alter to True to avoid circular dependency error when dropping table
     # https://dev.to/whchi/disable-sqlmodel-foreign-key-constraint-55kp
@@ -172,8 +186,15 @@ class Shortlist(SQLModel, table=True):
     # Preference of 0 has the highest preference.
     preference: int
 
-    created_at: datetime = Field(default=datetime.utcnow())
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(
+        nullable=False,
+        default_factory=datetime.utcnow,
+    )
+    updated_at: datetime = Field(
+        nullable=False,
+        default_factory=datetime.utcnow,
+        sa_column_kwargs={"onupdate": datetime.utcnow},
+    )
 
     user_id: Optional[int] = Field(
         default=None,
@@ -216,8 +237,15 @@ class NotificationBase(SQLModel):
 class Notification(NotificationBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
 
-    created_at: datetime = Field(default=datetime.utcnow())
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(
+        nullable=False,
+        default_factory=datetime.utcnow,
+    )
+    updated_at: datetime = Field(
+        nullable=False,
+        default_factory=datetime.utcnow,
+        sa_column_kwargs={"onupdate": datetime.utcnow},
+    )
 
     user_id: Optional[int] = Field(default=None, foreign_key="user.id")
     user: User = Relationship(back_populates="notifications")
