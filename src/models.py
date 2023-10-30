@@ -166,7 +166,7 @@ class ProjectCreate(ProjectBase):
 
 
 class ProjectUpdate(ProjectBase):
-    proposer_id: int
+    pass
 
 
 # Schema used for importing data from JSON.
