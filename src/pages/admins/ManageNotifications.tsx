@@ -8,7 +8,9 @@ import { useState } from "react";
 const { Title, Paragraph } = Typography;
 
 export default function ManageNotifications() {
-  const [sendNotificationsLoading, setSendNotificationsLoading] = useState<boolean>(false);
+  const [proposalNotificationsLoading, setProposalNotificationsLoading] = useState<boolean>(false);
+  const [allocationNotificationsLoading, setAllocationNotificationsLoading] = useState<boolean>(false);
+  const [sendNotificationsLoading, setCustomNotificationsLoading] = useState<boolean>(false);
   const { messageSuccess, messageError } = useMessage();
 
   return (
@@ -24,9 +26,9 @@ export default function ManageNotifications() {
       </Paragraph>
       <Button
         icon={<SendOutlined />}
-        loading={sendNotificationsLoading}
+        loading={proposalNotificationsLoading}
         onClick={async () => {
-          setSendNotificationsLoading(true);
+          setProposalNotificationsLoading(true);
           await NotificationService.sendNotifications(
             "Project proposals have been approved.",
             "Students will be able to view and shortlist your project proposals from now onwards.",
@@ -34,7 +36,7 @@ export default function ManageNotifications() {
           )
             .then(() => messageSuccess("Successfully sent notifications."))
             .catch(() => messageError("Failed to send notifications."));
-          setSendNotificationsLoading(false);
+          setProposalNotificationsLoading(false);
         }}
       >
         Send
@@ -46,9 +48,9 @@ export default function ManageNotifications() {
       </Paragraph>
       <Button
         icon={<SendOutlined />}
-        loading={sendNotificationsLoading}
+        loading={allocationNotificationsLoading}
         onClick={async () => {
-          setSendNotificationsLoading(true);
+          setAllocationNotificationsLoading(true);
           await NotificationService.sendNotifications(
             "Projects have been allocated.",
             "Please accept or decline your project allocation on the Project Allocator.",
@@ -56,7 +58,7 @@ export default function ManageNotifications() {
           )
             .then(() => messageSuccess("Successfully sent notifications."))
             .catch(() => messageError("Failed to send notifications."));
-          setSendNotificationsLoading(false);
+          setAllocationNotificationsLoading(false);
         }}
       >
         Send
@@ -72,8 +74,7 @@ export default function ManageNotifications() {
         autoComplete="off"
         className='max-w-xl'
         onFinish={async (values) => {
-          console.log(values)
-          setSendNotificationsLoading(true);
+          setCustomNotificationsLoading(true);
           await NotificationService.sendNotifications(
             values.title,
             values.description,
@@ -81,7 +82,7 @@ export default function ManageNotifications() {
           )
             .then(() => messageSuccess("Successfully sent notifications."))
             .catch(() => messageError("Failed to send notifications."));
-          setSendNotificationsLoading(false);
+          setCustomNotificationsLoading(false);
         }
         }
       >
