@@ -18,3 +18,10 @@ This is the repository that contains:
 * React Router v6 for routing
 
 ## Code Structure
+
+## Development Guide
+
+* When you update your backend API endpoints, make sure to run `yarn run generate` to auto-generate the API client.
+    * If the hot reload fails, you need to restart the frontend container by:
+        1. `cd` into `project-allocator-deploy`.
+        2. Run `docker-compose restart frontend`.
