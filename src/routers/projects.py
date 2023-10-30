@@ -74,6 +74,7 @@ async def update_project(
         raise HTTPException(status_code=401, detail="Project not owned by user")
     # Update each property of the project.
     for key, value in project_data.dict(exclude_unset=True).items():
+        print(key, value)
         setattr(project, key, value)
     session.add(project)
     session.commit()
