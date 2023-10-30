@@ -1,22 +1,21 @@
-import { AdminService, UserRead, UserService } from "@/api";
-import { getInitialLetters } from "@/utils";
+import { AdminService, AllocationService, UserRead, UserService } from "@/api";
+import UserList from "@/components/UserList";
 import { CheckOutlined, UploadOutlined } from '@ant-design/icons';
-import { Avatar, Button, Divider, Input, List, Modal, Space, Typography, Upload, UploadFile } from "antd";
+import { Button, Divider, Modal, Space, Typography, Upload, UploadFile } from "antd";
 import { RcFile } from "antd/es/upload";
 import { useState } from "react";
-import { Link, useLoaderData } from "react-router-dom";
+import { useLoaderData } from "react-router-dom";
 
-const { Search } = Input;
 const { Title, Paragraph } = Typography;
 
 export async function manageUsersLoader() {
-  const users = await UserService.readUsers();
-  return [users];
+  const allUsers = await UserService.readUsers();
+  const unallocatedUsers = await AllocationService.readUnallocatedUsers();
+  return [allUsers, unallocatedUsers];
 }
 
 export default function ManageUsers() {
-  const [users] = useLoaderData() as [UserRead[]];
-  const [searchText, setSearchText] = useState<string>('');
+  const [allUsers, unallocatedUsers] = useLoaderData() as [UserRead[], UserRead[]];
   const [checkMissingUsersFiles, setCheckMissingUsersFiles] = useState<UploadFile[]>([]);
   const [checkMissingUsersLoading, setCheckMissingUsersLoading] = useState<boolean>(false);
   const [missingEmails, setMissingEmails] = useState<string[]>([]);
@@ -87,34 +86,17 @@ export default function ManageUsers() {
           ) : "You can close this window now."}
       </Modal>
       <Divider />
+      <Title level={4}>Unallocated Users</Title>
+      <Paragraph className="text-slate-500">
+        Users who have not been allocated to any project will be shown here.
+      </Paragraph>
+      <UserList users={unallocatedUsers} />
+      <Divider />
       <Title level={4}>Manage Users</Title>
       <Paragraph className="text-slate-500">
         Search for users and click on the link to view, edit and delete them.
       </Paragraph>
-      <Search
-        className="w-64 mb-4"
-        placeholder="Enter search text"
-        onChange={(event) => setSearchText(event.target.value)}
-        onSearch={(searchText) => setSearchText(searchText)}
-      />
-      <List
-        itemLayout="horizontal"
-        pagination={users.length > 0 && { position: "bottom" }}
-        dataSource={users.filter((user) => [
-          user.name,
-          user.email,
-          user.role,
-        ].some((text) => text.toLowerCase().includes(searchText.toLowerCase())))}
-        renderItem={(user) => (
-          <List.Item>
-            <List.Item.Meta
-              avatar={<Avatar>{getInitialLetters(user.name)}</Avatar>}
-              title={<Link to={`/users/${user.id}`}>{user.name}</Link>}
-              description={user.email}
-            />
-          </List.Item>
-        )}
-      />
+      <UserList users={allUsers}/>
     </>
   );
 }
