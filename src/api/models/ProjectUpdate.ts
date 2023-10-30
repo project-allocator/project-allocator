@@ -18,6 +18,5 @@ export type ProjectUpdate = {
     lorem8: string;
     lorem9: Array<string>;
     lorem10: string;
-    proposer_id: number;
 };
 

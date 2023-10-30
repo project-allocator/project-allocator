@@ -184,14 +184,26 @@ export class AllocationService {
     }
 
     /**
-     * Read Conflicting
+     * Read Conflicting Projects
      * @returns ProjectRead Successful Response
      * @throws ApiError
      */
-    public static readConflicting(): CancelablePromise<Array<ProjectRead>> {
+    public static readConflictingProjects(): CancelablePromise<Array<ProjectRead>> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/projects/conflicting',
+        });
+    }
+
+    /**
+     * Read Unallocated Users
+     * @returns UserRead Successful Response
+     * @throws ApiError
+     */
+    public static readUnallocatedUsers(): CancelablePromise<Array<UserRead>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/users/unallocated',
         });
     }
 
