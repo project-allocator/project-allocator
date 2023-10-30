@@ -1,3 +1,4 @@
 # Project Allocator v3
 
-* Customisable function for allocation
+* Extract the function responsible for allocation
+* Add option to disable shortlists
