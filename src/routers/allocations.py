@@ -1,9 +1,8 @@
-import random
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlmodel import Session, select
 
-from ..config import config
+from .. import algorithms
 from ..dependencies import (
     block_undos_if_shutdown,
     check_admin,
@@ -22,46 +21,16 @@ router = APIRouter(tags=["allocation"])
     dependencies=[Security(check_admin)],
 )
 async def allocate_projects(session: Session = Depends(get_session)):
-    # Number of students per project
-    count = config["projects"]["allocations"]["students"]
-    # Only allocate students to approved projects
-    # 'Project.approved == True' does seem to be redundant
-    # but is required by SQLModel to construct a valid query.
-    projects = session.exec(select(Project).where(Project.approved == True)).all()
-    # Allocate shortlisted students to projects
-    for project in projects:
-        shortlists = session.exec(
-            select(Shortlist)
-            .where(Shortlist.project_id == project.id)
-            .order_by(Shortlist.preference.desc())
-        ).all()
-        shortlisters = list(map(lambda shortlist: shortlist.user, shortlists))
-        project.allocatees = []
-        project.allocatees = shortlisters[: min(count, len(shortlisters))]
-        session.add(project)
-        session.commit()
-    # Allocate remaining students to projects
-    for project in projects:
-        # fmt: off
-        non_allocatees = session.exec(
-            select(User)
-            .where(User.role == "student")
-            .where(User.allocated == None)
-        ).all()
-        if len(project.allocatees) < count:
-            project.allocatees += random.sample(
-                non_allocatees,
-                min(count - len(project.allocatees), len(non_allocatees)),
-            )
-            session.add(project)
-            session.commit()
-    # Reset student's acceptance status
-    students = session.exec(select(User).where(User.role == "student")).all()
-    for student in students:
-        student.accepted = None
-        session.add(student)
-        session.commit()
-    return {"ok": True}
+    users = session.exec(select(User)).all()
+    projects = session.exec(select(Project)).all()
+    shortlists = session.exec(select(Shortlist)).all()
+    # Allocate projects using the custom algorithm
+    res = algorithms.allocate_projects(users, projects, shortlists)
+    # Reflect changes to the models made by the custom algorithm
+    for entity in users + projects + shortlists:
+        session.add(entity)
+    session.commit()
+    return res
 
 
 @router.delete(
@@ -210,7 +179,7 @@ async def is_allocated(
     response_model=List[ProjectRead],
     dependencies=[Security(check_admin)],
 )
-async def read_conflicting(session: Session = Depends(get_session)):
+async def read_conflicting_projects(session: Session = Depends(get_session)):
     # Only show approved projects.
     # 'Project.approved == True' does seem to be redundant
     # but is required by SQLModel to construct a valid query.
@@ -222,3 +191,13 @@ async def read_conflicting(session: Session = Depends(get_session)):
         if not resolved:
             conflicting.append(project)
     return conflicting
+
+
+@router.get(
+    "/users/unallocated",
+    response_model=List[UserRead],
+    dependencies=[Security(check_admin)],
+)
+async def read_unallocated_users(session: Session = Depends(get_session)):
+    unallocated = session.exec(select(User).where(User.allocated == None)).all()
+    return unallocated
