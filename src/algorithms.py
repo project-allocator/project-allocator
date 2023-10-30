@@ -28,7 +28,8 @@ def allocate_projects_random(
     return {"ok": True}
 
 
-# Randomly allocate students
+# Randomly allocate students to projects but make sure every student gets allocated to a project
+# Ignores the value of `students_per_project` given in config.yaml
 # fmt:off
 def allocate_projects_random_adaptive(
     users: List[User],
