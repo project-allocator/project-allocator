@@ -7,7 +7,7 @@ const { Title, Paragraph } = Typography;
 
 export async function manageProjectsLoader() {
   const nonApprovedProjects = await ProposalService.readNonApproved();
-  const conflictingProjects = await AllocationService.readConflicting();
+  const conflictingProjects = await AllocationService.readConflictingProjects();
   return [nonApprovedProjects, conflictingProjects];
 }
 
