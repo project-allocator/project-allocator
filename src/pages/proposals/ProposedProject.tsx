@@ -1,4 +1,4 @@
-import { ProjectRead, ProposalService } from '@/api';
+import { AdminService, ProjectRead, ProposalService } from '@/api';
 import { ProjectsTable } from '@/components/ProjectTable';
 import StaffRoute from '@/routes/StaffRoute';
 import { PlusOutlined } from '@ant-design/icons';
@@ -8,11 +8,13 @@ import { Link, useLoaderData } from "react-router-dom";
 const { Title } = Typography;
 
 export async function proposedProjectLoader() {
-  return await ProposalService.readProposed()
+  const projects = await ProposalService.readProposed();
+  const areProposalsShutdown = await AdminService.areProposalsShutdown();
+  return [projects, areProposalsShutdown];
 }
 
 export default function ProposedProject() {
-  const projects = useLoaderData() as ProjectRead[];
+  const [projects, areProposalsShutdown] = useLoaderData() as [ProjectRead[], boolean];
 
   return (
     <>
@@ -20,13 +22,14 @@ export default function ProposedProject() {
         <Title level={3} className="mb-0">
           List of Proposed Projects
         </Title>
-        <StaffRoute>
-          <Tooltip title="Add">
-            <Link to="/projects/add" >
-              <Button shape="circle" icon={<PlusOutlined />} />
-            </Link>
-          </Tooltip>
-        </StaffRoute>
+        {!areProposalsShutdown &&
+          <StaffRoute>
+            <Tooltip title="Add">
+              <Link to="/projects/add" >
+                <Button shape="circle" icon={<PlusOutlined />} />
+              </Link>
+            </Tooltip>
+          </StaffRoute>}
       </Space>
       <Divider />
       <ProjectsTable projects={projects} />
