@@ -59,13 +59,16 @@ axios.interceptors.request.use(async (config) => {
       account: msalInstance.getActiveAccount()!,
     });
     config.headers.set('Authorization', `Bearer ${apiToken}`);
-    // See the following discussion for the motivation behind sending access token for Microsoft Graph API.
+    // We also provide the Microsoft Graph API token to the backend server
+    // so that it can access the user profile and send emails with that token.
+    // See the following discussion for the motivation:
     // https://www.reddit.com/r/webdev/comments/v62e78/authenticate_in_the_frontend_and_send_a_token_to/
     const { accessToken: graphToken } = await msalInstance.acquireTokenSilent({
       scopes: ["User.Read", "Mail.Send"],
       account: msalInstance.getActiveAccount()!,
     });
-    // Access token for Microsoft Graph API must be obtained per resource.
+    // Access token for Microsoft Graph API must be obtained per resource
+    // i.e. We cannot acquire a single token instead of the two acquireTokenSilent() calls
     config.headers.set('X-Graph-Token', graphToken);
   }
   return config;
