@@ -184,10 +184,57 @@ https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/Regi
 
 You may be required to login with your email address (Imperial)
 
-Click **New Registrations**
-
-
-TODO: Tutorial on how to setup Azure app registrations
+1. Click **New Registrations** at the top left
+    1. Enter `project-allocator` to **Name**
+    2. Select **Accounts in this organizational directory only (Imperial College London only - Single tenant)** for **Supported account types**
+    3. Select **Single-page application (SPA)** and enter `http://localhost:3000` for **Redirect URI (optional)**
+    4. Click **Register**
+2. Click **Manage** > **Manifest**
+    1. Edit the JSON file by setting `"accessTokenAcceptedVersion"` to `2`
+3. Click **Manage** > **Expose an API**
+    1. Click **Add a scope**
+    2. Leave the **Application ID URI** and click **Save and continue**
+    3. Now you can add a scope:
+        1. Enter `user_impersonation` to **Scope name**
+        2. Select **Admins and users** for **Who can consent?**
+        3. Enter `Access API as user` to **Admin consent display name**
+        4. Enter `Allows the app to access the API as the user.` to **Admin consent description**
+        5. Enter `Access API as you` to **User consent display name**
+        6. Enter `Allows the app to access the API as you.` to **User consent description**
+        7. Select **Enabled** for **State**
+        8. Click **Add scope**
+4. Click **API permissions**
+    1. Now you can add `project-allocator` API permissions:
+        1. Click **Add a permission**
+        2. Click **My APIs** tab
+        3. Select `project-allocator`
+        4. Leave the checkbox ticked and click **Add permissions**
+    2. Now you can add Microsoft Graph API permissions:
+        1. Click **Add a permission** again
+        2. Click **Microsoft APIs** tab
+        3. Click **Microsoft Graph** card at the top
+        4. Select **Delegated permissions**
+        5. Search for `User.Read` and `Mail.Send` and tick the checkboxes
+        6. Click **Add permissions**
+5. Click **Overview**
+    1. Note down your **Tenant ID** and **Application (client) ID**
+    2. Go to the frontend repository. In `.env`, set `VITE_TENANT_ID` to **Tenant ID** and `VITE_CLIENT_ID` to **Application (client) ID**
+    3. Go to the backend repository. In `.env`, set `TENANT_ID` to **Tenant ID** and `APP_CLIENT_ID` to **Application (client) ID**
+6. Now repeat steps 1-5 except you need to:
+    1. In step 1.1, enter `project-allocator-openapi` to **Name**
+    2. In step 1.3, select **Single-page application (SPA)** and enter `http://localhost:8000/oauth2-redirect` to **Redirect URI (optional)**
+    3. In step 5, you need to:
+        1. Note down your **Application (client) ID** for `project-allocator-openapi`
+        2. Go to the backend repository. In `.env`, set `OPENAPI_CLIENT_ID` to **Application (client) ID**
+7. After deployment is successful, go to the deployment repository on GitHub
+    1. Click **Actions**
+    2. Select one of the workflow runs
+    3. Select `deploy`, and click **Print Application URL**
+    4. Note down your application URL
+    5. Now head over to Azure Portal
+    6. Click **Manage** > **Authentication**
+    7. In **Single-page application** > **Redirect URIs**, click **Add URI**
+    8. Enter your application URL
 
 ## Getting SSH Access to Container Component
 
