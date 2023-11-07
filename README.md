@@ -47,11 +47,19 @@ This is the repository that contains:
         * Edit this file when you add your own SQLModel models
         * Uses Polyfactory: https://polyfactory.litestar.dev/latest/
     * `main.py`
-        * Main entry point for the backend server
+        * Main entry point for the backend
         * Sets up the FastAPI server and OpenAPI documentation
     * `models.py`
         * Edit this file to add your own SQLModel models e.g. model for project supervisor
         * Currently SQLModel has issues with circular import, and the easiest solution is to put all models in a single file: https://sqlmodel.tiangolo.com/tutorial/code-structure/
+* `Dockerfile`
+    * Dockerfile for local development
+* `Dockerfile.production`
+    * Dockerfile for production on Azure
+    * Takes security constraints of Appvia Wayfinder into account
+* `.env`
+    * Sets up environment variables for local development
+    * Environment variables for production development are provided via Appvia Wayfinder
 * `config.yaml`
     * Configuration for the Project Allocator
     * See the deployment repository for more details
