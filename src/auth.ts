@@ -17,10 +17,12 @@ export const msalInstance = new PublicClientApplication({
     postLogoutRedirectUri: '/signin',
   },
   cache: {
+    // Store MSAL cache in session.
     cacheLocation: "sessionStorage",
     storeAuthStateInCookie: false,
   },
   system: {
+    // TODO: Log all messages for debugging purposes.
     loggerOptions: {
       loggerCallback: (level, message, containsPii) => {
         if (containsPii) {

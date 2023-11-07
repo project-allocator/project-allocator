@@ -78,6 +78,7 @@ export default function HeaderLayout({ children }: HeaderLayoutProps) {
           </Space>
         </AuthRoute>
       </Header>
+      {/* Header layout comes with a notification drawer. */}
       <Drawer
         title="Notifications"
         placement="right"
