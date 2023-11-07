@@ -62,11 +62,40 @@ This is the repository that contains:
 
 ## Development Guide
 
-### Updating API endpoints
+### Hot Reload
 
-When you update your backend API endpoints, make sure to run `yarn run generate` to auto-generate the API client.
+The frontend server automatically when it detects any changes under the root directory.
 
-If the hot reload fails, you need to restart the frontend container by:
+But this may fail if you edit some of the configuration files e.g. package.json. In case of such failure, try running:
+
+```bash
+~$ docker compose restart --build frontend
+```
+
+### Entering the container
+
+```bash
+~$ docker compose up -d
+~$ docker compose exec -it frontend /bin/bash
+```
+
+### Auto-generate API client
+
+When you update the API endpoint (e.g. URL), make sure to run the following command:
+
+```bash
+~$ yarn run generate
+```
+
+This will auto-generate the API client under `src/api/` by asking the backend server about its specification.
+
+In fact, this command is run every minute inside the development container, so things may just work without it.
+And the files under `src/` are synchronised between the local machine and the development container, meaning you will see the changes on your editor immediately.
+
+In case of any failure, you will need to restart the frontend container by:
 
 1. `cd` into `project-allocator-deploy`.
 2. Run `docker-compose restart frontend`.
+
+Note that the names of the client functions auto-generated are based on the names of Python functions in the backend
+e.g. `read_project()` to `ReadProject`, so you may need to update your client code if you renamed one of them.
