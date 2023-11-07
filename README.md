@@ -24,7 +24,7 @@ https://private-user-images.githubusercontent.com/28210288/279185157-04d1b617-fe
 
 First, you need to clone this repository with `git clone https://github.com/Digital-Garage-ICL/project-allocator-deploy`.
 
-Inside the cloned repository you will find the `setup.sh` script. 
+Inside the cloned repository you will find the `setup_dev.sh` script. 
 You can run it as follows:
 
 ```bash
@@ -77,15 +77,27 @@ docker compose exec -it backend poetry run db seed --yes
 
 For those who are curious - `db` is a custom command which comes with utility functions for managing the database in development.
 
-Now you need to move onto the `project-allocator-frontend` repository and generate the frontend client scripts, which will be used by the React components to call the backend API:
+The database is now up and running.
+You can launch your faviourite DB client and explore the contents with the following credentials:
+
+* Address: 0.0.0.0:5432
+* Database name: default
+* Database username: postgres
+* Database password: postgres
+
+Let's us move onto the `project-allocator-frontend` repository and generate the frontend client scripts. This will be used by the React components to call the backend API:
 
 ```bash
 cd ../project-allocator-frontend && yarn generate
 ```
 
-Finally, you can check if everything is working by visiting [http://localhost:3000](http://localhost:3000) on your browser. You can also visit [http://localhost:8000/docs](http://localhost:8000/docs) to check the backend's Open API documentation.
+Finally, you can check if everything is working by visiting [http://localhost:3000](http://localhost:3000) on your browser.
+
+You can also visit [http://localhost:8000/docs](http://localhost:8000/docs) to check the backend's Open API documentation.
 
 ## Setting up the Production Environment
+
+### Using the Setup Script
 
 You can setup the production environment and enable automatic deployment of your application using Wayfinder.
 The deployment will be triggered every time you push to this repository on the `main` branch.
@@ -93,7 +105,7 @@ The deployment will be triggered every time you push to this repository on the `
 First, you need to clone this repository with `git clone https://github.com/Digital-Garage-ICL/project-allocator-deploy`.
 
 To begin with, check if you have a Wayfinder workspace created to deploy this application. 
-If not, you can create a new workspace with the `setup.sh` script, which you will find in the cloned repository:
+If not, you can create a new workspace with the `setup_prod.sh` script, which you will find in the cloned repository:
 
 ```bash
 ./scripts/setup_prod.sh
@@ -103,12 +115,12 @@ When it prompts "Do you already have a Wayfinder workspace (yes/no)?", type "yes
 Note that the workspace name must consist of 2-5 alphanumeric characters and must be unique within the Wayfinder cluster.
 
 Now you can navigate to the Wayfinder UI at [https://portal-20-0-245-170.go.wayfinder.run/](https://portal-20-0-245-170.go.wayfinder.run/) and start creating your Wayfinder application.
-The URL of your workspace should be output by the `setup.sh` script.
+The URL of your workspace should be output by the `setup_prod.sh` script.
 
-Finally, you are ready to setup your GitHub workflow! Simply run the `setup.sh` script as follows:
+Finally, you are ready to setup your GitHub workflow! Simply run the `setup_prod.sh` script (again) as follows:
 
 ```bash
-./scripts/setup_repo.sh
+./scripts/setup_prod.sh
 ```
 
 and when it prompts "Do you already have a Wayfinder workspace (yes/no)?", type "no" to continue.
@@ -119,14 +131,184 @@ This will complete the following tasks for you:
 * Obtain a Wayfinder access token and store it in this repository's GitHub secrets.
 * Store the GitHub personal access token to Kubernetes secrets so that the Kubernetes cluster can pull your Docker images.
 
+### Manual Setup (Not Recommended)
+
+We use Appvia Wayfinder for simplified and secure deployment of the Project Allocator.
+
+Before you proceed, you will need to understand the following vocabularies of Appvia Wayfinder:
+
+* Workspace
+    * Way to group users and cloud infrastructure for isolation
+* Application
+    * Models the elements of your applications (containers, cloud resources, environments, etc)
+* Components
+    * Individually deployable parts of your application
+        * Container components
+            * Define a set of properties for Kubernetes deployment management
+        * Cloud resource components
+            * Represents a dependency of your application served by a cloud service
+* Environment
+    * Map to a namespace in Kubernetes
+
+Find more on: https://docs.appvia.io/wayfinder
+
+The production environment is specified using Appvia Wayfinder's configuration files, which you can find under `manifests/` in this repository.
+
+This can be broken down into as follows:
+
+* Frontend container component
+    * Listens to port 8080
+* Backend container component
+    * Listens to port 8000
+* Database cloud resource component
+    * Uses Azure Postgresql preconfigured by Appvia Wayfinder admins
+* Ingress
+    * Redirets requests at port 80 to frontend container component
+    * Configures an API proxy
+        * Redirects API (`/api`) requests at port 80 to backend container component
+* Backend network policy
+    * Allows redirected requests from ingress to backend container component
+        * Blocked by Appvia Wayfinder by default
+
+Manual setup for the production environment involves a lot of technical details which we will not discuss here.
+
+You can also visit the Web UI to customise your production setup:
+https://portal-20-0-245-170.go.wayfinder.run
+
+Bear in mind that you also need to update the configuration files under `manifests/`, otherwise your changes will get overwritten by a CI/CD run.
+
 ## Setting up the Microsoft SSO
+
+First, head over to Azure AAD's app registrations:
+https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/RegisteredApps
+
+You may be required to login with your email address (Imperial)
+
+Click **New Registrations**
+
 
 TODO: Tutorial on how to setup Azure app registrations
 
-## Connecting to the Azure Database
+## Getting SSH Access to Container Component
 
-TODO: Tutorial on how to connect to the Azure database.
+You can run the following command(s):
 
 ```bash
-./scripts/connect_db.sh
+./scripts/access_pod.sh frontend
+./scripst/access_pod.sh backend
 ```
+
+This script will pick one running pod and ssh into it using your Appvia Wayfinder credentials.
+
+## Connecting to Azure Database
+
+You can run the following command:
+
+```bash
+./scripts/access_db.sh
+```
+
+This script will print out the necessary credentials to access your DB on Azure.
+
+## Connecting to AKS via Lens
+
+Lens is a Kubernetes IDE which lets you easily debug and monitor your Project Allocator instance once deployed.
+
+You can install Lens at https://k8slens.dev/.
+
+Before you launch Lens, run the following commands:
+
+```bash
+wf use workspace <YOUR_WORKSPACE_NAME>
+wf access env project-allocator dev --role namespace.admin
+```
+
+Now if you launch Lens, you should see your pods running under **Workloads** > **Pods**.
+
+## Features
+
+Administrators are capable of:
+* Browse approved projects
+* Check if all users have signed up to the Project Allocator with a list of emails
+* Check if there are any students who have not been allocated to a project
+* Check if there are any projects which have not been approved
+* Check if there are any projects who did not accept project allocation
+* Shutdown new project proposals/shortlists and undos for project allocation approval/disapproval
+* Mass-allocate/deallocate projects to/from students using the customised algorithm
+* Send in-app and email notifications
+* Import/export data in the DB
+* Browse all users
+* Delete/Edit all users
+* Approving/Disapproving a new project proposed by other staff/admin
+
+Staff are capable of:
+* Browse approved projects
+* Browse proposed projects
+* Proposing a new project
+* Editing/Deleting a proposed project
+* Check which students shortlisted for a prposed project
+* Check which students were allocated to a proposed project
+* Manually allocate/deallocate projects to/from students
+
+Students are capable of:
+* Browse approved projects
+* Shortlist for an approved project
+* Submit their order of preference for shortlisted projects
+* Check the allocated project
+* Accept/Reject the allocated project
+
+Users of all roles are capable of:
+* Login/Sign up using their Microsoft account (Imperial)
+* Sign out
+* Receive in-app and email notifications
+
+## Customisation
+
+The backend repository contains a file called `config.yaml` at the root,
+which lets you customise basic parameters for the Project Allocator.
+
+Here's a brief description of what the contents of `config.yaml` should look like:
+
+```yaml
+users:
+  admins: 
+    - rbc@ic.ac.uk # List of administrator emails
+projects:
+  allocations:
+    students: 4    # Nmber of students allocated per a single project
+```
+
+By default, each project has a project title, description and categories (list of keywords),
+but you can also keep track of the project's duration, for example, by simply editing `config.yaml` as follows:
+
+```yaml
+projects:
+  details:
+    - name: duration
+      title: Project Duration
+      description: >
+        Estimated duration of this project (in months).
+      message: Please enter a valid project duration!
+      type: number
+      required: true
+```
+
+The Project Allocator supports several types of input:
+
+* Textfield (single row)
+* Textarea (multiple rows)
+* Number
+* Slider
+* Date picker
+* Time picker
+* Switch (yes or no)
+* Select (dropdown menu)
+* Checkbox (multiple selections)
+* Radio (single selection)
+
+You can have a look at `config.yaml` for the exact format of each of these input types.
+
+You can also customise the algorithm used for project allocation,
+by implementing the `allocate_projects_custom()` function in `src/algorithms.py` at the backend repository.
+
+There are a few other, heavily-commented examples in `src/algorithms.py` so take a look at those before you start your implementation.
