@@ -23,23 +23,20 @@ export default function ProjectHeader({ title, project, hasConflict, hasAllocate
   const [isAllocated, setIsAllocated] = useState<boolean>(false);
   const [isAccepted, setIsAccepted] = useState<boolean | null>(null);
   const [isApproved, setIsApproved] = useState<boolean | null>(project?.approved || null);
-  const [isShortlisted, setIsShortlisted] = useState<boolean | null>(null);
+  const [isShortlisted, setIsShortlisted] = useState<boolean>(false);
+  const [areProposalsShutdown, setAreProposalsShutdown] = useState<boolean>(false);
   const [areUndosShutdown, setAreUndosShutdown] = useState<boolean>(false);
 
   // Avoid using React Router's data loader
   // to speed up UI by showing project details first.
   useEffect(() => {
     if (!project) return;
-    ProposalService.isProposed(project.id)
-      .then((value) => setIsProposed(value));
-    ShortlistService.isShortlisted(project.id)
-      .then((value) => setIsShortlisted(value));
-    AllocationService.isAllocated(project.id)
-      .then((value) => setIsAllocated(value));
-    AllocationService.isAccepted()
-      .then((value) => setIsAccepted(value));
-    AdminService.areUndosShutdown()
-      .then((value) => setAreUndosShutdown(value));
+    ProposalService.isProposed(project.id).then(setIsProposed);
+    ShortlistService.isShortlisted(project.id).then(setIsShortlisted);
+    AllocationService.isAllocated(project.id).then(setIsAllocated);
+    AllocationService.isAccepted().then(setIsAccepted);
+    AdminService.areProposalsShutdown().then(setAreProposalsShutdown);
+    AdminService.areUndosShutdown().then(setAreUndosShutdown);
   }, []);
 
   const navigate = useNavigate();
@@ -165,7 +162,7 @@ export default function ProjectHeader({ title, project, hasConflict, hasAllocate
                 type="info"
                 showIcon
                 message={isAccepted
-                  ? "You have accepted this project allcoation."
+                  ? "You have accepted this project allocation."
                   : "You have declined this project allocation."}
                 description="Contact your administrators for further information."
                 action={
@@ -189,31 +186,29 @@ export default function ProjectHeader({ title, project, hasConflict, hasAllocate
         <Title level={3} className="mb-0">
           {title}
         </Title>
-        {isShortlisted !== null &&
-          <StudentRoute>
-            <Tooltip title="Shortlist">
-              <Button
-                shape="circle"
-                icon={<HeartOutlined />}
-                type={isShortlisted ? "primary" : "default"}
-                onClick={() => {
-                  if (!project) return;
-                  (!isShortlisted
-                    ? ShortlistService.setShortlisted(project.id)
-                    : ShortlistService.unsetShortlisted(project.id))
-                    .then(() => messageSuccess(isShortlisted
-                      ? `Successfully unshortlisted project #${project.id}.`
-                      : `Successfully shortlisted project #${project.id}.`))
-                    .catch(() => messageError(isShortlisted
-                      ? `Failed to unshortlist project #${project.id}.`
-                      : `Failed to shortlist project #${project.id}.`));
-                  setIsShortlisted(!isShortlisted);
-                }}
-              />
-            </Tooltip>
-          </StudentRoute>}
+        <StudentRoute>
+          <Tooltip title="Shortlist">
+            <Button
+              shape="circle"
+              icon={<HeartOutlined />}
+              type={isShortlisted ? "primary" : "default"}
+              onClick={async () => {
+                // TODO: This check may be unnecessary.
+                if (!project) return;
+                await (!isShortlisted
+                  ? ShortlistService.setShortlisted(project.id)
+                  : ShortlistService.unsetShortlisted(project.id))
+                  .then(() => messageSuccess(isShortlisted
+                    ? `Successfully unshortlisted project #${project.id}.`
+                    : `Successfully shortlisted project #${project.id}.`))
+                  .catch(messageError);
+                setIsShortlisted(!isShortlisted);
+              }}
+            />
+          </Tooltip>
+        </StudentRoute>
         <StaffRoute>
-          {isProposed &&
+          {(isProposed && !areProposalsShutdown) &&
             <Space>
               <Tooltip title="Edit">
                 <Link to="./edit" >
@@ -225,10 +220,11 @@ export default function ProjectHeader({ title, project, hasConflict, hasAllocate
                   shape="circle"
                   icon={<DeleteOutlined />}
                   onClick={() => {
+                    // TODO: This check may be unnecessary.
                     if (!project) return;
                     ProjectService.deleteProject(project.id)
                       .then(() => messageSuccess(`Successfully deleted project #${project.id}.`))
-                      .catch(() => messageError(`Failed to delete project #${project.id}.`));
+                      .catch(messageError);
                     // Navigate back to either '/projects' or '/proposed'
                     // or to '/projects' if the history stack is empty.
                     location.key === 'default'

@@ -41,7 +41,7 @@ export default function User() {
                 onClick={() => {
                   UserService.deleteUser(user.id)
                     .then(() => messageSuccess(`Successfully deleted user #${user.id}.`))
-                    .catch(() => messageError(`Failed to delete user #${user.id}.`));
+                    .catch(messageError);
                   navigate("/admin");
                 }}
               />

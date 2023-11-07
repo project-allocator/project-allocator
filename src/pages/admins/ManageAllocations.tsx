@@ -36,10 +36,10 @@ export default function ManageAllocations() {
         onChange={() => areProposalsShutdown
           ? AdminService.unsetProposalsShutdown()
             .then(() => messageSuccess("Successfully reopened proposals."))
-            .catch(() => messageError("Failed to reopen proposals."))
+            .catch(messageError)
           : AdminService.setProposalsShutdown()
             .then(() => messageSuccess("Successfully shutdown proposals."))
-            .catch(() => messageError("Failed to shutdown proposals."))}
+            .catch(messageError)}
       />
       <Title level={4}>Shutdown Shortlists</Title>
       <Paragraph className="text-slate-500">
@@ -50,10 +50,10 @@ export default function ManageAllocations() {
         onChange={() => areShortlistsShutdown
           ? AdminService.unsetShortlistsShutdown()
             .then(() => messageSuccess("Successfully reopened shortlists."))
-            .catch(() => messageError("Failed to reopen shortlists."))
+            .catch(messageError)
           : AdminService.setShortlistsShutdown()
             .then(() => messageSuccess("Successfully shutdown shortlists."))
-            .catch(() => messageError("Failed to shutdown shortlists."))}
+            .catch(messageError)}
       />
       <Title level={4}>Shutdown Undos</Title>
       <Paragraph className="text-slate-500">
@@ -64,10 +64,10 @@ export default function ManageAllocations() {
         onChange={() => areUndosShutdown
           ? AdminService.unsetUndosShutdown()
             .then(() => messageSuccess("Successfully reopened undos."))
-            .catch(() => messageError("Failed to reopen undos."))
+            .catch(messageError)
           : AdminService.setUndosShutdown()
             .then(() => messageSuccess("Successfully shutdown undos."))
-            .catch(() => messageError("Failed to shutdown undos."))}
+            .catch(messageError)}
       />
       <Divider />
       <Title level={4}>Allocate Projects</Title>
@@ -81,7 +81,7 @@ export default function ManageAllocations() {
           setAllocateProjectsLoading(true);
           await AllocationService.allocateProjects()
             .then(() => messageSuccess("Successfully allocated projects."))
-            .catch(() => messageError("Failed to allocate projects."));
+            .catch(messageError);
           setAllocateProjectsLoading(false);
         }}
       >
@@ -98,7 +98,7 @@ export default function ManageAllocations() {
           setDeallocateProjectsLoading(true);
           await AllocationService.deallocateProjects()
             .then(() => messageSuccess("Successfully deallocated projects."))
-            .catch(() => messageError("Failed to deallocate projects."));
+            .catch(messageError);
           setDeallocateProjectsLoading(false);
         }}
       >

@@ -94,7 +94,7 @@ export default function ManageData() {
               console.log(JSON.parse(content))
               AdminService.importJson(JSON.parse(content))
                 .then(() => messageSuccess("Successfully imported JSON data."))
-                .catch((error) => messageError(`Failed to import JSON data. ${error.body.message || ''}`))
+                .catch(messageError)
                 .finally(() => setImportLoading(false));
             }
             reader.readAsText(importFiles[0] as RcFile);

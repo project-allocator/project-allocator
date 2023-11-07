@@ -35,7 +35,7 @@ export default function ManageNotifications() {
             ["staff", "admin"],
           )
             .then(() => messageSuccess("Successfully sent notifications."))
-            .catch(() => messageError("Failed to send notifications."));
+            .catch(messageError);
           setProposalNotificationsLoading(false);
         }}
       >
@@ -57,7 +57,7 @@ export default function ManageNotifications() {
             ["student"],
           )
             .then(() => messageSuccess("Successfully sent notifications."))
-            .catch(() => messageError("Failed to send notifications."));
+            .catch(messageError);
           setAllocationNotificationsLoading(false);
         }}
       >
@@ -81,7 +81,7 @@ export default function ManageNotifications() {
             values.roles,
           )
             .then(() => messageSuccess("Successfully sent notifications."))
-            .catch(() => messageError("Failed to send notifications."));
+            .catch(messageError);
           setCustomNotificationsLoading(false);
         }
         }

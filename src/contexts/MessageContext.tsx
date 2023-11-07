@@ -27,10 +27,10 @@ export function MessageContextProvider({ children }: MessageContextProviderProps
           placement: "bottomRight",
         });
       },
-      messageError: (message) => {
+      messageError: (error: any) => {
         instance.error({
           message: "Error",
-          description: message,
+          description: `${error.status} ${error.statusText}: ${error.body?.detail}`,
           placement: "bottomRight",
         });
       }
