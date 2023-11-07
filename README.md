@@ -19,7 +19,44 @@ This is the repository that contains:
 
 ## Code Structure
 
-## Useful Commands
+* `migrations/`
+    * Contains code for DB migrations
+    * Uses alembic and SQLModel
+* `src/`
+    * `resources/`
+        * Contains resources like an HTML template for email notification
+    * `routers/`
+        * Contains API endpoint implementations
+    * `algorithms.py`
+        * Edit this file to customise your project allocation algorithm
+    * `auth.py`
+        * Loads configuration from environment variables
+        * Sets up the Microsoft SSO authentication
+    * `cli.py`
+        * Edit this file to add custom CLI commands e.g. `poetry run db seed`
+        * Uses Typer: https://typer.tiangolo.com/
+    * `config.py`
+        * Loads configuration from `config.yaml`
+    * `db.py`
+        * Loads configuration from environment variables
+        * Sets up the database connection
+    * `dependencies.py`
+        * Edit this file to add custom FastAPI dependencies e.g. block admin access
+        * See this tutorial for more detail: https://fastapi.tiangolo.com/tutorial/dependencies/
+    * `factories.py`
+        * Edit this file when you add your own SQLModel models
+        * Uses Polyfactory: https://polyfactory.litestar.dev/latest/
+    * `main.py`
+        * Main entry point for the backend server
+        * Sets up the FastAPI server and OpenAPI documentation
+    * `models.py`
+        * Edit this file to add your own SQLModel models e.g. model for project supervisor
+        * Currently SQLModel has issues with circular import, and the easiest solution is to put all models in a single file: https://sqlmodel.tiangolo.com/tutorial/code-structure/
+* `config.yaml`
+    * Configuration for the Project Allocator
+    * See the deployment repository for more details
+
+## Development Guide
 
 ### Entering the container
 

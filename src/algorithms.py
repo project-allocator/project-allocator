@@ -91,4 +91,5 @@ def allocate_projects_custom():
 
 # Set this variable to the custom function of your choice.
 # Make sure that the custom function accepts three arguments: lists of users, projects and shortlists.
+# allocate_projects = allocate_projects_custom
 allocate_projects = allocate_projects_random
