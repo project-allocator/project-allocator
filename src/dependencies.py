@@ -1,11 +1,8 @@
-import json
-from typing import List
 from fastapi import Depends, HTTPException, Header
 from fastapi_azure_auth.user import User as AzureUser
-import requests
 from sqlmodel import Session, select
 
-from .models import Notification, Status, User
+from .models import Status, User
 from .db import engine
 from .auth import azure_scheme
 
