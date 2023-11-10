@@ -106,16 +106,4 @@ export class ProposalService {
         });
     }
 
-    /**
-     * Read Non Approved
-     * @returns ProjectRead Successful Response
-     * @throws ApiError
-     */
-    public static readNonApproved(): CancelablePromise<Array<ProjectRead>> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/projects/non-approved',
-        });
-    }
-
 }

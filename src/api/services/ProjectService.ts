@@ -13,34 +13,26 @@ import { request as __request } from '../core/request';
 export class ProjectService {
 
     /**
-     * Read Projects
+     * Read Approved Projects
      * @returns ProjectRead Successful Response
      * @throws ApiError
      */
-    public static readProjects(): CancelablePromise<Array<ProjectRead>> {
+    public static readApprovedProjects(): CancelablePromise<Array<ProjectRead>> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/projects',
+            url: '/api/projects/approved',
         });
     }
 
     /**
-     * Create Project
-     * @param requestBody
+     * Read Non Approved Projects
      * @returns ProjectRead Successful Response
      * @throws ApiError
      */
-    public static createProject(
-        requestBody: ProjectCreate,
-    ): CancelablePromise<ProjectRead> {
+    public static readNonApprovedProjects(): CancelablePromise<Array<ProjectRead>> {
         return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/projects',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                422: `Validation Error`,
-            },
+            method: 'GET',
+            url: '/api/projects/non-approved',
         });
     }
 
@@ -105,6 +97,26 @@ export class ProjectService {
             path: {
                 'project_id': projectId,
             },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Create Project
+     * @param requestBody
+     * @returns ProjectRead Successful Response
+     * @throws ApiError
+     */
+    public static createProject(
+        requestBody: ProjectCreate,
+    ): CancelablePromise<ProjectRead> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/projects',
+            body: requestBody,
+            mediaType: 'application/json',
             errors: {
                 422: `Validation Error`,
             },

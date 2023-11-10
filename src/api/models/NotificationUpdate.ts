@@ -3,7 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type UserUpdate = {
-    role?: string;
+export type NotificationUpdate = {
+    id: number;
+    seen?: boolean;
 };
 

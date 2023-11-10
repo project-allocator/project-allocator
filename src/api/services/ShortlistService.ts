@@ -54,8 +54,8 @@ export class ShortlistService {
     ): CancelablePromise<boolean> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/users/me/shortlisted/{project__id}',
-            query: {
+            url: '/api/users/me/shortlisted/{project_id}',
+            path: {
                 'project_id': projectId,
             },
             errors: {

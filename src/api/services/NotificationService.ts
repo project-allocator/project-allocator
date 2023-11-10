@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { NotificationRead } from '../models/NotificationRead';
+import type { NotificationUpdate } from '../models/NotificationUpdate';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -29,7 +30,7 @@ export class NotificationService {
      * @throws ApiError
      */
     public static markNotifications(
-        requestBody: Array<NotificationRead>,
+        requestBody: Array<NotificationUpdate>,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'PUT',
@@ -80,7 +81,7 @@ export class NotificationService {
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/users/notifications/',
+            url: '/api/users/notifications',
             headers: {
                 'x-graph-token': xGraphToken,
             },

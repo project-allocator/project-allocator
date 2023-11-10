@@ -10,6 +10,7 @@ export type { OpenAPIConfig } from './core/OpenAPI';
 export type { Body_import_json } from './models/Body_import_json';
 export type { HTTPValidationError } from './models/HTTPValidationError';
 export type { NotificationRead } from './models/NotificationRead';
+export type { NotificationUpdate } from './models/NotificationUpdate';
 export type { ProjectCreate } from './models/ProjectCreate';
 export type { ProjectImport } from './models/ProjectImport';
 export type { ProjectRead } from './models/ProjectRead';
