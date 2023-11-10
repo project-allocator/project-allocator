@@ -25,6 +25,8 @@ async def read_shortlisted(
 ):
     # fmt: off
     shortlists = session.exec(select(Shortlist).where(Shortlist.user_id == user.id)).all()
+    # Sort by ascending order of preference
+    # because preference of zero has the highest preference.
     shortlists.sort(key=lambda shortlist: shortlist.preference)
     projects = []
     for shortlist in shortlists:
@@ -34,7 +36,7 @@ async def read_shortlisted(
 
 
 @router.get(
-    "/users/me/shortlisted/{project__id}",
+    "/users/me/shortlisted/{project_id}",
     response_model=bool,
     dependencies=[Security(check_student)],
 )
@@ -129,9 +131,8 @@ async def read_shortlisters(
     project = session.get(Project, project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
-    shortlists = session.exec(
-        select(Shortlist).where(Shortlist.project_id == project_id)
-    ).all()
+    # fmt: off
+    shortlists = session.exec(select(Shortlist).where(Shortlist.project_id == project_id)).all()
     shortlists.sort(key=lambda shortlist: shortlist.preference)
     users = []
     for shortlist in shortlists:

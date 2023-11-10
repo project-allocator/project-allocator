@@ -30,6 +30,8 @@ async def lifespan(app: FastAPI):
     yield
 
 
+# Create FastAPI application with the authentication scheme
+# for Swagger API documentation.
 app = FastAPI(
     lifespan=lifespan,
     **swagger_scheme,
@@ -39,11 +41,13 @@ router = APIRouter(
     prefix="/api",
     # For generating frontend client
     generate_unique_id_function=lambda route: route.name,
-    # Block if not authenticated
+    # Set the authentication scheme for the entire API.
+    # Uses AzureAD to authenticate users.
     dependencies=[Security(azure_scheme)],
 )
 
-# Order is important as path parameters may collide
+# This order is important as path parameters may have collisions
+# e.g. /users/me and /users/{user_id}
 router.include_router(allocations.router)
 router.include_router(proposals.router)
 router.include_router(shortlists.router)
@@ -66,7 +70,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @router.get("/config")
 async def read_config():
-    # Make the config accessible from the frontend.
+    # Make the config object loaded from `config.yaml` accessible to the frontend.
     # This endpoint allows us to store config in a single location.
     return config
 
