@@ -4,11 +4,10 @@
 /* eslint-disable */
 
 export type UserImport = {
-    email: string;
-    name: string;
-    role: string;
-    accepted?: boolean;
-    id: number;
-    allocated_id?: number;
+  email: string;
+  name: string;
+  role: string;
+  accepted?: boolean;
+  id: number;
+  allocated_id?: number;
 };
-

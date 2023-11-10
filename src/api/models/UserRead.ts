@@ -4,10 +4,9 @@
 /* eslint-disable */
 
 export type UserRead = {
-    email: string;
-    name: string;
-    role: string;
-    accepted?: boolean;
-    id: number;
+  email: string;
+  name: string;
+  role: string;
+  accepted?: boolean;
+  id: number;
 };
-

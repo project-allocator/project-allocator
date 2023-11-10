@@ -4,7 +4,6 @@
 /* eslint-disable */
 
 export type NotificationUpdate = {
-    id: number;
-    seen?: boolean;
+  id: number;
+  seen?: boolean;
 };
-
