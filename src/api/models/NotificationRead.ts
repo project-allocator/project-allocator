@@ -4,8 +4,9 @@
 /* eslint-disable */
 
 export type NotificationRead = {
-  title: string;
-  description: string;
-  seen?: boolean;
-  id: number;
+    title: string;
+    description: string;
+    seen?: boolean;
+    id: number;
 };
+

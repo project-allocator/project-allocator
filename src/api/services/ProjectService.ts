@@ -2,121 +2,125 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ProjectCreate } from "../models/ProjectCreate";
-import type { ProjectRead } from "../models/ProjectRead";
-import type { ProjectUpdate } from "../models/ProjectUpdate";
+import type { ProjectCreate } from '../models/ProjectCreate';
+import type { ProjectRead } from '../models/ProjectRead';
+import type { ProjectUpdate } from '../models/ProjectUpdate';
 
-import type { CancelablePromise } from "../core/CancelablePromise";
-import { OpenAPI } from "../core/OpenAPI";
-import { request as __request } from "../core/request";
+import type { CancelablePromise } from '../core/CancelablePromise';
+import { OpenAPI } from '../core/OpenAPI';
+import { request as __request } from '../core/request';
 
 export class ProjectService {
-  /**
-   * Read Approved Projects
-   * @returns ProjectRead Successful Response
-   * @throws ApiError
-   */
-  public static readApprovedProjects(): CancelablePromise<Array<ProjectRead>> {
-    return __request(OpenAPI, {
-      method: "GET",
-      url: "/api/projects/approved",
-    });
-  }
 
-  /**
-   * Read Non Approved Projects
-   * @returns ProjectRead Successful Response
-   * @throws ApiError
-   */
-  public static readNonApprovedProjects(): CancelablePromise<
-    Array<ProjectRead>
-  > {
-    return __request(OpenAPI, {
-      method: "GET",
-      url: "/api/projects/non-approved",
-    });
-  }
+    /**
+     * Read Approved Projects
+     * @returns ProjectRead Successful Response
+     * @throws ApiError
+     */
+    public static readApprovedProjects(): CancelablePromise<Array<ProjectRead>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/projects/approved',
+        });
+    }
 
-  /**
-   * Read Project
-   * @param projectId
-   * @returns ProjectRead Successful Response
-   * @throws ApiError
-   */
-  public static readProject(projectId: number): CancelablePromise<ProjectRead> {
-    return __request(OpenAPI, {
-      method: "GET",
-      url: "/api/projects/{project_id}",
-      path: {
-        project_id: projectId,
-      },
-      errors: {
-        422: `Validation Error`,
-      },
-    });
-  }
+    /**
+     * Read Non Approved Projects
+     * @returns ProjectRead Successful Response
+     * @throws ApiError
+     */
+    public static readNonApprovedProjects(): CancelablePromise<Array<ProjectRead>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/projects/non-approved',
+        });
+    }
 
-  /**
-   * Update Project
-   * @param projectId
-   * @param requestBody
-   * @returns ProjectRead Successful Response
-   * @throws ApiError
-   */
-  public static updateProject(
-    projectId: number,
-    requestBody: ProjectUpdate,
-  ): CancelablePromise<ProjectRead> {
-    return __request(OpenAPI, {
-      method: "PUT",
-      url: "/api/projects/{project_id}",
-      path: {
-        project_id: projectId,
-      },
-      body: requestBody,
-      mediaType: "application/json",
-      errors: {
-        422: `Validation Error`,
-      },
-    });
-  }
+    /**
+     * Read Project
+     * @param projectId
+     * @returns ProjectRead Successful Response
+     * @throws ApiError
+     */
+    public static readProject(
+        projectId: number,
+    ): CancelablePromise<ProjectRead> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/projects/{project_id}',
+            path: {
+                'project_id': projectId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
 
-  /**
-   * Delete Project
-   * @param projectId
-   * @returns any Successful Response
-   * @throws ApiError
-   */
-  public static deleteProject(projectId: number): CancelablePromise<any> {
-    return __request(OpenAPI, {
-      method: "DELETE",
-      url: "/api/projects/{project_id}",
-      path: {
-        project_id: projectId,
-      },
-      errors: {
-        422: `Validation Error`,
-      },
-    });
-  }
+    /**
+     * Update Project
+     * @param projectId
+     * @param requestBody
+     * @returns ProjectRead Successful Response
+     * @throws ApiError
+     */
+    public static updateProject(
+        projectId: number,
+        requestBody: ProjectUpdate,
+    ): CancelablePromise<ProjectRead> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/projects/{project_id}',
+            path: {
+                'project_id': projectId,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
 
-  /**
-   * Create Project
-   * @param requestBody
-   * @returns ProjectRead Successful Response
-   * @throws ApiError
-   */
-  public static createProject(
-    requestBody: ProjectCreate,
-  ): CancelablePromise<ProjectRead> {
-    return __request(OpenAPI, {
-      method: "POST",
-      url: "/api/projects",
-      body: requestBody,
-      mediaType: "application/json",
-      errors: {
-        422: `Validation Error`,
-      },
-    });
-  }
+    /**
+     * Delete Project
+     * @param projectId
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static deleteProject(
+        projectId: number,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/projects/{project_id}',
+            path: {
+                'project_id': projectId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Create Project
+     * @param requestBody
+     * @returns ProjectRead Successful Response
+     * @throws ApiError
+     */
+    public static createProject(
+        requestBody: ProjectCreate,
+    ): CancelablePromise<ProjectRead> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/projects',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
 }
