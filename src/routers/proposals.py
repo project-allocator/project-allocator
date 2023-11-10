@@ -77,14 +77,3 @@ async def undo_proposal(
     session.add(project)
     session.commit()
     return {"ok": True}
-
-
-@router.get(
-    "/projects/non-approved",
-    response_model=List[ProjectRead],
-    dependencies=[Security(check_admin)],
-)
-async def read_non_approved(session: Session = Depends(get_session)):
-    # 'Project.approved == False' does seem to be redundant
-    # but is required by SQLModel to construct a valid query.
-    return session.exec(select(Project).where(Project.approved == False)).all()

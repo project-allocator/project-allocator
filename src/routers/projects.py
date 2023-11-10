@@ -1,3 +1,4 @@
+from operator import or_
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlmodel import Session, select
@@ -11,6 +12,7 @@ from ..models import (
 )
 from ..dependencies import (
     block_proposals_if_shutdown,
+    check_admin,
     check_staff,
     get_session,
     get_user,
@@ -19,8 +21,8 @@ from ..dependencies import (
 router = APIRouter(tags=["project"])
 
 
-@router.get("/projects", response_model=List[ProjectRead])
-async def read_projects(session: Session = Depends(get_session)):
+@router.get("/projects/approved", response_model=List[ProjectRead])
+async def read_approved_projects(session: Session = Depends(get_session)):
     # Only show approved projects.
     # 'Project.approved == True' does seem to be redundant
     # but is required by SQLModel to construct a valid query.
@@ -30,12 +32,28 @@ async def read_projects(session: Session = Depends(get_session)):
     return projects
 
 
+@router.get(
+    "/projects/non-approved",
+    response_model=List[ProjectRead],
+    dependencies=[Security(check_admin)],
+)
+async def read_non_approved_projects(session: Session = Depends(get_session)):
+    # 'Project.approved == False' and 'Project.approved == None' seem to be redundant
+    # but is required by SQLModel to construct a valid query.
+    return session.exec(
+        select(Project).where(or_(Project.approved == False, Project.approved == None))
+    ).all()
+
+
 @router.get("/projects/{project_id}", response_model=ProjectRead)
 async def read_project(
     project_id: int,
     session: Session = Depends(get_session),
 ):
-    return session.get(Project, project_id)
+    project = session.get(Project, project_id)
+    if project is None:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return project
 
 
 @router.post(
@@ -74,7 +92,6 @@ async def update_project(
         raise HTTPException(status_code=401, detail="Project not owned by user")
     # Update each property of the project.
     for key, value in project_data.dict(exclude_unset=True).items():
-        print(key, value)
         setattr(project, key, value)
     session.add(project)
     session.commit()
