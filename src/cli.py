@@ -8,7 +8,7 @@ from sqlmodel import SQLModel, Session, select
 
 from .db import engine
 from .models import Project, Shortlist, Status, User
-from .factories import ShortlistFactory, UserFactory, ProjectFactory
+from .factories import UserFactory, ProjectFactory
 
 app = typer.Typer()
 
@@ -57,7 +57,7 @@ def seed(yes: Annotated[bool, typer.Option(help="Skip confirmation.")] = False):
             return
     projects: List[Project] = []
     for _ in track(range(10), description="Seeding staff..."):
-        # Nest session inside for loop  so the progress can be checked.
+        # We nest session inside for loop so the progress can be checked.
         with Session(engine) as session:
             staff: User = UserFactory.build()
             staff.role = "staff"
@@ -69,14 +69,12 @@ def seed(yes: Annotated[bool, typer.Option(help="Skip confirmation.")] = False):
             session.add(staff)
             session.commit()
     for _ in track(range(200), description="Seeding students..."):
-        # Nest session inside for loop so the progress can be checked.
+        # We nest session inside for loop so the progress can be checked.
         with Session(engine) as session:
             student: User = UserFactory.build()
             student.role = "student"
-            for project in random.sample(projects, 5):
-                shortlist: Shortlist = ShortlistFactory.build()
-                shortlist.user = student
-                shortlist.project = project
+            for i, project in enumerate(random.sample(projects, 5)):
+                shortlist = Shortlist(user=student, project=project, preference=i)
                 session.add(shortlist)
                 session.add(project)
             session.add(student)
