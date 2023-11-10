@@ -93,7 +93,7 @@ cd ../project-allocator-frontend && yarn generate
 
 Finally, you can check if everything is working by visiting [http://localhost:3000](http://localhost:3000) on your browser.
 
-You can also visit [http://localhost:8000/docs](http://localhost:8000/docs) to check the backend's Open API documentation.
+You can also visit [http://localhost:8000/docs](http://localhost:8000/docs) to check the backend's OpenAPI documentation.
 
 ## Setting up the Production Environment
 
