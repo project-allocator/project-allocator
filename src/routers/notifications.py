@@ -7,7 +7,7 @@ from sqlmodel import Session, select
 from src.config import ROOT_DIR
 
 from ..dependencies import check_admin, get_session, get_token, get_user
-from ..models import Notification, NotificationRead, User
+from ..models import Notification, NotificationRead, NotificationUpdate, User
 
 router = APIRouter(tags=["notification"])
 
@@ -24,9 +24,10 @@ async def read_notifications(
     return notifications
 
 
+# TODO: This endpoint is semantically misleading
 @router.put("/users/me/notifications")
 async def mark_notifications(
-    notifications: List[NotificationRead],
+    notifications: List[NotificationUpdate],
     session: Session = Depends(get_session),
 ):
     for notification in notifications:
@@ -54,7 +55,7 @@ async def delete_notification(
 
 
 @router.post(
-    "/users/notifications/",
+    "/users/notifications",
     dependencies=[Security(check_admin)],
 )
 def send_notifications(
@@ -70,8 +71,8 @@ def send_notifications(
         template = file.read()
     # Get the target users.
     # TODO: Comment out when in production.
-    users = [session.exec(select(User).where(User.email == current_user.email)).one()]
-    # users = session.exec(select(User).where(User.role.in_(roles))).all()
+    # users = [session.exec(select(User).where(User.email == current_user.email)).one()]
+    users = session.exec(select(User).where(User.role.in_(roles))).all()
     for user in users:
         # Create notification entries in the database.
         notification = Notification(title=title, description=description)
@@ -104,3 +105,4 @@ def send_notifications(
             },
             timeout=30,
         )
+    return {"ok": True}
