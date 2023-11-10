@@ -1,0 +1,24 @@
+name: Check Format
+
+on: [push]
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18.x
+
+      - name: Install dependencies
+        uses: borales/actions-yarn@v4
+
+      - name: Check format with Prettier
+        run: |
+          yarn run prettier --check --log-level debug src/
