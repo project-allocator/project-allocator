@@ -130,6 +130,8 @@ async def add_allocatees(
         raise HTTPException(status_code=404, detail="Project not approved")
     for user in users:
         user = session.get(User, user.id)
+        if user.role != "student":
+            raise HTTPException(status_code=404, detail="User not a student")
         user.allocated = project
         user.accepted = None
         session.add(project)
@@ -184,13 +186,11 @@ async def read_conflicting_projects(session: Session = Depends(get_session)):
     # 'Project.approved == True' does seem to be redundant
     # but is required by SQLModel to construct a valid query.
     projects = session.exec(select(Project).where(Project.approved == True)).all()
-    conflicting = []
-    for project in projects:
-        # fmt: off
-        resolved = any(list(map(lambda allocatee: allocatee.accepted, project.allocatees)))
-        if not resolved:
-            conflicting.append(project)
-    return conflicting
+    # fmt: off
+    return [
+        project for project in projects
+        if not all([user.accepted for user in project.allocatees])
+    ]
 
 
 @router.get(
@@ -199,5 +199,5 @@ async def read_conflicting_projects(session: Session = Depends(get_session)):
     dependencies=[Security(check_admin)],
 )
 async def read_unallocated_users(session: Session = Depends(get_session)):
-    unallocated = session.exec(select(User).where(User.allocated == None)).all()
-    return unallocated
+    # fmt: off
+    return session.exec(select(User).where(User.role == "student").where(User.allocated == None)).all()
