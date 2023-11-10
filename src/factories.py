@@ -78,24 +78,3 @@ for detail in config["projects"]["details"]:
                 random.randint(0, len(detail["options"])),
             ),
         )
-
-
-################################################################################
-#                            Shortlist Factory                                 #
-################################################################################
-
-
-class ShortlistFactory(ModelFactory):
-    __model__ = Shortlist
-    __faker__ = Faker(locale="en_GB")
-
-    # Ignore optional fields
-    # otherwise they also get seeded by polyfactory.
-    user_id = None
-    project_id = None
-    created_at = None
-    updated_at = None
-
-    @classmethod
-    def preference(cls) -> int:
-        return cls.__faker__.random_int(min=1, max=10)
