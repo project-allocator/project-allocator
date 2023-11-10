@@ -6,15 +6,17 @@ export const authRequest = {
     `api://${import.meta.env.VITE_CLIENT_ID}/user_impersonation`,
     "User.Read",
     "Mail.Send",
-  ]
+  ],
 };
 
 export const msalInstance = new PublicClientApplication({
   auth: {
     clientId: import.meta.env.VITE_CLIENT_ID,
-    authority: `https://login.microsoftonline.com/${import.meta.env.VITE_TENANT_ID}`,
-    redirectUri: '/',
-    postLogoutRedirectUri: '/signin',
+    authority: `https://login.microsoftonline.com/${
+      import.meta.env.VITE_TENANT_ID
+    }`,
+    redirectUri: "/",
+    postLogoutRedirectUri: "/signin",
   },
   cache: {
     // Store MSAL cache in session.
@@ -44,9 +46,9 @@ export const msalInstance = new PublicClientApplication({
           default:
             return;
         }
-      }
-    }
-  }
+      },
+    },
+  },
 });
 
 // Configure interceptor for axios instance used by the auto-generated client.
@@ -58,7 +60,7 @@ axios.interceptors.request.use(async (config) => {
       ...authRequest,
       account: msalInstance.getActiveAccount()!,
     });
-    config.headers.set('Authorization', `Bearer ${apiToken}`);
+    config.headers.set("Authorization", `Bearer ${apiToken}`);
     // We also provide the Microsoft Graph API token to the backend server
     // so that it can access the user profile and send emails with that token.
     // See the following discussion for the motivation:
@@ -69,7 +71,7 @@ axios.interceptors.request.use(async (config) => {
     });
     // Access token for Microsoft Graph API must be obtained per resource
     // i.e. We cannot acquire a single token instead of the two acquireTokenSilent() calls
-    config.headers.set('X-Graph-Token', graphToken);
+    config.headers.set("X-Graph-Token", graphToken);
   }
   return config;
 });
@@ -84,4 +86,4 @@ axios.interceptors.response.use(undefined, (error: AxiosError) => {
     return Promise.resolve({ status: 200, data: null });
   }
   return Promise.reject(error);
-})
+});

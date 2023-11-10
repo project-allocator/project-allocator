@@ -11,8 +11,8 @@ interface UserListProps {
 }
 
 export default function UserList({ users }: UserListProps) {
-  const [searchText, setSearchText] = useState<string>('');
-  
+  const [searchText, setSearchText] = useState<string>("");
+
   return (
     <>
       <Search
@@ -24,11 +24,11 @@ export default function UserList({ users }: UserListProps) {
       <List
         itemLayout="horizontal"
         pagination={users.length > 0 && { position: "bottom" }}
-        dataSource={users.filter((user) => [
-          user.name,
-          user.email,
-          user.role,
-        ].some((text) => text.toLowerCase().includes(searchText.toLowerCase())))}
+        dataSource={users.filter((user) =>
+          [user.name, user.email, user.role].some((text) =>
+            text.toLowerCase().includes(searchText.toLowerCase()),
+          ),
+        )}
         renderItem={(user) => (
           <List.Item>
             <List.Item.Meta

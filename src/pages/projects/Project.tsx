@@ -1,12 +1,27 @@
-import { AllocationService, ProjectRead, ProjectService, ShortlistService, UserRead, UserService } from "@/api";
+import {
+  AllocationService,
+  ProjectRead,
+  ProjectService,
+  ShortlistService,
+  UserRead,
+  UserService,
+} from "@/api";
 import { ProjectContent } from "@/components/ProjectContent";
 import ProjectHeader from "@/components/ProjectHeader";
 import StaffRoute from "@/routes/StaffRoute";
 import { getInitialLetters } from "@/utils";
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
-import { Avatar, Button, Divider, List, Select, Tooltip, Typography } from "antd";
+import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+  Avatar,
+  Button,
+  Divider,
+  List,
+  Select,
+  Tooltip,
+  Typography,
+} from "antd";
 import { useEffect, useState } from "react";
-import { Link, useLoaderData, type LoaderFunctionArgs } from 'react-router-dom';
+import { Link, useLoaderData, type LoaderFunctionArgs } from "react-router-dom";
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -20,15 +35,17 @@ export async function projectLoader({ params }: LoaderFunctionArgs) {
 }
 
 export default function Project() {
-  const [project, students, shortlisters, initialAllocatees]
-    = useLoaderData() as [ProjectRead, UserRead[], UserRead[], UserRead[]];
+  const [project, students, shortlisters, initialAllocatees] =
+    useLoaderData() as [ProjectRead, UserRead[], UserRead[], UserRead[]];
 
   const [allocatees, setAllocatees] = useState<UserRead[]>(initialAllocatees);
-  const [extraAllocateeIndices, setExtraAllocateeIndices] = useState<number[]>([]);
+  const [extraAllocateeIndices, setExtraAllocateeIndices] = useState<number[]>(
+    [],
+  );
 
   const [hasConflict, setHasConflict] = useState<boolean | null>(null);
   const updateHasConflict = (allocatees: UserRead[]) =>
-    setHasConflict(!allocatees?.every((allocatee) => allocatee.accepted))
+    setHasConflict(!allocatees?.every((allocatee) => allocatee.accepted));
   useEffect(() => updateHasConflict(allocatees), []);
 
   return (
@@ -54,13 +71,17 @@ export default function Project() {
             className="w-full grow"
             placeholder="Select students to add"
             value={extraAllocateeIndices}
-            options={students.map((student, index) =>
-              ({ label: `${student.name} (${student.email})`, value: index }))}
+            options={students.map((student, index) => ({
+              label: `${student.name} (${student.email})`,
+              value: index,
+            }))}
             filterOption={(inputValue, option) => {
               if (!option) return false;
               const target = inputValue.toLowerCase();
               const student = students[option!.value];
-              return [student.email, student.name].some((item) => item.toLowerCase().includes(target));
+              return [student.email, student.name].some((item) =>
+                item.toLowerCase().includes(target),
+              );
             }}
             onChange={(indices: number[]) => setExtraAllocateeIndices(indices)}
           />
@@ -69,7 +90,9 @@ export default function Project() {
             className="flex-none"
             icon={<PlusOutlined />}
             onClick={() => {
-              const extraAllocatees = extraAllocateeIndices.map((index) => students[index]);
+              const extraAllocatees = extraAllocateeIndices.map(
+                (index) => students[index],
+              );
               AllocationService.addAllocatees(project.id, extraAllocatees);
               const newAllocatees = [...extraAllocatees, ...allocatees];
               setAllocatees(newAllocatees);
@@ -91,23 +114,29 @@ export default function Project() {
                     icon={<DeleteOutlined />}
                     onClick={() => {
                       AllocationService.removeAllocatee(allocatee.id);
-                      const newAllocatees = allocatees.filter((item) => item.id !== allocatee.id);
+                      const newAllocatees = allocatees.filter(
+                        (item) => item.id !== allocatee.id,
+                      );
                       setAllocatees(newAllocatees);
                       updateHasConflict(newAllocatees);
                     }}
                   />
-                </Tooltip>
+                </Tooltip>,
               ]}
             >
               <List.Item.Meta
                 avatar={<Avatar>{getInitialLetters(allocatee.name)}</Avatar>}
-                title={<Link to={`/users/${allocatee.id}`}>{allocatee.name}</Link>}
+                title={
+                  <Link to={`/users/${allocatee.id}`}>{allocatee.name}</Link>
+                }
                 description={allocatee.email}
               />
               <Text>
                 {allocatee.accepted === null
                   ? "No response"
-                  : allocatee.accepted ? "Accepted" : "Declined"}
+                  : allocatee.accepted
+                  ? "Accepted"
+                  : "Declined"}
               </Text>
             </List.Item>
           )}
@@ -115,7 +144,8 @@ export default function Project() {
         <Divider />
         <Title level={4}>Shortlisted Students</Title>
         <Paragraph className="text-slate-500">
-          List of students who shortlisted this projected will be shown in here, in the order of their preference.
+          List of students who shortlisted this projected will be shown in here,
+          in the order of their preference.
         </Paragraph>
         <List
           className="mt-4"
@@ -125,7 +155,11 @@ export default function Project() {
             <List.Item>
               <List.Item.Meta
                 avatar={<Avatar>{getInitialLetters(shortlister.name)}</Avatar>}
-                title={<Link to={`/users/${shortlister.id}`}>{shortlister.name}</Link>}
+                title={
+                  <Link to={`/users/${shortlister.id}`}>
+                    {shortlister.name}
+                  </Link>
+                }
                 description={shortlister.email}
               />
             </List.Item>

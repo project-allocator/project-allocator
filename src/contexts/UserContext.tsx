@@ -3,8 +3,8 @@ import { useIsAuthenticated } from "@azure/msal-react";
 import React, { useContext, useEffect, useState } from "react";
 
 interface UserContextType {
-  user?: UserRead,
-  setUser: React.Dispatch<React.SetStateAction<UserRead | undefined>>
+  user?: UserRead;
+  setUser: React.Dispatch<React.SetStateAction<UserRead | undefined>>;
 }
 
 const UserContext = React.createContext<UserContextType | undefined>(undefined);

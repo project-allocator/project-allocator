@@ -8,7 +8,17 @@ interface Config {
       title: string;
       description: string;
       message: string;
-      type: "textfield" | "textarea" | "number" | "slider" | "date" | "time" | "switch" | "select" | "checkbox" | "radio";
+      type:
+        | "textfield"
+        | "textarea"
+        | "number"
+        | "slider"
+        | "date"
+        | "time"
+        | "switch"
+        | "select"
+        | "checkbox"
+        | "radio";
       required: boolean;
       options?: string[];
     }[];
@@ -21,7 +31,9 @@ interface ConfigContextProviderProps {
   children: React.ReactNode;
 }
 
-export function ConfigContextProvider({ children }: ConfigContextProviderProps) {
+export function ConfigContextProvider({
+  children,
+}: ConfigContextProviderProps) {
   const [config, setConfig] = useState<Config>();
 
   useEffect(() => {
@@ -31,9 +43,7 @@ export function ConfigContextProvider({ children }: ConfigContextProviderProps) 
   }, []);
 
   return (
-    <ConfigContext.Provider value={config}>
-      {children}
-    </ConfigContext.Provider>
+    <ConfigContext.Provider value={config}>{children}</ConfigContext.Provider>
   );
 }
 

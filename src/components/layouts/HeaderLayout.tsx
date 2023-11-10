@@ -1,9 +1,26 @@
 import { NotificationRead, NotificationService } from "@/api";
 import { useUser } from "@/contexts/UserContext";
 import AuthRoute from "@/routes/AuthRoute";
-import { DeleteOutlined, DownOutlined, LogoutOutlined, NotificationOutlined, UserOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  DownOutlined,
+  LogoutOutlined,
+  NotificationOutlined,
+  UserOutlined,
+} from "@ant-design/icons";
 import { useMsal } from "@azure/msal-react";
-import { Badge, Button, Card, Drawer, Dropdown, Empty, Layout, Space, Tooltip, Typography } from "antd";
+import {
+  Badge,
+  Button,
+  Card,
+  Drawer,
+  Dropdown,
+  Empty,
+  Layout,
+  Space,
+  Tooltip,
+  Typography,
+} from "antd";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
@@ -25,10 +42,12 @@ export default function HeaderLayout({ children }: HeaderLayoutProps) {
   useEffect(() => {
     const fetchNotifications = () => {
       NotificationService.readNotifications()
-        .then((notifications) => setNotifications(notifications as NotificationRead[]))
+        .then((notifications) =>
+          setNotifications(notifications as NotificationRead[]),
+        )
         // Ignore error as failing to fetch notification should not stop rendering.
         .catch((error) => console.error(error));
-    }
+    };
     fetchNotifications();
     const timer = setInterval(fetchNotifications, 60 * 1000);
     return () => clearInterval(timer);
@@ -56,9 +75,9 @@ export default function HeaderLayout({ children }: HeaderLayoutProps) {
                     onClick: async () => {
                       await msalInstance.logoutPopup();
                       setUser(undefined);
-                    }
+                    },
                   },
-                ]
+                ],
               }}
             >
               <Button>
@@ -68,7 +87,12 @@ export default function HeaderLayout({ children }: HeaderLayoutProps) {
                 </Space>
               </Button>
             </Dropdown>
-            <Badge count={notifications.filter((notification) => !notification.seen).length}>
+            <Badge
+              count={
+                notifications.filter((notification) => !notification.seen)
+                  .length
+              }
+            >
               <Button
                 className="bg-transparent text-white"
                 icon={<NotificationOutlined />}
@@ -84,14 +108,18 @@ export default function HeaderLayout({ children }: HeaderLayoutProps) {
         placement="right"
         open={open}
         onClose={() => {
-          NotificationService.markNotifications(notifications.filter((item) => !item.seen));
-          setNotifications(notifications.map((item) => ({ ...item, seen: true })));
+          NotificationService.markNotifications(
+            notifications.filter((item) => !item.seen),
+          );
+          setNotifications(
+            notifications.map((item) => ({ ...item, seen: true })),
+          );
           setOpen(false);
         }}
       >
         <Space direction="vertical" className="w-full">
-          {notifications.length > 0
-            ? notifications.map((notification) => (
+          {notifications.length > 0 ? (
+            notifications.map((notification) => (
               <Card
                 key={notification.id}
                 size="small"
@@ -108,19 +136,23 @@ export default function HeaderLayout({ children }: HeaderLayoutProps) {
                       icon={<DeleteOutlined />}
                       onClick={() => {
                         NotificationService.deleteNotification(notification.id);
-                        setNotifications(notifications.filter((item) => item.id !== notification.id))
+                        setNotifications(
+                          notifications.filter(
+                            (item) => item.id !== notification.id,
+                          ),
+                        );
                       }}
                     />
                   </Tooltip>
                 </div>
               </Card>
             ))
-            : <Empty />}
+          ) : (
+            <Empty />
+          )}
         </Space>
       </Drawer>
-      <Content className="grid">
-        {children}
-      </Content>
-    </Layout >
+      <Content className="grid">{children}</Content>
+    </Layout>
   );
 }

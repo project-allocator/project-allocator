@@ -1,4 +1,4 @@
-import { Button, Layout, Result } from 'antd';
+import { Button, Layout, Result } from "antd";
 import { ResultStatusType } from "antd/es/result";
 import { useNavigate, useRouteError } from "react-router-dom";
 

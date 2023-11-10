@@ -1,7 +1,7 @@
 import { ProjectRead } from "@/api";
 import { useConfig } from "@/contexts/ConfigContext";
 import { Divider, Space, Tag, Typography } from "antd";
-import dayjs from 'dayjs';
+import dayjs from "dayjs";
 
 const { Title, Paragraph } = Typography;
 
@@ -25,16 +25,16 @@ export function ProjectContent({ project }: ProjectContentProps) {
             {(() => {
               const value = project[detail.name as keyof ProjectRead];
               switch (detail.type) {
-                case 'date':
-                  return dayjs(value as string).format('DD/MM/YYYY');
-                case 'time':
-                  return dayjs(value as string).format('hh:mm:ss');
-                case 'switch':
-                  return value ? 'Yes' : 'No';
-                case 'checkbox':
+                case "date":
+                  return dayjs(value as string).format("DD/MM/YYYY");
+                case "time":
+                  return dayjs(value as string).format("hh:mm:ss");
+                case "switch":
+                  return value ? "Yes" : "No";
+                case "checkbox":
                   return Array(value).length > 0
-                    ? Array(value).join(', ')
-                    : "Not specified"
+                    ? Array(value).join(", ")
+                    : "Not specified";
                 default:
                   return value;
               }
@@ -48,9 +48,11 @@ export function ProjectContent({ project }: ProjectContentProps) {
       </Paragraph>
       <Space className="flex-wrap min-w-xl mt-2">
         {project.categories.length > 0
-          ? project.categories.map((category: string) => (<Tag key={category}>{category}</Tag>))
+          ? project.categories.map((category: string) => (
+              <Tag key={category}>{category}</Tag>
+            ))
           : "Not specified"}
       </Space>
     </>
-  )
+  );
 }

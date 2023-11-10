@@ -2,9 +2,14 @@ import { UserRead, UserService } from "@/api";
 import { useMessage } from "@/contexts/MessageContext";
 import AdminRoute from "@/routes/AdminRoute";
 import { toCapitalCase } from "@/utils";
-import { DeleteOutlined, EditOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { Button, Divider, Space, Tooltip, Typography } from "antd";
-import { Link, LoaderFunctionArgs, useLoaderData, useNavigate } from 'react-router-dom';
+import {
+  Link,
+  LoaderFunctionArgs,
+  useLoaderData,
+  useNavigate,
+} from "react-router-dom";
 
 const { Title, Paragraph } = Typography;
 
@@ -30,7 +35,7 @@ export default function User() {
         <AdminRoute>
           <Space>
             <Tooltip title="Edit">
-              <Link to="./edit" >
+              <Link to="./edit">
                 <Button shape="circle" icon={<EditOutlined />} />
               </Link>
             </Tooltip>
@@ -40,7 +45,9 @@ export default function User() {
                 icon={<DeleteOutlined />}
                 onClick={() => {
                   UserService.deleteUser(user.id)
-                    .then(() => messageSuccess(`Successfully deleted user #${user.id}.`))
+                    .then(() =>
+                      messageSuccess(`Successfully deleted user #${user.id}.`),
+                    )
                     .catch(messageError);
                   navigate("/admin");
                 }}
@@ -52,12 +59,14 @@ export default function User() {
       <Divider />
       <Title level={4}>Name</Title>
       <Paragraph className="text-slate-500">
-        Full name of the user, which is based on the user's profile on Microsoft.
+        Full name of the user, which is based on the user's profile on
+        Microsoft.
       </Paragraph>
       <Paragraph>{user.name}</Paragraph>
       <Title level={4}>Email Address</Title>
       <Paragraph className="text-slate-500">
-        Email address of the user, which is based on the user's profile on Microsoft.
+        Email address of the user, which is based on the user's profile on
+        Microsoft.
       </Paragraph>
       <Paragraph>{user.email}</Paragraph>
       <Title level={4}>Role</Title>

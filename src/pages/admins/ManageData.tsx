@@ -1,40 +1,55 @@
 import { AdminService } from "@/api";
 import { useMessage } from "@/contexts/MessageContext";
-import { CheckOutlined, DownloadOutlined, InfoCircleOutlined, UploadOutlined } from '@ant-design/icons';
-import { Button, Divider, Popover, Select, Space, Typography, Upload, UploadFile } from "antd";
+import {
+  CheckOutlined,
+  DownloadOutlined,
+  InfoCircleOutlined,
+  UploadOutlined,
+} from "@ant-design/icons";
+import {
+  Button,
+  Divider,
+  Popover,
+  Select,
+  Space,
+  Typography,
+  Upload,
+  UploadFile,
+} from "antd";
 import { RcFile } from "antd/es/upload";
 import { useState } from "react";
 
 const { Title, Paragraph } = Typography;
 
 const exampleContent = {
-  "users": [
+  users: [
     {
-      "id": 1,
-      "name": "Ms Carole Bradley",
-      "email": "whittakeramber@example.com",
-      "role": "admin",
-      "accepted": null,
-      "allocated_id": null,
-    }
+      id: 1,
+      name: "Ms Carole Bradley",
+      email: "whittakeramber@example.com",
+      role: "admin",
+      accepted: null,
+      allocated_id: null,
+    },
   ],
-  "projects": [
+  projects: [
     {
-      "id": 1,
-      "title": "Dolorum excepturi nostrum ut perspiciatis accusantium.",
-      "description": "Laboriosam reiciendis quas rerum voluptate ducimus corporis. Accusamus excepturi dignissimos molestias dolore modi nisi corporis. Vero ratione atque aliquid odit qui recusandae.",
-      "categories": [
+      id: 1,
+      title: "Dolorum excepturi nostrum ut perspiciatis accusantium.",
+      description:
+        "Laboriosam reiciendis quas rerum voluptate ducimus corporis. Accusamus excepturi dignissimos molestias dolore modi nisi corporis. Vero ratione atque aliquid odit qui recusandae.",
+      categories: [
         "necessitatibus",
         "accusamus",
         "similique",
         "dicta",
-        "dignissimos"
+        "dignissimos",
       ],
-      "approved": true,
-      "proposer_id": 1,
-    }
-  ]
-}
+      approved: true,
+      proposer_id: 1,
+    },
+  ],
+};
 
 export default function ManageData() {
   const [exportType, setExportType] = useState<string>("json");
@@ -44,17 +59,15 @@ export default function ManageData() {
 
   return (
     <>
-      <Title level={3}>
-        Manage Data
-      </Title>
+      <Title level={3}>Manage Data</Title>
       <Divider />
       <Title level={4}>Import Data</Title>
       <Paragraph className="text-slate-500">
         Import data from the JSON format.
       </Paragraph>
       <Paragraph className="text-slate-500">
-        The format of the JSON file should be exactly identical to the file exported by the section below.
-        &nbsp;
+        The format of the JSON file should be exactly identical to the file
+        exported by the section below. &nbsp;
         <Popover
           trigger="hover"
           title="Example of JSON Content"
@@ -91,12 +104,12 @@ export default function ManageData() {
             const reader = new FileReader();
             reader.onload = (event) => {
               const content = event.target?.result as string;
-              console.log(JSON.parse(content))
+              console.log(JSON.parse(content));
               AdminService.importJson(JSON.parse(content))
                 .then(() => messageSuccess("Successfully imported JSON data."))
                 .catch(messageError)
                 .finally(() => setImportLoading(false));
-            }
+            };
             reader.readAsText(importFiles[0] as RcFile);
           }}
         >
@@ -109,16 +122,19 @@ export default function ManageData() {
         Export data in the JSON or CSV format.
       </Paragraph>
       <Paragraph className="text-slate-500">
-        The JSON format exports all information and is suitable for further processing data with Python etc.<br />
-        The CSV format exports minimal information about the project and allocation and is ready to be shared with staff and students.
+        The JSON format exports all information and is suitable for further
+        processing data with Python etc.
+        <br />
+        The CSV format exports minimal information about the project and
+        allocation and is ready to be shared with staff and students.
       </Paragraph>
       <Space direction="vertical">
         <Select
           defaultValue="json"
           className="w-20"
           options={[
-            { value: 'json', label: 'JSON' },
-            { value: 'csv', label: 'CSV' },
+            { value: "json", label: "JSON" },
+            { value: "csv", label: "CSV" },
           ]}
           onChange={(value) => setExportType(value)}
         />
@@ -132,9 +148,9 @@ export default function ManageData() {
               // Create blob link to download
               // https://stackoverflow.com/questions/50694881/how-to-download-file-in-react-js
               const url = window.URL.createObjectURL(new Blob([response]));
-              const linkElement = document.createElement('a');
+              const linkElement = document.createElement("a");
               linkElement.href = url;
-              linkElement.setAttribute('download', `output.${exportType}`);
+              linkElement.setAttribute("download", `output.${exportType}`);
               document.body.appendChild(linkElement);
               linkElement.click();
               document.body.removeChild(linkElement);

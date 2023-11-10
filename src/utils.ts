@@ -3,5 +3,8 @@ export function toCapitalCase(str: string): string {
 }
 
 export function getInitialLetters(name: string): string {
-  return name.split(' ').map((word) => word.charAt(0).toUpperCase()).join('');
+  return name
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase())
+    .join("");
 }

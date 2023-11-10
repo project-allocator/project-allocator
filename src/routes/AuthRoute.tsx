@@ -10,7 +10,7 @@ export default function AuthRoute({ children, fallback }: AuthRouteProps) {
   const { user } = useUser();
   if (!user) {
     if (fallback) return <Navigate to={fallback} />;
-    return null
+    return null;
   }
   return children;
 }

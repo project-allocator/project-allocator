@@ -1,7 +1,7 @@
-import { AdminService, ProjectRead, ProposalService } from '@/api';
-import { ProjectsTable } from '@/components/ProjectTable';
-import StaffRoute from '@/routes/StaffRoute';
-import { PlusOutlined } from '@ant-design/icons';
+import { AdminService, ProjectRead, ProposalService } from "@/api";
+import { ProjectsTable } from "@/components/ProjectTable";
+import StaffRoute from "@/routes/StaffRoute";
+import { PlusOutlined } from "@ant-design/icons";
 import { Button, Divider, Space, Tooltip, Typography } from "antd";
 import { Link, useLoaderData } from "react-router-dom";
 
@@ -14,7 +14,10 @@ export async function proposedProjectLoader() {
 }
 
 export default function ProposedProject() {
-  const [projects, areProposalsShutdown] = useLoaderData() as [ProjectRead[], boolean];
+  const [projects, areProposalsShutdown] = useLoaderData() as [
+    ProjectRead[],
+    boolean,
+  ];
 
   return (
     <>
@@ -22,14 +25,15 @@ export default function ProposedProject() {
         <Title level={3} className="mb-0">
           List of Proposed Projects
         </Title>
-        {!areProposalsShutdown &&
+        {!areProposalsShutdown && (
           <StaffRoute>
             <Tooltip title="Add">
-              <Link to="/projects/add" >
+              <Link to="/projects/add">
                 <Button shape="circle" icon={<PlusOutlined />} />
               </Link>
             </Tooltip>
-          </StaffRoute>}
+          </StaffRoute>
+        )}
       </Space>
       <Divider />
       <ProjectsTable projects={projects} />

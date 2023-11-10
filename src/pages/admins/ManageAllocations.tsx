@@ -1,6 +1,6 @@
 import { AdminService, AllocationService } from "@/api";
 import { useMessage } from "@/contexts/MessageContext";
-import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
 import { Button, Divider, Switch, Typography } from "antd";
 import { useState } from "react";
 import { useLoaderData } from "react-router-dom";
@@ -15,17 +15,17 @@ export async function manageAllocationsLoader() {
 }
 
 export default function ManageAllocations() {
-  const [areProposalsShutdown, areShortlistsShutdown, areUndosShutdown]
-    = useLoaderData() as [boolean, boolean, boolean];
-  const [allocateProjectsLoading, setAllocateProjectsLoading] = useState<boolean>(false);
-  const [deallocateProjectsLoading, setDeallocateProjectsLoading] = useState<boolean>(false);
+  const [areProposalsShutdown, areShortlistsShutdown, areUndosShutdown] =
+    useLoaderData() as [boolean, boolean, boolean];
+  const [allocateProjectsLoading, setAllocateProjectsLoading] =
+    useState<boolean>(false);
+  const [deallocateProjectsLoading, setDeallocateProjectsLoading] =
+    useState<boolean>(false);
   const { messageSuccess, messageError } = useMessage();
 
   return (
     <>
-      <Title level={3}>
-        Manage Allocations
-      </Title>
+      <Title level={3}>Manage Allocations</Title>
       <Divider />
       <Title level={4}>Shutdown Proposals</Title>
       <Paragraph className="text-slate-500">
@@ -33,13 +33,15 @@ export default function ManageAllocations() {
       </Paragraph>
       <Switch
         defaultChecked={areProposalsShutdown}
-        onChange={() => areProposalsShutdown
-          ? AdminService.unsetProposalsShutdown()
-            .then(() => messageSuccess("Successfully reopened proposals."))
-            .catch(messageError)
-          : AdminService.setProposalsShutdown()
-            .then(() => messageSuccess("Successfully shutdown proposals."))
-            .catch(messageError)}
+        onChange={() =>
+          areProposalsShutdown
+            ? AdminService.unsetProposalsShutdown()
+                .then(() => messageSuccess("Successfully reopened proposals."))
+                .catch(messageError)
+            : AdminService.setProposalsShutdown()
+                .then(() => messageSuccess("Successfully shutdown proposals."))
+                .catch(messageError)
+        }
       />
       <Title level={4}>Shutdown Shortlists</Title>
       <Paragraph className="text-slate-500">
@@ -47,27 +49,32 @@ export default function ManageAllocations() {
       </Paragraph>
       <Switch
         defaultChecked={areShortlistsShutdown}
-        onChange={() => areShortlistsShutdown
-          ? AdminService.unsetShortlistsShutdown()
-            .then(() => messageSuccess("Successfully reopened shortlists."))
-            .catch(messageError)
-          : AdminService.setShortlistsShutdown()
-            .then(() => messageSuccess("Successfully shutdown shortlists."))
-            .catch(messageError)}
+        onChange={() =>
+          areShortlistsShutdown
+            ? AdminService.unsetShortlistsShutdown()
+                .then(() => messageSuccess("Successfully reopened shortlists."))
+                .catch(messageError)
+            : AdminService.setShortlistsShutdown()
+                .then(() => messageSuccess("Successfully shutdown shortlists."))
+                .catch(messageError)
+        }
       />
       <Title level={4}>Shutdown Undos</Title>
       <Paragraph className="text-slate-500">
-        Turn this on to block students from undo-ing "Accept" or "Decline" to their project allocation.
+        Turn this on to block students from undo-ing "Accept" or "Decline" to
+        their project allocation.
       </Paragraph>
       <Switch
         defaultChecked={areUndosShutdown}
-        onChange={() => areUndosShutdown
-          ? AdminService.unsetUndosShutdown()
-            .then(() => messageSuccess("Successfully reopened undos."))
-            .catch(messageError)
-          : AdminService.setUndosShutdown()
-            .then(() => messageSuccess("Successfully shutdown undos."))
-            .catch(messageError)}
+        onChange={() =>
+          areUndosShutdown
+            ? AdminService.unsetUndosShutdown()
+                .then(() => messageSuccess("Successfully reopened undos."))
+                .catch(messageError)
+            : AdminService.setUndosShutdown()
+                .then(() => messageSuccess("Successfully shutdown undos."))
+                .catch(messageError)
+        }
       />
       <Divider />
       <Title level={4}>Allocate Projects</Title>
@@ -86,7 +93,7 @@ export default function ManageAllocations() {
         }}
       >
         Allocate
-      </Button >
+      </Button>
       <Title level={4}>Deallocate Projects</Title>
       <Paragraph className="text-slate-500">
         Click this to deallocate projects from allocated students.

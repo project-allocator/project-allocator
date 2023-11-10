@@ -1,7 +1,7 @@
 import { ProjectRead } from "@/api";
 import { AutoComplete, Input, Space, Table, Tag } from "antd";
 import { useState } from "react";
-import Highlighter from 'react-highlight-words';
+import Highlighter from "react-highlight-words";
 import { Link } from "react-router-dom";
 
 interface ProjectsTableProps {
@@ -9,7 +9,7 @@ interface ProjectsTableProps {
 }
 
 export function ProjectsTable({ projects }: ProjectsTableProps) {
-  const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState("");
 
   const columns = [
     {
@@ -57,11 +57,13 @@ export function ProjectsTable({ projects }: ProjectsTableProps) {
     <>
       <AutoComplete
         className="w-64 mb-4"
-        options={
-          projects.map((project) => project.categories).flat()
-            .filter((option) => option.toLowerCase().includes(searchText.toLowerCase()))
-            .map((option) => ({ value: option }))
-        }
+        options={projects
+          .map((project) => project.categories)
+          .flat()
+          .filter((option) =>
+            option.toLowerCase().includes(searchText.toLowerCase()),
+          )
+          .map((option) => ({ value: option }))}
         value={searchText}
         onChange={(searchText) => setSearchText(searchText)}
         onSearch={(searchText) => setSearchText(searchText)}
@@ -70,17 +72,16 @@ export function ProjectsTable({ projects }: ProjectsTableProps) {
       </AutoComplete>
       <Table
         columns={columns}
-        dataSource={
-          projects.filter((project) => [
-            project.title,
-            project.description,
-            ...project.categories
-          ].some((text) => text.toLowerCase().includes(searchText.toLowerCase()))
-          ).map((project: ProjectRead) => ({
+        dataSource={projects
+          .filter((project) =>
+            [project.title, project.description, ...project.categories].some(
+              (text) => text.toLowerCase().includes(searchText.toLowerCase()),
+            ),
+          )
+          .map((project: ProjectRead) => ({
             ...project,
             key: project.id,
-          }))
-        }
+          }))}
       />
     </>
   );

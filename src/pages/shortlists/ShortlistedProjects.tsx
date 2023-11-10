@@ -1,5 +1,5 @@
 import { ProjectRead, ShortlistService } from "@/api";
-import { DeleteOutlined, HolderOutlined } from '@ant-design/icons';
+import { DeleteOutlined, HolderOutlined } from "@ant-design/icons";
 import { Button, Divider, List, Space, Tooltip, Typography } from "antd";
 import { Reorder, useDragControls } from "framer-motion";
 import { useEffect, useState } from "react";
@@ -24,9 +24,7 @@ export default function ShortlistedProjects() {
 
   return (
     <>
-      <Title level={3}>
-        List of Shortlisted Projects
-      </Title>
+      <Title level={3}>List of Shortlisted Projects</Title>
       <Divider />
       <Reorder.Group
         as="div"
@@ -44,14 +42,18 @@ export default function ShortlistedProjects() {
           dataSource={projectIds}
           rowKey={(projectId: number) => projectId}
           renderItem={(projectId: number) => {
-            const project = projects?.find((project: ProjectRead) => project.id === projectId);
+            const project = projects?.find(
+              (project: ProjectRead) => project.id === projectId,
+            );
             if (project) {
               return (
                 <ProjectItem
                   project={project as ProjectRead}
                   onDelete={() => {
                     ShortlistService.unsetShortlisted(projectId);
-                    setProjectIds(projectIds.filter((item) => item !== projectId));
+                    setProjectIds(
+                      projectIds.filter((item) => item !== projectId),
+                    );
                   }}
                 />
               );
