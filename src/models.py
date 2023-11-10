@@ -69,8 +69,10 @@ class UserRead(UserBase):
     id: int
 
 
-class UserUpdate(UserBase):
-    pass
+# We can only update user role.
+# The field is left optional to preserve the semantics of partial updates.
+class UserUpdate(SQLModel):
+    role: Optional[str] = None
 
 
 # Schema used for importing data from JSON.
@@ -85,8 +87,28 @@ class UserImport(UserBase):
 ################################################################################
 
 
-# Create ProjectBase Pydantic model dynamically according to the YAML config
+# Define project details as custom fields according to config.yaml
 # https://stackoverflow.com/questions/74186458/how-to-dynamically-define-an-sqlmodel-class
+project_details = {
+    detail["name"]: {
+        "textfield": (str, ...),
+        "textarea": (str, ...),
+        "number": (int, ...),
+        "slider": (int, ...),
+        "date": (datetime, ...),
+        "time": (datetime, ...),
+        "switch": (bool, ...),
+        "select": (str, ...),
+        "radio": (str, ...),
+        # Use JSON format to store a list of strings.
+        # PostgreSQL's list type is not supported by Pydantic.
+        "checkbox": (List[str], Field(sa_column=Column(JSON))),
+    }[detail["type"]]
+    # Project details are found in config.yaml under 'projects' > 'details'
+    for detail in config["projects"]["details"]
+}
+
+# Create ProjectBase Pydantic model dynamically using custom_fields
 ProjectBase = create_model(
     "ProjectBase",
     __base__=SQLModel,
@@ -96,25 +118,9 @@ ProjectBase = create_model(
     # PostgreSQL's list type is not supported by Pydantic.
     categories=(List[str], Field(sa_column=Column(JSON))),
     # True if admin has approved proposal.
-    # None means admin has not made any response.
+    # None means admin has not made any response yet.
     approved=(Optional[bool], Field(default=None)),
-    **{
-        detail["name"]: {
-            "textfield": (str, ...),
-            "textarea": (str, ...),
-            "number": (int, ...),
-            "slider": (int, ...),
-            "date": (datetime, ...),
-            "time": (datetime, ...),
-            "switch": (bool, ...),
-            "select": (str, ...),
-            # Use JSON format to store a list of strings.
-            # PostgreSQL's list type is not supported by Pydantic.
-            "checkbox": (List[str], Field(sa_column=Column(JSON))),
-            "radio": (str, ...),
-        }[detail["type"]]
-        for detail in config["projects"]["details"]
-    },
+    **project_details,
 )
 
 
@@ -165,12 +171,30 @@ class ProjectCreate(ProjectBase):
     pass
 
 
-class ProjectUpdate(ProjectBase):
-    pass
+# Create ProjectUpdate Pydantic model dynamically using custom_fields
+# We wrap all field types with optional so that we can partially update projects.
+ProjectUpdate = create_model(
+    "ProjectUpdate",
+    __base__=SQLModel,
+    title=(Optional[str], ...),
+    description=(Optional[str], ...),
+    categories=(Optional[List[str]], Field(sa_column=Column(JSON))),
+    approved=(Optional[bool], Field(default=None)),
+    **{
+        name: (
+            # We make the field type optional.
+            Optional[meta[0]],
+            # Need to provide default value None while preserving sa_column argument for Field().
+            # fmt: off
+            (lambda field: setattr(field, "default", None))(Field() if meta[1] == ... else meta[1]),
+        )
+        for (name, meta) in project_details.items()
+    },
+)
 
 
 # Schema used for importing data from JSON.
-# Administrators can specify the proposer using the existing user IDs.
+# Administrators can now specify the proposer using the existing user IDs.
 class ProjectImport(ProjectBase):
     id: int
     proposer_id: int
@@ -253,3 +277,9 @@ class Notification(NotificationBase, table=True):
 
 class NotificationRead(NotificationBase):
     id: int
+
+
+class NotificationUpdate(SQLModel):
+    # TODO: This id is used by mark_notifications endpoint.
+    id: int
+    seen: Optional[bool] = None
