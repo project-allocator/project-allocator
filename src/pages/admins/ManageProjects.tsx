@@ -1,4 +1,4 @@
-import { AllocationService, ProjectRead, ProposalService } from "@/api";
+import { AllocationService, ProjectRead, ProjectService } from "@/api";
 import { ProjectsTable } from "@/components/ProjectTable";
 import { Divider, Typography } from "antd";
 import { useLoaderData } from "react-router-dom";
@@ -6,7 +6,7 @@ import { useLoaderData } from "react-router-dom";
 const { Title, Paragraph } = Typography;
 
 export async function manageProjectsLoader() {
-  const nonApprovedProjects = await ProposalService.readNonApproved();
+  const nonApprovedProjects = await ProjectService.readNonApprovedProjects();
   const conflictingProjects = await AllocationService.readConflictingProjects();
   return [nonApprovedProjects, conflictingProjects];
 }

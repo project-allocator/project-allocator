@@ -6,7 +6,7 @@ import { useLoaderData } from "react-router-dom";
 const { Title } = Typography;
 
 export async function projectsLoader() {
-  return await ProjectService.readProjects();
+  return await ProjectService.readApprovedProjects();
 }
 
 export default function Projects() {
