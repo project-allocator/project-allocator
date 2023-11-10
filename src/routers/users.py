@@ -36,7 +36,10 @@ async def read_user(
     user_id: int,
     session: Session = Depends(get_session),
 ):
-    return session.get(User, user_id)
+    user = session.get(User, user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
 
 
 @router.post("/users", response_model=UserRead)
@@ -50,20 +53,20 @@ async def create_user(
         return user
     # If logging in for the first time,
     # retrieve user data via Microsoft Graph API and create user in the database.
-    res = requests.get(
+    response = requests.get(
         "https://graph.microsoft.com/v1.0/me",
         headers={"Authorization": f"Bearer {token}"},
     ).json()
     # Find out the user role based on response.
     role = "staff"
-    if res["jobTitle"] == "Undergraduate":
+    if response["jobTitle"] == "Undergraduate":
         role = "student"
-    if res["userPrincipalName"] in config["users"]["admins"]:
+    if response["userPrincipalName"] in config["users"]["admins"]:
         role = "admin"
     # Create a new user and store it in the database.
     user = User(
-        email=res["userPrincipalName"],
-        name=f"{res['givenName']} {res['surname']}",
+        email=response["userPrincipalName"],
+        name=f"{response['givenName']} {response['surname']}",
         role=role,
     )
     session.add(user)
