@@ -7,9 +7,10 @@ echo "------------------------------------------------------------"
 
 function open_url() {
   # Open the URL with the defaul browser (only works in Linux and Unix)
-  xdg-open "$1" || sensible-browser "$1" || x-www-browser "$1" || gnome-open "$1" || open "$1" \
-  || echo "Error: Cannot open browser from the terminal."
-  echo "Try opening $1 with the browser of your choice."
+  if ! (xdg-open "$1" || sensible-browser "$1" || x-www-browser "$1" || gnome-open "$1" || open "$1") 2> /dev/null; then
+    echo "Error: Cannot open browser from the terminal."
+    echo "Try opening $1 with the browser of your choice."
+  fi
 }
 
 echo "This script will setup your development environment"
