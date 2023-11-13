@@ -42,13 +42,16 @@ fi
 # Set the -e option to exit if any subsequent command fails
 set -e
 
-# Clone the repositories
-echo "Cloning repositories..."
+# Pull or clone the repositories
+echo "Pulling or cloning repositories..."
+repository_dir="$(git rev-parse --show-toplevel | xargs basename)"
 repository_url="$(git config --get remote.origin.url)"
+frontend_repository_dir="${repository_dir/project-allocator-deploy/project-allocator-frontend}"
+backend_repository_dir="${repository_dir/project-allocator-deploy/project-allocator-backend}"
 frontend_repository_url="${repository_url/project-allocator-deploy/project-allocator-frontend}"
 backend_repository_url="${repository_url/project-allocator-deploy/project-allocator-backend}"
-(cd ../ && git clone "$frontend_repository_url")
-(cd ../ && git clone "$backend_repository_url")
+(cd ../ && (git -C "$frontend_repository_dir" pull || git clone "$frontend_repository_url"))
+(cd ../ && (git -C "$backend_repository_dir" pull || git clone "$backend_repository_url"))
 
 # Build and run the docker containers
 echo "Building and running containers..."
@@ -63,9 +66,11 @@ echo "Seeding the database tables..."
 docker compose exec -it backend poetry run db seed --yes
 
 # Install backend dependencies in local venv
+echo "Installing backend dependencies..."
 (cd ../project-allocator-backend && poetry install)
 
 # Install frontend dependencies in local directory
+echo "Installing frontend dependencies..."
 (cd ../project-allocator-frontend && (npm install || yarn install))
 
 # Auto-generate the frontend client scripts
