@@ -52,7 +52,7 @@ backend_repository_url="${repository_url/project-allocator-deploy/project-alloca
 
 # Build and run the docker containers
 echo "Building and running containers..."
-docker compose up -f docker-compose.yaml --build -d
+docker compose -f docker-compose.yaml up --build -d
 
 # Create tables in the database
 echo "Creating database tables..."
