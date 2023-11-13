@@ -62,6 +62,12 @@ docker compose exec -it backend poetry run db reset --yes
 echo "Seeding the database tables..."
 docker compose exec -it backend poetry run db seed --yes
 
+# Install backend dependencies in local venv
+(cd ../project-allocator-backend && poetry install)
+
+# Install frontend dependencies in local directory
+(cd ../project-allocator-frontend && (npm install || yarn install))
+
 # Auto-generate the frontend client scripts
 echo "Generating the frontend client scripts..."
 (cd ../project-allocator-frontend && (npm run generate || yarn generate))
