@@ -18,7 +18,73 @@ https://private-user-images.githubusercontent.com/28210288/279185100-37bc380f-73
 
 https://private-user-images.githubusercontent.com/28210288/279185157-04d1b617-fec2-49a7-ae4f-07766396aad0.mov?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTEiLCJleHAiOjE2OTg2OTc4NjIsIm5iZiI6MTY5ODY5NzU2MiwicGF0aCI6Ii8yODIxMDI4OC8yNzkxODUxNTctMDRkMWI2MTctZmVjMi00OWE3LWFlNGYtMDc3NjYzOTZhYWQwLm1vdj9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFJV05KWUFYNENTVkVINTNBJTJGMjAyMzEwMzAlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjMxMDMwVDIwMjYwMlomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTVhNmUzMWM0MWRlMzNhNTBmNzJhZDY2Zjc4ZDgyNTNjYzUwNmQ1YzIyYjRmOWMwMTdjMzRlMGExNjFlZTBjNjImWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.kJk8fStRmCZFy2KK5J4nybxplKLqBoaB06E3LR04OdY
 
+## Main Features
+
+Administrators are capable of:
+
+- Browse approved projects
+- Check if all users have signed up to the Project Allocator with a list of emails
+- Check if there are any students who have not been allocated to a project
+- Check if there are any projects which have not been approved
+- Check if there are any projects who did not accept project allocation
+- Shutdown new project proposals/shortlists and undos for project allocation approval/disapproval
+- Mass-allocate/deallocate projects to/from students using the customised algorithm
+- Send in-app and email notifications
+- Import/export data in the DB
+- Browse all users
+- Delete/Edit all users
+- Approving/Disapproving a new project proposed by other staff/admin
+
+Staff are capable of:
+
+- Browse approved projects
+- Browse proposed projects
+- Proposing a new project
+- Editing/Deleting a proposed project
+- Check which students shortlisted for a prposed project
+- Check which students were allocated to a proposed project
+- Manually allocate/deallocate projects to/from students
+
+Students are capable of:
+
+- Browse approved projects
+- Shortlist for an approved project
+- Submit their order of preference for shortlisted projects
+- Check the allocated project
+- Accept/Reject the allocated project
+
+Users of all roles are capable of:
+
+- Login/Sign up using their Microsoft account (Imperial)
+- Sign out
+- Receive in-app and email notifications
+
 ## Setting up the Development Environment
+
+## Prerequisites
+
+Before you proceed, you need to create the following repositories in your own GitHub account/organisation:
+
+- `project-allocator-deploy`
+- `project-allocator-frontend`
+- `project-allocator-backend`
+
+For each of the template repositories below:
+
+- [https://github.com/Digital-Garage-ICL/project-allocator-deploy](https://github.com/Digital-Garage-ICL/project-allocator-deploy)
+- [https://github.com/Digital-Garage-ICL/project-allocator-backend](https://github.com/Digital-Garage-ICL/project-allocator-backend)
+- [https://github.com/Digital-Garage-ICL/project-allocator-frontend](https://github.com/Digital-Garage-ICL/project-allocator-frontend)
+
+1. Click **Use this template** at the top right
+2. Click **Create a new repository**
+3. Leave **Repository template** and **Include all branches** unchecked
+4. Select your own GitHub account/organisation (not `Digital-Garage-ICL`) for **Owner**
+5. Enter `project-allocator-deploy`, `project-allocator-backend` or `project-allocator-frontend` to **Repository name**
+   1. This correspond to the name of the template repository
+6. Leave **Description** empty
+7. Select **Internal** or **Private** for **Visibility**
+   1. Never make this repository **Public** as some of the repositories contain sensitive information required for the default Azure ADD setup
+8. Click **Create repository**
 
 ### Using the Setup Script
 
@@ -295,48 +361,7 @@ wf access env project-allocator dev --role namespace.admin
 
 Now if you launch Lens, you should see your pods running under **Workloads** > **Pods**.
 
-## Features
-
-Administrators are capable of:
-
-- Browse approved projects
-- Check if all users have signed up to the Project Allocator with a list of emails
-- Check if there are any students who have not been allocated to a project
-- Check if there are any projects which have not been approved
-- Check if there are any projects who did not accept project allocation
-- Shutdown new project proposals/shortlists and undos for project allocation approval/disapproval
-- Mass-allocate/deallocate projects to/from students using the customised algorithm
-- Send in-app and email notifications
-- Import/export data in the DB
-- Browse all users
-- Delete/Edit all users
-- Approving/Disapproving a new project proposed by other staff/admin
-
-Staff are capable of:
-
-- Browse approved projects
-- Browse proposed projects
-- Proposing a new project
-- Editing/Deleting a proposed project
-- Check which students shortlisted for a prposed project
-- Check which students were allocated to a proposed project
-- Manually allocate/deallocate projects to/from students
-
-Students are capable of:
-
-- Browse approved projects
-- Shortlist for an approved project
-- Submit their order of preference for shortlisted projects
-- Check the allocated project
-- Accept/Reject the allocated project
-
-Users of all roles are capable of:
-
-- Login/Sign up using their Microsoft account (Imperial)
-- Sign out
-- Receive in-app and email notifications
-
-## Customisation
+## Customising the Project Allocator
 
 The backend repository contains a file called `config.yaml` at the root,
 which lets you customise basic parameters for the Project Allocator.
