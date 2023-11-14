@@ -127,7 +127,7 @@ Before you proceed, you will need to create a GitHub personal access token:
 5. Create a new GitHub access token with the following details:
    1. Leave the **Note** empty
    2. Select **No expiration** for **Expiration**
-   3. Check **read:packages** for **Select scopes**
+   3. Check **repo** and **read:packages** for **Select scopes**
    4. Click **Generate token**
 6. Note down the generated token starting with `ghp_`
 
@@ -146,6 +146,13 @@ This will complete the following tasks for you:
 - Obtain a Wayfinder access token and store it in this repository's GitHub secrets.
 - Store the GitHub personal access token to Kubernetes secrets so that the Kubernetes cluster can pull your Docker images.
 - Trigger the frontend, backend and deploy workflows to deploy the Project Allocator.
+
+To check if the application deployed successfully, go to the deployment repository on GitHub and follow these steps:
+
+1. Click **Actions**
+2. Select one of the workflow runs
+3. Select `deploy`, and click **Print Application URL**
+4. Click the displayed application URL
 
 ### Manual Setup (Not Recommended)
 

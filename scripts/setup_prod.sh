@@ -76,7 +76,7 @@ else
 fi
 
 # Find out the GitHub PAT from user input.
-read -rp "Enter GitHub personal access token (CLASSIC token with READ-PACKAGE scope and NO EXPIRY): " github_token
+read -rp "Enter GitHub personal access token: " github_token
 
 # Find out the URL of the deploy repository.
 repository_url="$(git config --get remote.origin.url)"
