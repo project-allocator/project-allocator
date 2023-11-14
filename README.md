@@ -293,7 +293,7 @@ Bear in mind that you also need to update the configuration files under `manifes
 
 Right now, the repositories contain the default Azure ADD application setup, which is used by the Project Allocator sto authenticate users with their Imperial email addresses.
 
-This is fine for development purposes, but you will need to setup your own Azure ADD application for production, as you will need to register the URL of your own Project Allocator instance on Azure ADD.
+This is fine for development purposes, but you will need to setup your own Azure ADD application for production, as you will need to register the deployment URL of your own Project Allocator instance on Azure ADD.
 
 First, head over to Azure AAD's app registrations:
 [https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/RegisteredApps](https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/RegisteredApps)
