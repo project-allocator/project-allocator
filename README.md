@@ -55,7 +55,7 @@ Students are capable of:
 
 Users of all roles are capable of:
 
-- Login/Sign up using their Microsoft account (Imperial)
+- Login/Sign up using their Imperial Microsoft account
 - Sign out
 - Receive in-app and email notifications
 
@@ -204,7 +204,7 @@ When it prompts "Do you already have an empty Wayfinder workspace (y/n)?", type 
 
 Now you can navigate to the Wayfinder UI at [https://portal-20-0-245-170.go.wayfinder.run/](https://portal-20-0-245-170.go.wayfinder.run/) and start creating your Wayfinder application:
 
-1. Click **Log in using Single Sign-On (SSO)** to login with your email address (Imperial).
+1. Click **Log in using Single Sign-On (SSO)** to login with your Imperial email address.
 2. Click **Select workspace** and choose the workspace you created earlier with the `setup_prod.sh` script.
 
 Before you proceed, you will need to create a GitHub personal access token:
@@ -291,14 +291,14 @@ Bear in mind that you also need to update the configuration files under `manifes
 
 ## Setting up the Microsoft SSO
 
-Right now, the repositories contain the default Azure ADD application for the Project Allocator.
+Right now, the repositories contain the default Azure ADD application setup, which is used by the Project Allocator sto authenticate users with their Imperial email addresses.
 
-This is fine for development purposes, but you will need to setup your own Azure ADD application for production.
+This is fine for development purposes, but you will need to setup your own Azure ADD application for production, as you will need to register the URL of your own Project Allocator instance on Azure ADD.
 
 First, head over to Azure AAD's app registrations:
-https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/RegisteredApps
+[https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/RegisteredApps](https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/RegisteredApps)
 
-You may be required to login with your email address (Imperial)
+You may be required to login with your Imperial email address.
 
 1. Click **New Registrations** at the top left
    1. Enter `project-allocator` to **Name**
