@@ -59,6 +59,19 @@ Users of all roles are capable of:
 - Sign out
 - Receive in-app and email notifications
 
+## Getting Stared
+
+You need to follow the sections below to start using the Project Allocator.
+
+- [Setting up the Development Environment](#setting-up-the-development-environment)
+  - [Prerequisites](#prerequisites)
+  - [Using the Setup Script](#using-the-setup-script)
+- [Setting up the Production Environment](#setting-up-the-production-environment)
+  - [Using the Setup Script](#using-the-setup-script-1)
+- [Setting up the Microsoft SSO](#setting-up-the-microsoft-sso)
+
+After you have successfully setup the development/production environment and Micorsoft SSO, you can start [customising the Project Allocator](#customising-the-project-allocator).
+
 ## Setting up the Development Environment
 
 ## Prerequisites
@@ -83,14 +96,14 @@ For each of the template repositories below:
    1. This correspond to the name of the template repository
 6. Leave **Description** empty
 7. Select **Internal** or **Private** for **Visibility**
-   1. Never make this repository **Public** as some of the repositories contain sensitive information required for the default Azure ADD setup
+   1. Never make this repository **Public** as some of the repositories contain sensitive information required for the default Azure ADD application
 8. Click **Create repository**
 
 ### Using the Setup Script
 
 First, you need to clone the deployment repository with `git clone https://github.com/<OWNER_NAME>/project-allocator-deploy`.
 
-Replace `<OWNER_NAME>` with the name of your GitHub account/organisation you used in Prerequisites.
+Replace `<OWNER_NAME>` with the name of your GitHub account/organisation you used in [Prerequisites](#prerequisites).
 
 Inside the cloned repository you will find the `setup_dev.sh` script.
 You can run it as follows:
@@ -99,7 +112,9 @@ You can run it as follows:
 ./scripts/setup_dev.sh
 ```
 
-This will complete the following tasks for you:
+Make sure you have the necessary dependencies if the script prompts you to install them.
+
+If you follow the instructions printed by the script, it will complete the following tasks for you:
 
 - Clone the required repositories.
   - From the same GitHub account/orgnaisation which this repository was cloned from.
@@ -123,7 +138,7 @@ git clone https://github.com/<OWNER_NAME>/project-allocator-frontend
 git clone https://github.com/<OWNER_NAME>/project-allocator-backend
 ```
 
-Replace `<OWNER_NAME>` with the name of your GitHub account/organisation you used in Prerequisites.
+Replace `<OWNER_NAME>` with the name of your GitHub account/organisation you used in [Prerequisites](#prerequisites).
 
 After running these commands successfully, your directory structure should look like:
 
@@ -174,7 +189,7 @@ The deployment will be triggered every time you push to this repository on the `
 
 First, make sure you have cloned the deployment repository. If not, you can clone it with `git clone https://github.com/<OWNER_NAME>/project-allocator-deploy`.
 
-Replace `<OWNER_NAME>` with the name of your GitHub account/organisation you used in Prerequisites.
+Replace `<OWNER_NAME>` with the name of your GitHub account/organisation you used in [Prerequisites](#prerequisites).
 
 To begin with, check if you have a Wayfinder workspace created to deploy this application.
 If not, you can create a new workspace with the `setup_prod.sh` script, which you will find in the cloned repository:
@@ -182,6 +197,8 @@ If not, you can create a new workspace with the `setup_prod.sh` script, which yo
 ```bash
 ./scripts/setup_prod.sh
 ```
+
+Make sure you have the necessary dependencies if the script prompts you to install them.
 
 When it prompts "Do you already have an empty Wayfinder workspace (y/n)?", type "n", and it will ask you for the necessary information and create a new workspace for you. Note that the workspace name must consist of 2-5 alphanumeric characters and must be unique within the Wayfinder cluster.
 
@@ -273,6 +290,10 @@ https://portal-20-0-245-170.go.wayfinder.run
 Bear in mind that you also need to update the configuration files under `manifests/`, otherwise your changes will get overwritten by a CI/CD run.
 
 ## Setting up the Microsoft SSO
+
+Right now, the repositories contain the default Azure ADD application for the Project Allocator.
+
+This is fine for development purposes, but you will need to setup your own Azure ADD application for production.
 
 First, head over to Azure AAD's app registrations:
 https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/RegisteredApps
