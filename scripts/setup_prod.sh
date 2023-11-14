@@ -55,22 +55,23 @@ fi
 set -e
 
 # Find out the workspace name from user input.
-read -rp "Do you already have a Wayfinder workspace (y/n)?: " has_workspace
+read -rp "Do you already have an empty Wayfinder workspace (y/n)?: " has_workspace
 if [[ "$has_workspace" =~ ^[Yy]$ ]]; then
   echo "Now you are ready to setup your GitHub repository!"
   read -rp "Enter Wayfinder workspace name (2-5 unique alphanumeric): " workspace_name
 else
-  echo "This script will create a Wayfinder workspace for you."
+  echo "This script will create an empty Wayfinder workspace for you."
   read -rp "Do you wish to continue (y/n)?: " should_continue
   if [[ ! "$should_continue" =~ ^[Yy]$ ]]; then
     echo "Aborting..."
     exit 1
   fi
-  read -rp "Enter Wayfinder workspace name (2-5 unique alphanumeric): " workspace_name
-  read -rp "Enter Wayfinder workspace summary (human readable string): " workspace_summary
-  echo "Creating a workspace $workspace_name..."
-  wf create "$workspace_name" summary="$workspace_summary"
-  echo "Successfully created a workspace. Please visit the Wayfinder UI and create your application."
+  read -rp "Enter your Wayfinder workspace name (2-5 unique alphanumeric): " workspace_name
+  read -rp "Enter your Wayfinder workspace summary (human readable string): " workspace_summary
+  echo "Creating an empty workspace $workspace_name..."
+  wf create workspace "$workspace_name" --summary="$workspace_summary"
+  echo "Successfully created an empty workspace."
+  echo "Please follow the instructions in README.md and re-run: $0."
   exit 0
 fi
 
@@ -80,14 +81,17 @@ read -rp "Enter GitHub personal access token (CLASSIC token with READ-PACKAGE sc
 # Find out the URL of the deploy repository.
 repository_url="$(git config --get remote.origin.url)"
 repository_url="${repository_url/\.git/}"
-repository_name="$(echo "$repository_url" | cut -d '/' -f 5)"
-full_repository_name="$(echo "$repository_url" | cut -d '/' -f 4,5)"
+re="^(https|git)(:\/\/|@)([^\/:]+)[\/:]([^\/:]+)\/(.+)(.git)*$"
+if [[ $repository_url =~ $re ]]; then    
+    repository_name="${BASH_REMATCH[5]}"
+    full_repository_name="${BASH_REMATCH[4]}/${BASH_REMATCH[5]}"
+fi
 
 # Store the GitHub personal access token in GitHub Actions secrets
 # so that deployment workflow can find out the latest sha of packages.
 echo "Storing the GitHub personal access token in GitHub Actions secrets..."
 # GitHub Actions secrets cannot start with GITHUB
-gh secrets set PERSONAL_ACCESS_TOKEN --repo "$full_repository_name" --body "$github_token"
+gh secret set PERSONAL_ACCESS_TOKEN --repo "$full_repository_name" --body "$github_token"
 
 # Store the Wayfinder configuration in GitHub Actions variables.
 echo "Storing the Wayfinder configuration in GitHub Actions variables..."
@@ -118,8 +122,13 @@ gh secret set DATABASE_ADMINISTRATOR_PASSWORD --repo "$full_repository_name" --b
 echo "Setting the default Wayfinder workspace..."
 wf use workspace "$workspace_name"
 
-# Assign the Wayfinder access token manage apps.
-echo "Acquiring the Wayfinder access token..."
+# Apply application and environment manifests to create Kubernetes namespace.
+echo "Applying application and environment manifests..."
+wf apply -f manifests/app.yaml
+wf apply -f manifests/env.yaml
+
+# Assign roles to the Wayfinder access token.
+echo "Assigning roles to the Wayfinder access token..."
 wf assign wayfinderrole --workspace "$workspace_name" --workspace-access-token "$repository_name" --role workspace.appmanager
 wf assign wayfinderrole --workspace "$workspace_name" --workspace-access-token "$repository_name" --role workspace.dnsmanager
 wf assign wayfinderrole --workspace "$workspace_name" --workspace-access-token "$repository_name" --role workspace.accessmanager
@@ -130,7 +139,6 @@ wf assign accessrole --workspace "$workspace_name" --workspace-access-token "$re
 
 # Create a Kubernetes secret so that kubelet can pull our container image.
 echo "Creating secrets on the Kubernetes cluster..."
-export GITHUB_TOKEN="$github_token"
 username="$(gh api user | jq -r '.login')"
 # Get access to the kuberenetes namespace in order to create a Kubernetes secret.
 # We cannot run 'wf access env' as Wayfinder application has not been created yet.
@@ -138,5 +146,10 @@ wf access cluster to1.aks-stdnt1 --role namespace.admin --namespace "$workspace_
 # Delete the secret first in case it already exists.
 kubectl delete secret ghcr-login-secret --namespace "$workspace_name"-project-allocator-dev > /dev/null 2>&1 || true
 kubectl create secret docker-registry ghcr-login-secret --namespace "$workspace_name"-project-allocator-dev --docker-username="$username" --docker-password="$github_token" --docker-server=ghcr.io
+
+# Trigger the frontend and backend workflows to push images.
+echo "Triggering the frontend and backend workflows..."
+gh workflow run "push.yaml" --repo "${full_repository_name/project-allocator-deploy/project-allocator-frontend}"
+gh workflow run "push.yaml" --repo "${full_repository_name/project-allocator-deploy/project-allocator-backend}"
 
 echo "Production environment setup complete!"
