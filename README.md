@@ -144,51 +144,51 @@ To downgrade the database, simply run:
 
 You might find the following notes useful to check that the tables are in the normal form (BCNF).
 
-$\text{user}$ table (BCNF)
+$\mathrm{user}$ table (BCNF)
 
 - Keys:
-  - $\text{id}$
-  - $\text{email}$
+  - $\mathrm{id}$
+  - $\mathrm{email}$
 - Foreign keys:
-  - $\text{allocated\_id} \xrightarrow{fk} \text{project.id}$
+  - $\mathrm{allocated\_id} \xrightarrow{fk} \mathrm{project.id}$
 - Functional dependencies:
-  - $\text{email} \xrightarrow{fd} \text{id}$
-  - $\text{id} \xrightarrow{fd} \text{email}$
-  - $\text{id} \xrightarrow{fd} \text{name}$
-  - $\text{id} \xrightarrow{fd} \text{role}$
-  - $\text{id} \xrightarrow{fd} \text{accepted}$
-  - $\text{id} \xrightarrow{fd} \text{allocated\_id}$
+  - $\mathrm{email} \xrightarrow{fd} \mathrm{id}$
+  - $\mathrm{id} \xrightarrow{fd} \mathrm{email}$
+  - $\mathrm{id} \xrightarrow{fd} \mathrm{name}$
+  - $\mathrm{id} \xrightarrow{fd} \mathrm{role}$
+  - $\mathrm{id} \xrightarrow{fd} \mathrm{accepted}$
+  - $\mathrm{id} \xrightarrow{fd} \mathrm{allocated\_id}$
 
-$\text{project}$ table (BCNF)
+$\mathrm{project}$ table (BCNF)
 
 - Keys:
-  - $\text{id}$
+  - $\mathrm{id}$
 - Foreign keys:
-  - $\text{proposer\_id} \xrightarrow{fk} \text{user.id}$
+  - $\mathrm{proposer\_id} \xrightarrow{fk} \mathrm{user.id}$
 - Functional dependencies:
-  - $\text{id} \xrightarrow{fd} \text{title}$
-  - $\text{id} \xrightarrow{fd} \text{description}$
-  - $\text{id} \xrightarrow{fd} \text{categories}$
-  - $\text{id} \xrightarrow{fd} \text{approved}$
-  - $\text{id} \xrightarrow{fd} \text{proposer\_id}$
+  - $\mathrm{id} \xrightarrow{fd} \mathrm{title}$
+  - $\mathrm{id} \xrightarrow{fd} \mathrm{description}$
+  - $\mathrm{id} \xrightarrow{fd} \mathrm{categories}$
+  - $\mathrm{id} \xrightarrow{fd} \mathrm{approved}$
+  - $\mathrm{id} \xrightarrow{fd} \mathrm{proposer\_id}$
 
-$\text{shortlist}$ table (BCNF)
+$\mathrm{shortlist}$ table (BCNF)
 
 - Keys:
-  - $(\text{user\_id}, \text{project\_id})$
+  - $(\mathrm{user\_id}, \mathrm{project\_id})$
 - Functional dependencies:
-  - $(\text{user\_id}, \text{project\_id}) \xrightarrow{fd} \text{preference}$
+  - $(\mathrm{user\_id}, \mathrm{project\_id}) \xrightarrow{fd} \mathrm{preference}$
 
-$\text{notification}$ table (BCNF)
+$\mathrm{notification}$ table (BCNF)
 
 - Keys:
-  - $\text{id}$
+  - $\mathrm{id}$
 - Foreign keys:
-  - $\text{user\_id} \xrightarrow{fk} \text{user.id}$
+  - $\mathrm{user\_id} \xrightarrow{fk} \mathrm{user.id}$
 - Functional dependencies:
-  - $\text{id} \xrightarrow{fd} \text{title}$
-  - $\text{id} \xrightarrow{fd} \text{description}$
-  - $\text{id} \xrightarrow{fd} \text{seen}$
-  - $\text{id} \xrightarrow{fd} \text{user\_id}$
+  - $\mathrm{id} \xrightarrow{fd} \mathrm{title}$
+  - $\mathrm{id} \xrightarrow{fd} \mathrm{description}$
+  - $\mathrm{id} \xrightarrow{fd} \mathrm{seen}$
+  - $\mathrm{id} \xrightarrow{fd} \mathrm{user\_id}$
 
-Although the tables are in the normal form, you may find it beneficial in the future to split the $\text{user}$ table into two tables, one for account information and the other for project allocation (e.g. $\text{accepted}$).
+Although the tables are in the normal form, you may find it beneficial in the future to split the $\mathrm{user}$ table into two tables, one for account information and the other for project allocation (e.g. $\mathrm{accepted}$).
