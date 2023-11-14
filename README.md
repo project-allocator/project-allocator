@@ -145,6 +145,7 @@ This will complete the following tasks for you:
 - Store the configuration of your Wayfinder application to this repository's GitHub variables.
 - Obtain a Wayfinder access token and store it in this repository's GitHub secrets.
 - Store the GitHub personal access token to Kubernetes secrets so that the Kubernetes cluster can pull your Docker images.
+- Trigger the frontend, backend and deploy workflows to deploy the Project Allocator.
 
 ### Manual Setup (Not Recommended)
 

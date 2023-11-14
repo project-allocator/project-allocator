@@ -149,7 +149,30 @@ kubectl create secret docker-registry ghcr-login-secret --namespace "$workspace_
 
 # Trigger the frontend and backend workflows to push images.
 echo "Triggering the frontend and backend workflows..."
-gh workflow run "push.yaml" --repo "${full_repository_name/project-allocator-deploy/project-allocator-frontend}"
-gh workflow run "push.yaml" --repo "${full_repository_name/project-allocator-deploy/project-allocator-backend}"
+frontend_repository_name="${full_repository_name/project-allocator-deploy/project-allocator-frontend}"
+backend_repository_name="${full_repository_name/project-allocator-deploy/project-allocator-backend}"
+gh workflow run "push.yaml" --repo "$frontend_repository_name"
+gh workflow run "push.yaml" --repo "$backend_repository_name"
+
+# Wait for the frontend and backend workflows to complete.
+echo "Waiting for the workflows to complete..."
+while true; do
+  echo "Attempting checks in 10 seconds..."
+  sleep 10
+  if gh run list --json status --repo "$frontend_repository_name" | jq 'all(.status == "completed")' | grep -q "false"; then
+    echo "Frontend workflows still running."
+    continue
+  fi
+  if gh run list --json status --repo "$backend_repository_name" | jq 'all(.status == "completed")' | grep -q "false"; then
+    echo "Backend workflows still running."
+    continue
+  fi
+  echo "Workflows complete."
+  break
+done
+
+# Trigger the deploy workflow to deploy the application.
+echo "Triggering the deploy workflow..."
+gh workflow run "deploy.yaml" --repo "$full_repository_name"
 
 echo "Production environment setup complete!"
