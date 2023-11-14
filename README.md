@@ -140,11 +140,11 @@ To downgrade the database, simply run:
 ~$ poetry run downgrade base
 ```
 
-## Database Normalisation
+### Database Normalisation
 
 You might find the following notes useful to check that the tables are in the normal form (BCNF).
 
-$\mathrm{user}$ table (BCNF)
+User table (BCNF)
 
 - Keys:
   - $\mathrm{id}$
@@ -159,7 +159,7 @@ $\mathrm{user}$ table (BCNF)
   - $\mathrm{id} \xrightarrow{fd} \mathrm{accepted}$
   - $\mathrm{id} \xrightarrow{fd} \mathrm{allocated\_id}$
 
-$\mathrm{project}$ table (BCNF)
+Project table (BCNF)
 
 - Keys:
   - $\mathrm{id}$
@@ -172,14 +172,14 @@ $\mathrm{project}$ table (BCNF)
   - $\mathrm{id} \xrightarrow{fd} \mathrm{approved}$
   - $\mathrm{id} \xrightarrow{fd} \mathrm{proposer\_id}$
 
-$\mathrm{shortlist}$ table (BCNF)
+Shortlist table (BCNF)
 
 - Keys:
   - $(\mathrm{user\_id}, \mathrm{project\_id})$
 - Functional dependencies:
   - $(\mathrm{user\_id}, \mathrm{project\_id}) \xrightarrow{fd} \mathrm{preference}$
 
-$\mathrm{notification}$ table (BCNF)
+Notification table (BCNF)
 
 - Keys:
   - $\mathrm{id}$
@@ -191,4 +191,4 @@ $\mathrm{notification}$ table (BCNF)
   - $\mathrm{id} \xrightarrow{fd} \mathrm{seen}$
   - $\mathrm{id} \xrightarrow{fd} \mathrm{user\_id}$
 
-Although the tables are in the normal form, you may find it beneficial in the future to split the $\mathrm{user}$ table into two tables, one for account information and the other for project allocation (e.g. $\mathrm{accepted}$).
+Although the tables are in the normal form, you may find it beneficial in the future to split the user table into two tables, one for account information and the other for project allocation (e.g. $\mathrm{accepted}$).
