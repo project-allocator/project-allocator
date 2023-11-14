@@ -4,9 +4,9 @@ Welcome to Project Allocator v3!
 
 This is the repository that contains:
 
-* GitHub workflow to deploy the Docker images in the cloud.
-* Scripts to setup development environment.
-* `docker-compose.yaml` to build and run the Docker images locally.
+- GitHub workflow to deploy the Docker images in the cloud.
+- Scripts to setup development environment.
+- `docker-compose.yaml` to build and run the Docker images locally.
 
 ## Demo Screenshots
 
@@ -14,7 +14,7 @@ This is the repository that contains:
 
 https://private-user-images.githubusercontent.com/28210288/279185100-37bc380f-73c0-40c8-a303-f4acb5a8ff48.mov?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTEiLCJleHAiOjE2OTg2OTc3ODIsIm5iZiI6MTY5ODY5NzQ4MiwicGF0aCI6Ii8yODIxMDI4OC8yNzkxODUxMDAtMzdiYzM4MGYtNzNjMC00MGM4LWEzMDMtZjRhY2I1YThmZjQ4Lm1vdj9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFJV05KWUFYNENTVkVINTNBJTJGMjAyMzEwMzAlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjMxMDMwVDIwMjQ0MlomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTQzYzhmY2QzYTJkZjJlZWZlZTQxY2QyMGExOWM5ZDc5ZDU2MDE0ZTJmYWViMzdiMGVjMzZhNTgwNTIyZmVkNWUmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.wYFdNsYbynQX4Um409l0UdOE94mX5j14KHdtG8YwQE0
 
-### Student Screen 
+### Student Screen
 
 https://private-user-images.githubusercontent.com/28210288/279185157-04d1b617-fec2-49a7-ae4f-07766396aad0.mov?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTEiLCJleHAiOjE2OTg2OTc4NjIsIm5iZiI6MTY5ODY5NzU2MiwicGF0aCI6Ii8yODIxMDI4OC8yNzkxODUxNTctMDRkMWI2MTctZmVjMi00OWE3LWFlNGYtMDc3NjYzOTZhYWQwLm1vdj9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFJV05KWUFYNENTVkVINTNBJTJGMjAyMzEwMzAlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjMxMDMwVDIwMjYwMlomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTVhNmUzMWM0MWRlMzNhNTBmNzJhZDY2Zjc4ZDgyNTNjYzUwNmQ1YzIyYjRmOWMwMTdjMzRlMGExNjFlZTBjNjImWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.kJk8fStRmCZFy2KK5J4nybxplKLqBoaB06E3LR04OdY
 
@@ -24,7 +24,7 @@ https://private-user-images.githubusercontent.com/28210288/279185157-04d1b617-fe
 
 First, you need to clone this repository with `git clone https://github.com/Digital-Garage-ICL/project-allocator-deploy`.
 
-Inside the cloned repository you will find the `setup_dev.sh` script. 
+Inside the cloned repository you will find the `setup_dev.sh` script.
 You can run it as follows:
 
 ```bash
@@ -33,15 +33,15 @@ You can run it as follows:
 
 This will complete the following tasks for you:
 
-* Clone the required repositories.
-    * From the same GitHub account/orgnaisation which this repository was cloned from.
-* Build and run the Docker images specified in `docker-compose.yaml`.
-* Initialise and seed the database running in the Docker container.
+- Clone the required repositories.
+  - From the same GitHub account/orgnaisation which this repository was cloned from.
+- Build and run the Docker images specified in `docker-compose.yaml`.
+- Initialise and seed the database running in the Docker container.
 
-If you encounter an error, you will need to manually setup your development environment. 
+If you encounter an error, you will need to manually setup your development environment.
 See the "Manual Setup" for more details.
 
-Once it runs successfully you're reay to start coding! 
+Once it runs successfully you're reay to start coding!
 Visit the repositories for the frontend/backed for detailed instructions on how to get started.
 
 ### Manual Setup (Not Recommended)
@@ -80,10 +80,10 @@ For those who are curious - `db` is a custom command which comes with utility fu
 The database is now up and running.
 You can launch your faviourite DB client and explore the contents with the following credentials:
 
-* Address: 0.0.0.0:5432
-* Database name: default
-* Database username: postgres
-* Database password: postgres
+- Address: 0.0.0.0:5432
+- Database name: default
+- Database username: postgres
+- Database password: postgres
 
 Let's us move onto the `project-allocator-frontend` repository and generate the frontend client scripts. This will be used by the React components to call the backend API:
 
@@ -104,18 +104,32 @@ The deployment will be triggered every time you push to this repository on the `
 
 First, you need to clone this repository with `git clone https://github.com/Digital-Garage-ICL/project-allocator-deploy`.
 
-To begin with, check if you have a Wayfinder workspace created to deploy this application. 
+To begin with, check if you have a Wayfinder workspace created to deploy this application.
 If not, you can create a new workspace with the `setup_prod.sh` script, which you will find in the cloned repository:
 
 ```bash
 ./scripts/setup_prod.sh
 ```
 
-When it prompts "Do you already have a Wayfinder workspace (yes/no)?", type "yes", and it will ask you for the necessary information and create a workspace for you.
-Note that the workspace name must consist of 2-5 alphanumeric characters and must be unique within the Wayfinder cluster.
+When it prompts "Do you already have an empty Wayfinder workspace (y/n)?", type "n", and it will ask you for the necessary information and create a new workspace for you. Note that the workspace name must consist of 2-5 alphanumeric characters and must be unique within the Wayfinder cluster.
 
-Now you can navigate to the Wayfinder UI at [https://portal-20-0-245-170.go.wayfinder.run/](https://portal-20-0-245-170.go.wayfinder.run/) and start creating your Wayfinder application.
-The URL of your workspace should be output by the `setup_prod.sh` script.
+Now you can navigate to the Wayfinder UI at [https://portal-20-0-245-170.go.wayfinder.run/](https://portal-20-0-245-170.go.wayfinder.run/) and start creating your Wayfinder application:
+
+1. Click **Log in using Single Sign-On (SSO)** to login with your email address (Imperial).
+2. Click **Select workspace** and choose the workspace you created earlier with the `setup_prod.sh` script.
+
+Before you proceed, you will need to create a GitHub personal access token:
+
+1. Sign in to GitHub and navigate to the top page: [https://github.com/](https://github.com/)
+2. Click your profile icon at the top right and select **Settings**
+3. Click **Developer settings** > **Personal access tokens** > **Tokens (classic)**
+4. Click **Generate new token (classic)**
+5. Create a new GitHub access token with the following details:
+   1. Leave the **Note** empty
+   2. Select **No expiration** for **Expiration**
+   3. Check **read:packages** for **Select scopes**
+   4. Click **Generate token**
+6. Note down the generated token starting with `ghp_`
 
 Finally, you are ready to setup your GitHub workflow! Simply run the `setup_prod.sh` script (again) as follows:
 
@@ -123,13 +137,14 @@ Finally, you are ready to setup your GitHub workflow! Simply run the `setup_prod
 ./scripts/setup_prod.sh
 ```
 
-and when it prompts "Do you already have a Wayfinder workspace (yes/no)?", type "no" to continue.
+When it prompts "Do you already have an empty Wayfinder workspace (y/n)?", type "y" to continue,
+and enter the name of the workspace you have just created.
 
 This will complete the following tasks for you:
 
-* Store the configuration of your Wayfinder application to this repository's GitHub variables.
-* Obtain a Wayfinder access token and store it in this repository's GitHub secrets.
-* Store the GitHub personal access token to Kubernetes secrets so that the Kubernetes cluster can pull your Docker images.
+- Store the configuration of your Wayfinder application to this repository's GitHub variables.
+- Obtain a Wayfinder access token and store it in this repository's GitHub secrets.
+- Store the GitHub personal access token to Kubernetes secrets so that the Kubernetes cluster can pull your Docker images.
 
 ### Manual Setup (Not Recommended)
 
@@ -137,18 +152,18 @@ We use Appvia Wayfinder for simplified and secure deployment of the Project Allo
 
 Before you proceed, you will need to understand the following vocabularies of Appvia Wayfinder:
 
-* Workspace
-    * Way to group users and cloud infrastructure for isolation
-* Application
-    * Models the elements of your applications (containers, cloud resources, environments, etc)
-* Components
-    * Individually deployable parts of your application
-        * Container components
-            * Define a set of properties for Kubernetes deployment management
-        * Cloud resource components
-            * Represents a dependency of your application served by a cloud service
-* Environment
-    * Map to a namespace in Kubernetes
+- Workspace
+  - Way to group users and cloud infrastructure for isolation
+- Application
+  - Models the elements of your applications (containers, cloud resources, environments, etc)
+- Components
+  - Individually deployable parts of your application
+    - Container components
+      - Define a set of properties for Kubernetes deployment management
+    - Cloud resource components
+      - Represents a dependency of your application served by a cloud service
+- Environment
+  - Map to a namespace in Kubernetes
 
 Find more on: https://docs.appvia.io/wayfinder
 
@@ -156,19 +171,19 @@ The production environment is specified using Appvia Wayfinder's configuration f
 
 This can be broken down into as follows:
 
-* Frontend container component
-    * Listens to port 8080
-* Backend container component
-    * Listens to port 8000
-* Database cloud resource component
-    * Uses Azure Postgresql preconfigured by Appvia Wayfinder admins
-* Ingress
-    * Redirets requests at port 80 to frontend container component
-    * Configures an API proxy
-        * Redirects API (`/api`) requests at port 80 to backend container component
-* Backend network policy
-    * Allows redirected requests from ingress to backend container component
-        * Blocked by Appvia Wayfinder by default
+- Frontend container component
+  - Listens to port 8080
+- Backend container component
+  - Listens to port 8000
+- Database cloud resource component
+  - Uses Azure Postgresql preconfigured by Appvia Wayfinder admins
+- Ingress
+  - Redirets requests at port 80 to frontend container component
+  - Configures an API proxy
+    - Redirects API (`/api`) requests at port 80 to backend container component
+- Backend network policy
+  - Allows redirected requests from ingress to backend container component
+    - Blocked by Appvia Wayfinder by default
 
 Manual setup for the production environment involves a lot of technical details which we will not discuss here.
 
@@ -185,56 +200,56 @@ https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/Regi
 You may be required to login with your email address (Imperial)
 
 1. Click **New Registrations** at the top left
-    1. Enter `project-allocator` to **Name**
-    2. Select **Accounts in this organizational directory only (Imperial College London only - Single tenant)** for **Supported account types**
-    3. Select **Single-page application (SPA)** and enter `http://localhost:3000` for **Redirect URI (optional)**
-    4. Click **Register**
+   1. Enter `project-allocator` to **Name**
+   2. Select **Accounts in this organizational directory only (Imperial College London only - Single tenant)** for **Supported account types**
+   3. Select **Single-page application (SPA)** and enter `http://localhost:3000` for **Redirect URI (optional)**
+   4. Click **Register**
 2. Click **Manage** > **Manifest**
-    1. Edit the JSON file by setting `"accessTokenAcceptedVersion"` to `2`
+   1. Edit the JSON file by setting `"accessTokenAcceptedVersion"` to `2`
 3. Click **Manage** > **Expose an API**
-    1. Click **Add a scope**
-    2. Leave the **Application ID URI** and click **Save and continue**
-    3. Now you can add a scope:
-        1. Enter `user_impersonation` to **Scope name**
-        2. Select **Admins and users** for **Who can consent?**
-        3. Enter `Access API as user` to **Admin consent display name**
-        4. Enter `Allows the app to access the API as the user.` to **Admin consent description**
-        5. Enter `Access API as you` to **User consent display name**
-        6. Enter `Allows the app to access the API as you.` to **User consent description**
-        7. Select **Enabled** for **State**
-        8. Click **Add scope**
+   1. Click **Add a scope**
+   2. Leave the **Application ID URI** and click **Save and continue**
+   3. Now you can add a scope:
+      1. Enter `user_impersonation` to **Scope name**
+      2. Select **Admins and users** for **Who can consent?**
+      3. Enter `Access API as user` to **Admin consent display name**
+      4. Enter `Allows the app to access the API as the user.` to **Admin consent description**
+      5. Enter `Access API as you` to **User consent display name**
+      6. Enter `Allows the app to access the API as you.` to **User consent description**
+      7. Select **Enabled** for **State**
+      8. Click **Add scope**
 4. Click **API permissions**
-    1. Now you can add `project-allocator` API permissions:
-        1. Click **Add a permission**
-        2. Click **My APIs** tab
-        3. Select `project-allocator`
-        4. Leave the checkbox ticked and click **Add permissions**
-    2. Now you can add Microsoft Graph API permissions:
-        1. Click **Add a permission** again
-        2. Click **Microsoft APIs** tab
-        3. Click **Microsoft Graph** card at the top
-        4. Select **Delegated permissions**
-        5. Search for `User.Read` and `Mail.Send` and tick the checkboxes
-        6. Click **Add permissions**
+   1. Now you can add `project-allocator` API permissions:
+      1. Click **Add a permission**
+      2. Click **My APIs** tab
+      3. Select `project-allocator`
+      4. Leave the checkbox ticked and click **Add permissions**
+   2. Now you can add Microsoft Graph API permissions:
+      1. Click **Add a permission** again
+      2. Click **Microsoft APIs** tab
+      3. Click **Microsoft Graph** card at the top
+      4. Select **Delegated permissions**
+      5. Search for `User.Read` and `Mail.Send` and tick the checkboxes
+      6. Click **Add permissions**
 5. Click **Overview**
-    1. Note down your **Tenant ID** and **Application (client) ID**
-    2. Go to the frontend repository. In `.env`, set `VITE_TENANT_ID` to **Tenant ID** and `VITE_CLIENT_ID` to **Application (client) ID**
-    3. Go to the backend repository. In `.env`, set `TENANT_ID` to **Tenant ID** and `APP_CLIENT_ID` to **Application (client) ID**
+   1. Note down your **Tenant ID** and **Application (client) ID**
+   2. Go to the frontend repository. In `.env`, set `VITE_TENANT_ID` to **Tenant ID** and `VITE_CLIENT_ID` to **Application (client) ID**
+   3. Go to the backend repository. In `.env`, set `TENANT_ID` to **Tenant ID** and `APP_CLIENT_ID` to **Application (client) ID**
 6. Now repeat steps 1-5 except you need to:
-    1. In step 1.1, enter `project-allocator-openapi` to **Name**
-    2. In step 1.3, select **Single-page application (SPA)** and enter `http://localhost:8000/oauth2-redirect` to **Redirect URI (optional)**
-    3. In step 5, you need to:
-        1. Note down your **Application (client) ID** for `project-allocator-openapi`
-        2. Go to the backend repository. In `.env`, set `OPENAPI_CLIENT_ID` to **Application (client) ID**
+   1. In step 1.1, enter `project-allocator-openapi` to **Name**
+   2. In step 1.3, select **Single-page application (SPA)** and enter `http://localhost:8000/oauth2-redirect` to **Redirect URI (optional)**
+   3. In step 5, you need to:
+      1. Note down your **Application (client) ID** for `project-allocator-openapi`
+      2. Go to the backend repository. In `.env`, set `OPENAPI_CLIENT_ID` to **Application (client) ID**
 7. After deployment is successful, go to the deployment repository on GitHub
-    1. Click **Actions**
-    2. Select one of the workflow runs
-    3. Select `deploy`, and click **Print Application URL**
-    4. Note down your application URL
-    5. Now head over to Azure Portal
-    6. Click **Manage** > **Authentication**
-    7. In **Single-page application** > **Redirect URIs**, click **Add URI**
-    8. Enter your application URL
+   1. Click **Actions**
+   2. Select one of the workflow runs
+   3. Select `deploy`, and click **Print Application URL**
+   4. Note down your application URL
+   5. Now head over to Azure Portal
+   6. Click **Manage** > **Authentication**
+   7. In **Single-page application** > **Redirect URIs**, click **Add URI**
+   8. Enter your application URL
 
 ## Getting SSH Access to Container Component
 
@@ -275,39 +290,43 @@ Now if you launch Lens, you should see your pods running under **Workloads** > *
 ## Features
 
 Administrators are capable of:
-* Browse approved projects
-* Check if all users have signed up to the Project Allocator with a list of emails
-* Check if there are any students who have not been allocated to a project
-* Check if there are any projects which have not been approved
-* Check if there are any projects who did not accept project allocation
-* Shutdown new project proposals/shortlists and undos for project allocation approval/disapproval
-* Mass-allocate/deallocate projects to/from students using the customised algorithm
-* Send in-app and email notifications
-* Import/export data in the DB
-* Browse all users
-* Delete/Edit all users
-* Approving/Disapproving a new project proposed by other staff/admin
+
+- Browse approved projects
+- Check if all users have signed up to the Project Allocator with a list of emails
+- Check if there are any students who have not been allocated to a project
+- Check if there are any projects which have not been approved
+- Check if there are any projects who did not accept project allocation
+- Shutdown new project proposals/shortlists and undos for project allocation approval/disapproval
+- Mass-allocate/deallocate projects to/from students using the customised algorithm
+- Send in-app and email notifications
+- Import/export data in the DB
+- Browse all users
+- Delete/Edit all users
+- Approving/Disapproving a new project proposed by other staff/admin
 
 Staff are capable of:
-* Browse approved projects
-* Browse proposed projects
-* Proposing a new project
-* Editing/Deleting a proposed project
-* Check which students shortlisted for a prposed project
-* Check which students were allocated to a proposed project
-* Manually allocate/deallocate projects to/from students
+
+- Browse approved projects
+- Browse proposed projects
+- Proposing a new project
+- Editing/Deleting a proposed project
+- Check which students shortlisted for a prposed project
+- Check which students were allocated to a proposed project
+- Manually allocate/deallocate projects to/from students
 
 Students are capable of:
-* Browse approved projects
-* Shortlist for an approved project
-* Submit their order of preference for shortlisted projects
-* Check the allocated project
-* Accept/Reject the allocated project
+
+- Browse approved projects
+- Shortlist for an approved project
+- Submit their order of preference for shortlisted projects
+- Check the allocated project
+- Accept/Reject the allocated project
 
 Users of all roles are capable of:
-* Login/Sign up using their Microsoft account (Imperial)
-* Sign out
-* Receive in-app and email notifications
+
+- Login/Sign up using their Microsoft account (Imperial)
+- Sign out
+- Receive in-app and email notifications
 
 ## Customisation
 
@@ -318,11 +337,11 @@ Here's a brief description of what the contents of `config.yaml` should look lik
 
 ```yaml
 users:
-  admins: 
+  admins:
     - rbc@ic.ac.uk # List of administrator emails
 projects:
   allocations:
-    students: 4    # Nmber of students allocated per a single project
+    students: 4 # Nmber of students allocated per a single project
 ```
 
 By default, each project has a project title, description and categories (list of keywords),
@@ -342,16 +361,16 @@ projects:
 
 The Project Allocator supports several types of input:
 
-* Textfield (single row)
-* Textarea (multiple rows)
-* Number
-* Slider
-* Date picker
-* Time picker
-* Switch (yes or no)
-* Select (dropdown menu)
-* Checkbox (multiple selections)
-* Radio (single selection)
+- Textfield (single row)
+- Textarea (multiple rows)
+- Number
+- Slider
+- Date picker
+- Time picker
+- Switch (yes or no)
+- Select (dropdown menu)
+- Checkbox (multiple selections)
+- Radio (single selection)
 
 You can have a look at `config.yaml` for the exact format of each of these input types.
 
