@@ -73,54 +73,62 @@ The backend server restarts automatically when it detects any changes under the 
 But this may fail if you edit some of the configuration files e.g. alembic.ini. In case of such failure, try running:
 
 ```bash
-~$ docker compose restart --build backend
+docker compose restart --build backend
 ```
 
-### Entering the container
+### Entering Container
 
 ```bash
-~$ docker compose up -d
-~$ docker compose exec -it backend /bin/bash
+docker compose up -d
+docker compose exec -it backend /bin/bash
 ```
 
-### Seeding the database
+## Resetting Database
 
-Enter the `backend` container.
-
-First create tables in the database by running:
+Ent er the `backend` container and run the following command:
 
 ```bash
-~$ poetry run db create
+poetry run db reset
 ```
 
-This creates tables based on the models you defined in `models.py`.
+### Seeding Database
 
-You can now seed the database using the following command:
+Enter the `backend` container. You can seed the database by running the following command:
 
 ```bash
-~$ poetry run db seed
+poetry run db seed
 ```
+
+This command automatically resets the database tables, so there is no need to run `poetry run db reset` beforehand.
+
+## Changing User Roles
+
+Enter the `backend` container and run the following command:
+
+```bash
+poetry run db role <USER_EMAIL> <USER_ROLE>
+```
+
+where `<USER_ROLE>` is one of `admin`, `staff`, `student`.
 
 ### Auto-generating migrations
 
-Enter the `backend` container.
-
-First you need to check the database connection:
+Enter the `backend` container and check the database connection as follows:
 
 ```bash
-~$ poetry run alembic current
+poetry run alembic current
 ```
 
 If you want to generate the initial migration, make sure the database is empty, otherwise Alembic skips the generation:
 
 ```bash
-~$ poetry run db drop
+poetry run db drop
 ```
 
 Now run the following command to auto-generate migrations:
 
 ```bash
-~$ poetry run alembic revision --autogenerate -m "Initial migration"
+poetry run alembic revision --autogenerate -m "Initial migration"
 ```
 
 ### Creating new migrations
@@ -128,16 +136,16 @@ Now run the following command to auto-generate migrations:
 You can create a new revision and upgrade the database by:
 
 ```bash
-~$ poetry run alembic revision -m "Your Revision Message"
-~$ poetry run alembic upgrade head
-~$ poetry run alembic history
+poetry run alembic revision -m "Your Revision Message"
+poetry run alembic upgrade head
+poetry run alembic history
 ```
 
 To downgrade the database, simply run:
 
 ```bash
-~$ poetry run downgrade -1
-~$ poetry run downgrade base
+poetry run downgrade -1
+poetry run downgrade base
 ```
 
 ### Database Normalisation
