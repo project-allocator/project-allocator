@@ -1,4 +1,4 @@
-import { AdminService, AllocationService, UserRead, UserService } from "@/api";
+import { AllocationService, UserRead, UserService } from "@/api";
 import UserList from "@/components/UserList";
 import { CheckOutlined, UploadOutlined } from "@ant-design/icons";
 import {
@@ -73,7 +73,7 @@ export default function ManageUsers() {
               const content = event.target?.result as string;
               const allEmails = content.split(",").map((email) => email.trim());
               const missingEmails =
-                await AdminService.checkMissingUsers(allEmails);
+                await UserService.checkMissingUsers(allEmails);
               setMissingEmails(missingEmails);
               setIsModalOpen(true);
               setCheckMissingUsersLoading(false);
