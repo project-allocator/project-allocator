@@ -5,7 +5,7 @@ import {
   DownloadOutlined,
   ExclamationCircleOutlined,
   InfoCircleOutlined,
-  UploadOutlined
+  UploadOutlined,
 } from "@ant-design/icons";
 import {
   Button,
@@ -59,7 +59,8 @@ export default function ManageData() {
   const [exportLoading, setExportLoading] = useState<boolean>(false);
   const [importFiles, setImportFiles] = useState<UploadFile[]>([]);
   const [importLoading, setImportLoading] = useState<boolean>(false);
-  const [resetDatabaseConfirmString, setResetDatabaseConfirmString] = useState<string>("");
+  const [resetDatabaseConfirmString, setResetDatabaseConfirmString] =
+    useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const { messageSuccess, messageError } = useMessage();
 
@@ -152,17 +153,19 @@ export default function ManageData() {
             (exportType === "json"
               ? AdminService.exportJson()
               : AdminService.exportCsv()
-            ).then((response) => {
-              // Create blob link to download
-              // https://stackoverflow.com/questions/50694881/how-to-download-file-in-react-js
-              const url = window.URL.createObjectURL(new Blob([response]));
-              const linkElement = document.createElement("a");
-              linkElement.href = url;
-              linkElement.setAttribute("download", `output.${exportType}`);
-              document.body.appendChild(linkElement);
-              linkElement.click();
-              document.body.removeChild(linkElement);
-            }).catch(messageError)
+            )
+              .then((response) => {
+                // Create blob link to download
+                // https://stackoverflow.com/questions/50694881/how-to-download-file-in-react-js
+                const url = window.URL.createObjectURL(new Blob([response]));
+                const linkElement = document.createElement("a");
+                linkElement.href = url;
+                linkElement.setAttribute("download", `output.${exportType}`);
+                document.body.appendChild(linkElement);
+                linkElement.click();
+                document.body.removeChild(linkElement);
+              })
+              .catch(messageError)
               .finally(() => setExportLoading(false));
           }}
         >
@@ -174,7 +177,8 @@ export default function ManageData() {
       <Paragraph className="text-slate-500">
         Reset the database of this Project Allocator instance.
         <br />
-        This will delete all users and projects registered in the application, except your admin account information, which will be preserved.
+        This will delete all users and projects registered in the application,
+        except your admin account information, which will be preserved.
         <br />
         <b>This operation cannot be undone</b>.
       </Paragraph>
@@ -189,9 +193,7 @@ export default function ManageData() {
         open={isModalOpen}
         footer={
           <Space>
-            <Button onClick={() => setIsModalOpen(false)}>
-              Cancel
-            </Button>
+            <Button onClick={() => setIsModalOpen(false)}>Cancel</Button>
             <Button
               type="primary"
               disabled={resetDatabaseConfirmString != "RESET DATABASE"}
@@ -204,18 +206,21 @@ export default function ManageData() {
             >
               OK
             </Button>
-          </Space >
+          </Space>
         }
         onCancel={() => setIsModalOpen(false)}
       >
         <Paragraph>
-          If you are sure you want to continue, please type <b>RESET DATABASE</b> in the box below.
+          If you are sure you want to continue, please type{" "}
+          <b>RESET DATABASE</b> in the box below.
         </Paragraph>
         <Input
           value={resetDatabaseConfirmString}
-          onChange={(event) => setResetDatabaseConfirmString(event.target.value)}
+          onChange={(event) =>
+            setResetDatabaseConfirmString(event.target.value)
+          }
         />
-      </Modal >
+      </Modal>
     </>
   );
 }
