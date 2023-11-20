@@ -163,22 +163,14 @@ export class AdminService {
     }
 
     /**
-     * Check Missing Users
-     * @param requestBody
-     * @returns string Successful Response
+     * Reset Database
+     * @returns any Successful Response
      * @throws ApiError
      */
-    public static checkMissingUsers(
-        requestBody: Array<string>,
-    ): CancelablePromise<Array<string>> {
+    public static resetDatabase(): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/users/missing',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                422: `Validation Error`,
-            },
+            url: '/api/database/reset',
         });
     }
 
