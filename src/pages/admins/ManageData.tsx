@@ -3,12 +3,15 @@ import { useMessage } from "@/contexts/MessageContext";
 import {
   CheckOutlined,
   DownloadOutlined,
+  ExclamationCircleOutlined,
   InfoCircleOutlined,
-  UploadOutlined,
+  UploadOutlined
 } from "@ant-design/icons";
 import {
   Button,
   Divider,
+  Input,
+  Modal,
   Popover,
   Select,
   Space,
@@ -53,8 +56,11 @@ const exampleContent = {
 
 export default function ManageData() {
   const [exportType, setExportType] = useState<string>("json");
+  const [exportLoading, setExportLoading] = useState<boolean>(false);
   const [importFiles, setImportFiles] = useState<UploadFile[]>([]);
   const [importLoading, setImportLoading] = useState<boolean>(false);
+  const [resetDatabaseConfirmString, setResetDatabaseConfirmString] = useState<string>("");
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const { messageSuccess, messageError } = useMessage();
 
   return (
@@ -140,7 +146,9 @@ export default function ManageData() {
         />
         <Button
           icon={<DownloadOutlined />}
+          loading={exportLoading}
           onClick={() => {
+            setExportLoading(true);
             (exportType === "json"
               ? AdminService.exportJson()
               : AdminService.exportCsv()
@@ -154,12 +162,60 @@ export default function ManageData() {
               document.body.appendChild(linkElement);
               linkElement.click();
               document.body.removeChild(linkElement);
-            });
+            }).catch(messageError)
+              .finally(() => setExportLoading(false));
           }}
         >
           Download File
         </Button>
       </Space>
+      <Divider />
+      <Title level={4}>Reset Database</Title>
+      <Paragraph className="text-slate-500">
+        Reset the database of this Project Allocator instance.
+        <br />
+        This will delete all users and projects registered in the application, except your admin account information, which will be preserved.
+        <br />
+        <b>This operation cannot be undone</b>.
+      </Paragraph>
+      <Button
+        icon={<ExclamationCircleOutlined />}
+        onClick={() => setIsModalOpen(true)}
+      >
+        Reset Database
+      </Button>
+      <Modal
+        title="Are you sure you want to continue?"
+        open={isModalOpen}
+        footer={
+          <Space>
+            <Button onClick={() => setIsModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              type="primary"
+              disabled={resetDatabaseConfirmString != "RESET DATABASE"}
+              onClick={() => {
+                AdminService.resetDatabase()
+                  .then(() => messageSuccess("Successfully reset database."))
+                  .catch(messageError)
+                  .finally(() => setIsModalOpen(false));
+              }}
+            >
+              OK
+            </Button>
+          </Space >
+        }
+        onCancel={() => setIsModalOpen(false)}
+      >
+        <Paragraph>
+          If you are sure you want to continue, please type <b>RESET DATABASE</b> in the box below.
+        </Paragraph>
+        <Input
+          value={resetDatabaseConfirmString}
+          onChange={(event) => setResetDatabaseConfirmString(event.target.value)}
+        />
+      </Modal >
     </>
   );
 }
