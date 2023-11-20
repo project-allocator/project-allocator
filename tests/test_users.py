@@ -2,6 +2,20 @@ from fastapi.testclient import TestClient
 from requests_mock import Mocker
 
 
+def test_check_missing_users(admin_client: TestClient):
+    emails = [
+        "alice@example.com",
+        "bob@example.com",
+        "charlie@example.com",
+        "david@example.com",
+    ]
+    response = admin_client.post("/api/users/missing", json=emails)
+    data = response.json()
+    assert response.status_code == 200
+    assert len(data) == 1
+    assert data[0] == "david@example.com"
+
+
 def test_read_current_user(student_client: TestClient):
     response = student_client.get("/api/users/me")
     data = response.json()

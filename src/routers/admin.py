@@ -3,16 +3,18 @@ import csv
 import json
 from typing import List
 from fastapi import APIRouter, Depends, Security
-from sqlmodel import Session, select
+from sqlmodel import Session, select, delete
 
 from ..models import (
+    Notification,
     Project,
     ProjectImport,
+    Shortlist,
     User,
     UserImport,
     Status,
 )
-from ..dependencies import check_admin, get_session
+from ..dependencies import check_admin, get_session, get_user
 
 router = APIRouter(tags=["admin"])
 
@@ -176,17 +178,22 @@ async def import_json(
 
 
 @router.post(
-    "/users/missing",
-    response_model=List[str],
+    "/database/reset",
     dependencies=[Security(check_admin)],
 )
-async def check_missing_users(
-    emails: List[str],
+async def reset_database(
+    user: User | None = Depends(get_user),
     session: Session = Depends(get_session),
 ):
-    missing = []
-    for email in emails:
-        user = session.exec(select(User).where(User.email == email)).one_or_none()
-        if not user:
-            missing.append(email)
-    return missing
+    session.exec(delete(User))
+    session.exec(delete(Project))
+    session.exec(delete(Shortlist))
+    session.exec(delete(Notification))
+    session.exec(delete(Status))
+
+    session.add(User(email=user.email, name=user.name, role=user.role))
+    session.add(Status(key="proposals.shutdown", value=False))
+    session.add(Status(key="shortlists.shutdown", value=False))
+    session.add(Status(key="undos.shutdown", value=False))
+    session.commit()
+    return {"ok": True}

@@ -1,6 +1,7 @@
 import datetime
 import random
 from fastapi.testclient import TestClient
+import pytest
 from sqlmodel import Session, select
 from src.config import config
 from src.factories import ProjectFactory, UserFactory
@@ -202,15 +203,24 @@ def test_import_json(staff_user: User, admin_client: TestClient, session: Sessio
     assert len(projects) == 2  # 2 new projects
 
 
-def test_check_missing_users(admin_client: TestClient, session: Session):
-    emails = [
-        "alice@example.com",
-        "bob@example.com",
-        "charlie@example.com",
-        "david@example.com",
-    ]
-    response = admin_client.post("/api/users/missing", json=emails)
+# Ignore RuntimeWarning from sqlmodel
+# otherwise it gives warnings about the user dependency.
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
+def test_reset_database(admin_client: TestClient, session: Session):
+    users = [UserFactory.build() for _ in range(10)]
+    projects = [ProjectFactory.build() for _ in range(10)]
+    session.add_all(users)
+    session.add_all(projects)
+    session.commit()
+
+    response = admin_client.post("/api/database/reset")
     data = response.json()
     assert response.status_code == 200
-    assert len(data) == 1
-    assert data[0] == "david@example.com"
+    assert data["ok"] is True
+
+    users = session.exec(select(User)).all()
+    projects = session.exec(select(Project)).all()
+    statuses = session.exec(select(Status)).all()
+    assert len(users) == 1  # 1 admin user
+    assert len(projects) == 0
+    assert len(statuses) == 3  # 3 default statuses

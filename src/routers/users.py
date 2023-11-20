@@ -16,6 +16,23 @@ from ..dependencies import (
 router = APIRouter(tags=["user"])
 
 
+@router.post(
+    "/users/missing",
+    response_model=List[str],
+    dependencies=[Security(check_admin)],
+)
+async def check_missing_users(
+    emails: List[str],
+    session: Session = Depends(get_session),
+):
+    missing = []
+    for email in emails:
+        user = session.exec(select(User).where(User.email == email)).one_or_none()
+        if not user:
+            missing.append(email)
+    return missing
+
+
 @router.get("/users", response_model=List[UserRead])
 async def read_users(
     role: str | None = None,
