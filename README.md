@@ -412,6 +412,8 @@ wf deploy component project-allocator dev --component db --remove
 wf deploy component project-allocator dev --component db --force
 ```
 
+This often happens when you override the production database credentials by running `setup_prod.sh` twice.
+
 ## Customising the Project Allocator
 
 The backend repository contains a file called `config.yaml` at the root,
