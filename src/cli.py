@@ -7,7 +7,7 @@ from rich.progress import track
 from sqlmodel import SQLModel, Session, select
 
 from .db import engine
-from .models import Project, Shortlist, Status, User
+from .models import Project, Shortlist, User, Status
 from .factories import UserFactory, ProjectFactory
 
 app = typer.Typer()
@@ -25,6 +25,11 @@ def create(yes: Annotated[bool, typer.Option(help="Skip confirmation.")] = False
         if not typer.confirm("Are you sure to create all tables in the database?"):
             return
     SQLModel.metadata.create_all(engine)
+    with Session(engine) as session:
+        session.add(Status(key="proposals.shutdown", value=False))
+        session.add(Status(key="shortlists.shutdown", value=False))
+        session.add(Status(key="undos.shutdown", value=False))
+        session.commit()
     print("✨[green]Successfully created all tables in the database.")
 
 
@@ -46,6 +51,11 @@ def reset(yes: Annotated[bool, typer.Option(help="Skip confirmation.")] = False)
             return
     SQLModel.metadata.drop_all(engine)
     SQLModel.metadata.create_all(engine)
+    with Session(engine) as session:
+        session.add(Status(key="proposals.shutdown", value=False))
+        session.add(Status(key="shortlists.shutdown", value=False))
+        session.add(Status(key="undos.shutdown", value=False))
+        session.commit()
     print("✨[green]Successfully reset the database.")
 
 
@@ -55,6 +65,14 @@ def seed(yes: Annotated[bool, typer.Option(help="Skip confirmation.")] = False):
         print("❗[red]This command should not be run in production.")
         if not typer.confirm("Are you sure to seed the database?"):
             return
+    SQLModel.metadata.drop_all(engine)
+    SQLModel.metadata.create_all(engine)
+    with Session(engine) as session:
+        session.add(Status(key="proposals.shutdown", value=False))
+        session.add(Status(key="shortlists.shutdown", value=False))
+        session.add(Status(key="undos.shutdown", value=False))
+        session.commit()
+
     projects: List[Project] = []
     for _ in track(range(10), description="Seeding staff..."):
         # We nest session inside for loop so the progress can be checked.
@@ -79,12 +97,6 @@ def seed(yes: Annotated[bool, typer.Option(help="Skip confirmation.")] = False):
                 session.add(project)
             session.add(student)
             session.commit()
-    print("Seeding status...")
-    with Session(engine) as session:
-        session.add(Status(key="proposals.shutdown", value=False))
-        session.add(Status(key="shortlists.shutdown", value=False))
-        session.add(Status(key="undos.shutdown", value=False))
-        session.commit()
     print("✨[green]Successfully seeded the database.")
 
 
