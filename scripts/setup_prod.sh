@@ -111,7 +111,7 @@ echo "Generating and storing database credentials in GitHub Actions secrets..."
 # Server name must be lowercase alphanumeric.
 server_name="$(pwgen -Ans 16 1)"
 # Administrator login must be lowercase alphanumeric and cannot start with a number.
-administrator_login="$(pwgen -As 1 1)$(pwgen -Ans 15 1)"
+administrator_login="$(pwgen -0As 1 1)$(pwgen -Ans 15 1)"
 # Administrator password must be alphanumeric and contain uppercase letters.
 administrator_password="$(pwgen -cns 32 1)"
 gh secret set DATABASE_SERVER_NAME --repo "$full_repository_name" --body "$server_name"
