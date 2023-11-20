@@ -351,6 +351,7 @@ You may be required to login with your Imperial email address.
    6. Click **Manage** > **Authentication**
    7. In **Single-page application** > **Redirect URIs**, click **Add URI**
    8. Enter your application URL
+   9. Click **Save** at the bottom
 
 ## Getting SSH Access to Container Component
 
@@ -387,6 +388,29 @@ wf access env project-allocator dev --role namespace.admin
 ```
 
 Now if you launch Lens, you should see your pods running under **Workloads** > **Pods**.
+
+## Resovling Conflicts
+
+If you customised your Wayfinder configurations on Web UI, you might get the following error:
+
+```
+Error: AppComponent/frontend: AppComponent.app.appvia.io "frontend" is invalid:
+ * spec.name: Component name must be unique within an application
+```
+
+in which case, you can run the following commands to re-apply your configurations:
+
+```bash
+wf delete -f manifests/frontend.yaml
+wf apply -f manifests/frontend.yaml
+```
+
+Also, if you observe that some components are not running as expected (e.g. `db`), you can run:
+
+```bash
+wf deploy component project-allocator dev --component db --remove
+wf deploy component project-allocator dev --component db --force
+```
 
 ## Customising the Project Allocator
 
