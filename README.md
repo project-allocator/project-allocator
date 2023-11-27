@@ -8,13 +8,19 @@ This is the repository that contains:
 - Scripts to setup development environment.
 - `docker-compose.yaml` to build and run the Docker images locally.
 
-## Demo Screenshots
+## Demo
 
-### Admin Screen
+Live at: [https://frontend-dev-projectall.to1azure.imperialapp.io/](https://frontend-dev-projectall.to1azure.imperialapp.io/)
+
+Admin view:
 
 https://private-user-images.githubusercontent.com/28210288/279185100-37bc380f-73c0-40c8-a303-f4acb5a8ff48.mov?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTEiLCJleHAiOjE2OTg2OTc3ODIsIm5iZiI6MTY5ODY5NzQ4MiwicGF0aCI6Ii8yODIxMDI4OC8yNzkxODUxMDAtMzdiYzM4MGYtNzNjMC00MGM4LWEzMDMtZjRhY2I1YThmZjQ4Lm1vdj9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFJV05KWUFYNENTVkVINTNBJTJGMjAyMzEwMzAlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjMxMDMwVDIwMjQ0MlomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTQzYzhmY2QzYTJkZjJlZWZlZTQxY2QyMGExOWM5ZDc5ZDU2MDE0ZTJmYWViMzdiMGVjMzZhNTgwNTIyZmVkNWUmWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.wYFdNsYbynQX4Um409l0UdOE94mX5j14KHdtG8YwQE0
 
-### Student Screen
+Staff view:
+
+TODO
+
+Student view:
 
 https://private-user-images.githubusercontent.com/28210288/279185157-04d1b617-fec2-49a7-ae4f-07766396aad0.mov?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTEiLCJleHAiOjE2OTg2OTc4NjIsIm5iZiI6MTY5ODY5NzU2MiwicGF0aCI6Ii8yODIxMDI4OC8yNzkxODUxNTctMDRkMWI2MTctZmVjMi00OWE3LWFlNGYtMDc3NjYzOTZhYWQwLm1vdj9YLUFtei1BbGdvcml0aG09QVdTNC1ITUFDLVNIQTI1NiZYLUFtei1DcmVkZW50aWFsPUFLSUFJV05KWUFYNENTVkVINTNBJTJGMjAyMzEwMzAlMkZ1cy1lYXN0LTElMkZzMyUyRmF3czRfcmVxdWVzdCZYLUFtei1EYXRlPTIwMjMxMDMwVDIwMjYwMlomWC1BbXotRXhwaXJlcz0zMDAmWC1BbXotU2lnbmF0dXJlPTVhNmUzMWM0MWRlMzNhNTBmNzJhZDY2Zjc4ZDgyNTNjYzUwNmQ1YzIyYjRmOWMwMTdjMzRlMGExNjFlZTBjNjImWC1BbXotU2lnbmVkSGVhZGVycz1ob3N0JmFjdG9yX2lkPTAma2V5X2lkPTAmcmVwb19pZD0wIn0.kJk8fStRmCZFy2KK5J4nybxplKLqBoaB06E3LR04OdY
 
@@ -109,6 +115,7 @@ Inside the cloned repository you will find the `setup_dev.sh` script.
 You can run it as follows:
 
 ```bash
+mkdir /path/to/project-allocator && cd /path/to/project-allocator
 ./scripts/setup_dev.sh
 ```
 
@@ -195,6 +202,7 @@ To begin with, check if you have a Wayfinder workspace created to deploy this ap
 If not, you can create a new workspace with the `setup_prod.sh` script, which you will find in the cloned repository:
 
 ```bash
+cd /path/to/project-allocator-deploy
 ./scripts/setup_prod.sh
 ```
 
@@ -389,7 +397,18 @@ wf access env project-allocator dev --role namespace.admin
 
 Now if you launch Lens, you should see your pods running under **Workloads** > **Pods**.
 
-## Resovling Conflicts
+## Resolving GHCR Access Issues
+
+Sometimes the GitHub actions in the frontend and backend repsoitories may fail to push images to GHCR. In this case, you will additionally need to follow these steps to enable package access to GitHub Actions:
+
+1. From organisation top-page, click **Packages**
+2. Select the package with the failing GitHub action
+3. Go to **Package settings** > **Manage Actions access**, and click **Add Repository**
+4. Select the corresponding repository
+5. Click **Add repositories**
+6. Under **Role** dropdown, select **Write**
+
+## Resovling Wayfinder Conflicts
 
 If you customised your Wayfinder configurations on Web UI, you might get the following error:
 
