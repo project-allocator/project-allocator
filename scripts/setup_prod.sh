@@ -127,6 +127,11 @@ echo "Applying application and environment manifests..."
 wf apply -f manifests/app.yaml
 wf apply -f manifests/env.yaml
 
+# Wait for Wayfinder to apply the application and environment manifests.
+# The `wf access cluster` may fail if the namespace has not been created yet.
+echo "Waiting for Wayfinder to apply the manifests (10 seconds)..."
+sleep 10
+
 # Assign roles to the Wayfinder access token.
 echo "Assigning roles to the Wayfinder access token..."
 wf assign wayfinderrole --workspace "$workspace_name" --workspace-access-token "$repository_name" --role workspace.appmanager
