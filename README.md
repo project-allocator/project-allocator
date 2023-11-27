@@ -101,9 +101,9 @@ For each of the template repositories below:
 
 ### Using the Setup Script
 
-First, you need to clone the deployment repository with `git clone https://github.com/<OWNER_NAME>/project-allocator-deploy`.
+First, you need to clone the deployment repository with `git clone https://github.com/<REPOSITORY_OWNER>/project-allocator-deploy`.
 
-Replace `<OWNER_NAME>` with the name of your GitHub account/organisation you used in [Prerequisites](#prerequisites).
+Replace `<REPOSITORY_OWNER>` with the name of your GitHub account/organisation you used in [Prerequisites](#prerequisites).
 
 Inside the cloned repository you will find the `setup_dev.sh` script.
 You can run it as follows:
@@ -133,12 +133,12 @@ If you wish to manually setup the development environment, you can start by clon
 
 ```bash
 mkdir project-allocator && cd project-allocator
-git clone https://github.com/<OWNER_NAME>/project-allocator-deploy
-git clone https://github.com/<OWNER_NAME>/project-allocator-frontend
-git clone https://github.com/<OWNER_NAME>/project-allocator-backend
+git clone https://github.com/<REPOSITORY_OWNER>/project-allocator-deploy
+git clone https://github.com/<REPOSITORY_OWNER>/project-allocator-frontend
+git clone https://github.com/<REPOSITORY_OWNER>/project-allocator-backend
 ```
 
-Replace `<OWNER_NAME>` with the name of your GitHub account/organisation you used in [Prerequisites](#prerequisites).
+Replace `<REPOSITORY_OWNER>` with the name of your GitHub account/organisation you used in [Prerequisites](#prerequisites).
 
 After running these commands successfully, your directory structure should look like:
 
@@ -187,9 +187,9 @@ You can also visit [http://localhost:8000/docs](http://localhost:8000/docs) to c
 You can setup the production environment and enable automatic deployment of your application using Wayfinder.
 The deployment will be triggered every time you push to this repository on the `main` branch.
 
-First, make sure you have cloned the deployment repository. If not, you can clone it with `git clone https://github.com/<OWNER_NAME>/project-allocator-deploy`.
+First, make sure you have cloned the deployment repository. If not, you can clone it with `git clone https://github.com/<REPOSITORY_OWNER>/project-allocator-deploy`.
 
-Replace `<OWNER_NAME>` with the name of your GitHub account/organisation you used in [Prerequisites](#prerequisites).
+Replace `<REPOSITORY_OWNER>` with the name of your GitHub account/organisation you used in [Prerequisites](#prerequisites).
 
 To begin with, check if you have a Wayfinder workspace created to deploy this application.
 If not, you can create a new workspace with the `setup_prod.sh` script, which you will find in the cloned repository:
