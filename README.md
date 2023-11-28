@@ -379,7 +379,7 @@ This is fine for development purposes, but you will need to setup your own Azure
 First, head over to Azure AAD's app registrations:
 [https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/RegisteredApps](https://portal.azure.com/#view/Microsoft_AAD_IAM/ActiveDirectoryMenuBlade/~/RegisteredApps)
 
-You may be required to login with your Imperial email address.
+> You may be required to login with your Imperial email address.
 
 1. Click **New Registrations** at the top left
    1. Enter `project-allocator` to **Name**
