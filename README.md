@@ -105,11 +105,17 @@ This should create a fork of each of thh original repositories under your GitHub
 
 ### Using the Setup Script
 
-First, you need to clone the deployment repository with `git clone git@github.com:<REPOSITORY_OWNER>/project-allocator-deploy.git`.
+First create a new directory for the Project Allocator:
+
+```bash
+mkdir /path/to/project-allocator && cd /path/to/project-allocator
+```
+
+Now you need to clone the deployment repository with `git clone git@github.com:<REPOSITORY_OWNER>/project-allocator-deploy.git`.
 
 > Replace `<REPOSITORY_OWNER>` with the name of your GitHub account/organisation you used in [Prerequisites](#prerequisites).
 
-First, navigate to the deployment repository you have just cloned:
+And navigate to the deployment repository you have just cloned:
 
 ```bash
 cd /path/to/project-allocator-deploy
@@ -139,7 +145,6 @@ Visit the repositories for the frontend/backed for detailed instructions on how 
 If you wish to manually setup the development environment, you can start by cloning the required repositories:
 
 ```bash
-mkdir /path/to/project-allocator && cd /path/to/project-allocator
 git clone git@github.com:<REPOSITORY_OWNER>/project-allocator-deploy.git
 git clone git@github.com:<REPOSITORY_OWNER>/project-allocator-frontend.git
 git clone git@github.com:<REPOSITORY_OWNER>/project-allocator-backend.git
@@ -194,9 +199,7 @@ You can also visit [http://localhost:8000/docs](http://localhost:8000/docs) to c
 You can setup the production environment and enable automatic deployment of your application using Wayfinder.
 The deployment will be triggered every time you push to this repository on the `main` branch.
 
-First, make sure you have cloned the deployment repository. If not, you can clone it with `git clone git@github.com:<REPOSITORY_OWNER>/project-allocator-deploy.git`.
-
-> Make sure you replace `<REPOSITORY_OWNER>` with the name of your GitHub account/organisation you used in [Prerequisites](#prerequisites).
+First, make sure you have cloned the deployment repository. If not, you can follow the instructions at [Setting up the Development Environment](#setting-up-the-development-environment).
 
 Now navigate to the deployment repository you have just cloned:
 
