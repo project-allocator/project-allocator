@@ -6,7 +6,7 @@ echo "v1.0"
 echo "------------------------------------------------------------"
 
 echo "This script will create a new Wayfinder workspace"
-echo "in which you can host your Project Allocator."
+echo "where you can host your copy of the Project Allocator."
 
 echo "Please make sure you have met the following requirements:"
 echo "* You have installed and logged in to the 'wf' Wayfinder CLI command."
