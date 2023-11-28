@@ -54,28 +54,19 @@ fi
 # Set the -e option to exit if any subsequent command fails
 set -e
 
-# Find out the workspace name from user input.
-read -rp "Do you already have an empty Wayfinder workspace (y/n)?: " has_workspace
-if [[ "$has_workspace" =~ ^[Yy]$ ]]; then
-  echo "Now you are ready to setup your GitHub repository!"
-  read -rp "Enter Wayfinder workspace name (2-5 unique alphanumeric): " workspace_name
-else
-  echo "This script will create an empty Wayfinder workspace for you."
-  read -rp "Do you wish to continue (y/n)?: " should_continue
-  if [[ ! "$should_continue" =~ ^[Yy]$ ]]; then
-    echo "Aborting..."
-    exit 1
-  fi
-  read -rp "Enter your Wayfinder workspace name (2-5 unique alphanumeric): " workspace_name
-  read -rp "Enter your Wayfinder workspace summary (human readable string): " workspace_summary
-  echo "Creating an empty workspace $workspace_name..."
-  wf create workspace "$workspace_name" --summary="$workspace_summary"
-  echo "Successfully created an empty workspace."
-  echo "Please follow the instructions in README.md and re-run: $0."
+# Make sure the user has created a Wayfinder workspace.
+read -rp "Do you already have a Wayfinder workspace (y/n)?: " has_workspace
+if [[ ! "$has_workspace" =~ ^[Yy]$ ]]; then
+  echo "Before you continue, you need to create a new Wayfinder workspace."
+  echo "Please follow the instructions in README.md and run this script again."
   exit 0
 fi
 
-# Find out the GitHub PAT from user input.
+# Get the workspace name from user input
+echo "You are ready to setup your GitHub repository."
+read -rp "Enter Wayfinder workspace name (2-5 unique alphanumeric): " workspace_name
+
+# Get the GitHub PAT from user input.
 read -rp "Enter GitHub personal access token: " github_token
 
 # Find out the URL of the deploy repository.

@@ -109,19 +109,21 @@ For each of the template repositories below:
 
 First, you need to clone the deployment repository with `git clone https://github.com/<REPOSITORY_OWNER>/project-allocator-deploy`.
 
-Replace `<REPOSITORY_OWNER>` with the name of your GitHub account/organisation you used in [Prerequisites](#prerequisites).
+> Replace `<REPOSITORY_OWNER>` with the name of your GitHub account/organisation you used in [Prerequisites](#prerequisites).
 
-Inside the cloned repository you will find the `setup_dev.sh` script.
-You can run it as follows:
+First, navigate to the deployment repository you have just cloned:
 
 ```bash
-mkdir /path/to/project-allocator && cd /path/to/project-allocator
+cd /path/to/project-allocator-deploy
+```
+
+Inside the repository, you will find the `setup_dev.sh` script. Make sure install have the necessary dependencies, which will be listed when you run the script, and run:
+
+```bash
 ./scripts/setup_dev.sh
 ```
 
-Make sure you have the necessary dependencies if the script prompts you to install them.
-
-If you follow the instructions printed by the script, it will complete the following tasks for you:
+And follow the instructions printed by the script. This will complete the following tasks for you:
 
 - Clone the required repositories.
   - From the same GitHub account/orgnaisation which this repository was cloned from.
@@ -139,13 +141,13 @@ Visit the repositories for the frontend/backed for detailed instructions on how 
 If you wish to manually setup the development environment, you can start by cloning the required repositories:
 
 ```bash
-mkdir project-allocator && cd project-allocator
+mkdir /path/to/project-allocator && cd /path/to/project-allocator
 git clone https://github.com/<REPOSITORY_OWNER>/project-allocator-deploy
 git clone https://github.com/<REPOSITORY_OWNER>/project-allocator-frontend
 git clone https://github.com/<REPOSITORY_OWNER>/project-allocator-backend
 ```
 
-Replace `<REPOSITORY_OWNER>` with the name of your GitHub account/organisation you used in [Prerequisites](#prerequisites).
+> Make sure you replace `<REPOSITORY_OWNER>` with the name of your GitHub account/organisation you used in [Prerequisites](#prerequisites).
 
 After running these commands successfully, your directory structure should look like:
 
@@ -196,24 +198,29 @@ The deployment will be triggered every time you push to this repository on the `
 
 First, make sure you have cloned the deployment repository. If not, you can clone it with `git clone https://github.com/<REPOSITORY_OWNER>/project-allocator-deploy`.
 
-Replace `<REPOSITORY_OWNER>` with the name of your GitHub account/organisation you used in [Prerequisites](#prerequisites).
+> Make sure you replace `<REPOSITORY_OWNER>` with the name of your GitHub account/organisation you used in [Prerequisites](#prerequisites).
 
-To begin with, check if you have a Wayfinder workspace created to deploy this application.
-If not, you can create a new workspace with the `setup_prod.sh` script, which you will find in the cloned repository:
+Now navigate to the deployment repository you have just cloned:
 
 ```bash
 cd /path/to/project-allocator-deploy
-./scripts/setup_prod.sh
 ```
 
-Make sure you have the necessary dependencies if the script prompts you to install them.
+To begin with, you need to check if you have a Wayfinder workspace available to deploy your Project Allocator. If you're not sure, visit the Wayfinder UI at [https://portal-20-0-245-170.go.wayfinder.run](https://portal-20-0-245-170.go.wayfinder.run) and look for a workspace that does not already have an application named `project-allocator`.
 
-When it prompts "Do you already have an empty Wayfinder workspace (y/n)?", type "n", and it will ask you for the necessary information and create a new workspace for you. Note that the workspace name must consist of 2-5 alphanumeric characters and must be unique within the Wayfinder cluster.
+> When first time signing in, you will need to click **Log in using Single Sign-On (SSO)** to login with your Imperial email address.
 
-Now you can navigate to the Wayfinder UI at [https://portal-20-0-245-170.go.wayfinder.run/](https://portal-20-0-245-170.go.wayfinder.run/) and start creating your Wayfinder application:
+If that is not the case, you can create a new workspace with the `create_ws.sh` script, which you will find in the cloned repository. Make sure you are in the root directory of the repository, and run:
 
-1. Click **Log in using Single Sign-On (SSO)** to login with your Imperial email address.
-2. Click **Select workspace** and choose the workspace you created earlier with the `setup_prod.sh` script.
+```bash
+./scripts/create_ws.sh
+```
+
+This script will ask you for the necessary information and create a new workspace for you. Note that the workspace name must consist of 2-5 alphanumeric characters and must be unique within the Wayfinder cluster.
+
+You can check the workspace has been created successfully by visiting the Wayfinder UI again.
+
+> This method of creating a workspace is a temporary solution which will be possible int the future version of the Wayfinder UI.
 
 Before you proceed, you will need to create a GitHub personal access token:
 
@@ -228,7 +235,7 @@ Before you proceed, you will need to create a GitHub personal access token:
    4. Click **Generate token**
 6. Note down the generated token starting with `ghp_`
 
-Finally, you are ready to setup your GitHub workflow! Simply run the `setup_prod.sh` script (again) as follows:
+Finally, you are ready to setup your production workflow! Simply run the `setup_prod.sh` script as follows:
 
 ```bash
 ./scripts/setup_prod.sh
@@ -292,8 +299,8 @@ This can be broken down into as follows:
 
 Manual setup for the production environment involves a lot of technical details which we will not discuss here.
 
-You can also visit the Web UI to customise your production setup:
-https://portal-20-0-245-170.go.wayfinder.run
+You can also visit the Wayfinder UI to customise your production setup:
+[https://portal-20-0-245-170.go.wayfinder.run](https://portal-20-0-245-170.go.wayfinder.run)
 
 Bear in mind that you also need to update the configuration files under `manifests/`, otherwise your changes will get overwritten by a CI/CD run.
 
@@ -386,7 +393,7 @@ This script will print out the necessary credentials to access your DB on Azure.
 
 Lens is a Kubernetes IDE which lets you easily debug and monitor your Project Allocator instance once deployed.
 
-You can install Lens at https://k8slens.dev/.
+You can install Lens from their official website: [https://k8slens.dev/](https://k8slens.dev/).
 
 Before you launch Lens, run the following commands:
 
@@ -410,7 +417,7 @@ Sometimes the GitHub actions in the frontend and backend repsoitories may fail t
 
 ## Resovling Wayfinder Conflicts
 
-If you customised your Wayfinder configurations on Web UI, you might get the following error:
+If you previously customised your Wayfinder configurations on Web UI, you might get the following error when running the deployment workflow:
 
 ```
 Error: AppComponent/frontend: AppComponent.app.appvia.io "frontend" is invalid:
