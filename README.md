@@ -221,7 +221,7 @@ This script will ask you for the necessary information and create a new workspac
 
 You can check the workspace has been created successfully by visiting the Wayfinder UI again.
 
-> This method of creating a workspace is a temporary solution which will be possible int the future version of the Wayfinder UI.
+> This method of creating a workspace is a temporary solution, and this will be possible in the future version of the Wayfinder UI.
 
 Before you proceed, you will need to create a GitHub personal access token:
 
@@ -230,7 +230,8 @@ Before you proceed, you will need to create a GitHub personal access token:
 3. Click **Developer settings** > **Personal access tokens** > **Tokens (classic)**
 4. Click **Generate new token (classic)**
 5. Create a new GitHub access token with the following details:
-   1. Leave the **Note** empty
+   1. Enter `project-allocator-deploy` to **Note**
+      a. You can enter any name you like, but make sure you remember it as you might need to use it later.
    2. Select **No expiration** for **Expiration**
    3. Check **repo** (i.e. all scopes under **repo**) and **read:packages** for **Select scopes**
    4. Click **Generate token**

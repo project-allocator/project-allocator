@@ -40,8 +40,8 @@ if [[ ! "$should_continue" =~ ^[Yy]$ ]]; then
 echo "Aborting..."
 exit 1
 fi
-read -rp "Enter your Wayfinder workspace name (2-5 unique alphanumeric): " workspace_name
-read -rp "Enter your Wayfinder workspace summary (human readable string): " workspace_summary
+read -rp "Enter the name of your new Wayfinder workspace (2-5 unique alphanumeric): " workspace_name
+read -rp "Enter the summary of your new Wayfinder workspace (any human readable string): " workspace_summary
 echo "Creating an empty workspace $workspace_name..."
 wf create workspace "$workspace_name" --summary="$workspace_summary"
 echo "Successfully created an empty workspace."

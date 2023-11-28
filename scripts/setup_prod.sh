@@ -64,10 +64,10 @@ fi
 
 # Get the workspace name from user input
 echo "You are ready to setup your GitHub repository."
-read -rp "Enter Wayfinder workspace name (2-5 unique alphanumeric): " workspace_name
+read -rp "Enter your Wayfinder workspace name (2-5 unique alphanumeric): " workspace_name
 
 # Get the GitHub PAT from user input.
-read -rp "Enter GitHub personal access token: " github_token
+read -rp "Enter your GitHub personal access token (no expiry with repo and read:packages scopes): " github_token
 
 # Find out the URL of the deploy repository.
 repository_url="$(git config --get remote.origin.url)"
