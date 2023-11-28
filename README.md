@@ -96,7 +96,7 @@ For each of the original repositories below:
 
 1. Click **Fork** at the top right
 2. Select your GitHub account/organisation to fork the repository to
-   a. Make sure you don't already have a repository named `project-allocator-deploy`, `project-allocator-backend` or `project-allocator-frontend` under your GitHub account/organisation
+   1. Make sure you don't already have a repository named `project-allocator-deploy`, `project-allocator-backend` or `project-allocator-frontend` under your GitHub account/organisation
 3. Leave **Repository name** and **Descriptio** empty
 4. Leave **Copy the main branch only** selected
 5. Click **Create fork**
@@ -236,7 +236,7 @@ Before you proceed, you will need to create a GitHub personal access token:
 4. Click **Generate new token (classic)**
 5. Create a new GitHub access token with the following details:
    1. Enter `project-allocator-deploy` to **Note**
-      a. You can enter any name you like, but make sure you remember it as you might need to use it later.
+      1. You can enter any name you like, but make sure you remember it as you might need to use it later.
    2. Select **No expiration** for **Expiration**
    3. Check **repo** (i.e. all scopes under **repo**) and **read:packages** for **Select scopes**
    4. Click **Generate token**
