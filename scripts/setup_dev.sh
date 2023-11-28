@@ -5,14 +5,6 @@ echo "Setup Script for Development Environment"
 echo "v1.0"
 echo "------------------------------------------------------------"
 
-function open_url() {
-  # Open the URL with the defaul browser (only works in Linux and Unix)
-  if ! (xdg-open "$1" || sensible-browser "$1" || x-www-browser "$1" || gnome-open "$1" || open "$1") 2> /dev/null; then
-    echo "Error: Cannot open browser from the terminal."
-    echo "Try opening $1 with the browser of your choice."
-  fi
-}
-
 echo "This script will setup your development environment"
 echo "by cloning necessary GitHub repositories and building/running development Docker images."
 
@@ -80,6 +72,15 @@ echo "Generating the frontend client scripts..."
 
 # Open the browser
 echo "Lauching the Open API documentation in browser..."
+
+function open_url() {
+  # Open the URL with the defaul browser (only works in Linux and Unix)
+  if ! (xdg-open "$1" || sensible-browser "$1" || x-www-browser "$1" || gnome-open "$1" || open "$1") 2> /dev/null; then
+    echo "Error: Cannot open browser from the terminal."
+    echo "Try opening $1 with the browser of your choice."
+  fi
+}
+
 open_url http://localhost:8000/docs
 echo "Launching the frontend in browser..."
 open_url http://localhost:3000
