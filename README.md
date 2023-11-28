@@ -535,9 +535,9 @@ You can run this workflow by following these steps:
 
 After the workflow has finished running, you can trigger the `deploy` workflow by following similar steps, or by pushing a commit to the deployment repository.
 
-## Deleting the Project
+## Deleting the Project Allocator
 
-To delete the Project Allocator completely, you can simply run:
+To delete the Project Allocator completely, you can run:
 
 ```bash
 wf use workspace <WORKSPACE_NAME>
