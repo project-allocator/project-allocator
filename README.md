@@ -287,7 +287,8 @@ This will complete the following tasks for you:
 To check if the application has been deployed successfully, go to the deployment repository on GitHub and follow these steps:
 
 1. Click **Actions**
-2. Select one of the workflow runs
+2. Select the latest workflow run
+   a. You may see some failed workflow runs, but you can ignore them as long as the latest workflow run is successful.
 3. Select `deploy`, and click **Print Application URL**
 4. Click the displayed application URL
 
