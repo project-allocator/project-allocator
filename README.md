@@ -88,22 +88,20 @@ Before you proceed, you need to create the following repositories in your own Gi
 - `project-allocator-frontend`
 - `project-allocator-backend`
 
-For each of the template repositories below:
+For each of the original repositories below:
 
 - [https://github.com/Digital-Garage-ICL/project-allocator-deploy](https://github.com/Digital-Garage-ICL/project-allocator-deploy)
 - [https://github.com/Digital-Garage-ICL/project-allocator-backend](https://github.com/Digital-Garage-ICL/project-allocator-backend)
 - [https://github.com/Digital-Garage-ICL/project-allocator-frontend](https://github.com/Digital-Garage-ICL/project-allocator-frontend)
 
-1. Click **Use this template** at the top right
-2. Click **Create a new repository**
-3. Leave **Repository template** and **Include all branches** unchecked
-4. Select your own GitHub account/organisation (not `Digital-Garage-ICL`) for **Owner**
-5. Enter `project-allocator-deploy`, `project-allocator-backend` or `project-allocator-frontend` to **Repository name**
-   1. This correspond to the name of the template repository
-6. Leave **Description** empty
-7. Select **Internal** or **Private** for **Visibility**
-   1. Never make this repository **Public** as some of the repositories contain sensitive information required for the default Azure ADD application
-8. Click **Create repository**
+1. Click **Fork** at the top right
+2. Select your GitHub account/organisation to fork the repository to
+   a. Make sure you don't already have a repository named `project-allocator-deploy`, `project-allocator-backend` or `project-allocator-frontend` under your GitHub account/organisation
+3. Leave **Repository name** and **Descriptio** empty
+4. Leave **Copy the main branch only** selected
+5. Click **Create fork**
+
+This should create a fork of each of thh original repositories under your GitHub account/organisation. You can check this by visiting your GitHub account/organisation and clicking **Repositories**.
 
 ### Using the Setup Script
 
@@ -258,6 +256,15 @@ To check if the application deployed successfully, go to the deployment reposito
 3. Select `deploy`, and click **Print Application URL**
 4. Click the displayed application URL
 
+> Sometimes the GitHub actions in the frontend and backend repsoitories may fail to push images to GHCR. In this case, you will additionally need to follow these steps to enable package access to GitHub Actions:
+>
+> 1. From organisation top-page, click **Packages**
+> 2. Select the package with the failing GitHub action
+> 3. Go to **Package settings** > **Manage Actions access**, and click **Add Repository**
+> 4. Select the corresponding repository
+> 5. Click **Add repositories**
+> 6. Under **Role** dropdown, select **Write**
+
 ### Manual Setup (Not Recommended)
 
 We use Appvia Wayfinder for simplified and secure deployment of the Project Allocator.
@@ -303,6 +310,27 @@ You can also visit the Wayfinder UI to customise your production setup:
 [https://portal-20-0-245-170.go.wayfinder.run](https://portal-20-0-245-170.go.wayfinder.run)
 
 Bear in mind that you also need to update the configuration files under `manifests/`, otherwise your changes will get overwritten by a CI/CD run.
+
+> If you customise your Wayfinder configurations manaully on Web UI, you might get the following error when running the deployment workflow:
+>
+> ```
+> Error: AppComponent/frontend: AppComponent.app.appvia.io "frontend" is invalid:
+> * spec.name: Component name must be unique within an application
+> ```
+>
+> in which case, you can run the following commands to re-apply your configurations:
+>
+> ```bash
+> wf delete -f manifests/frontend.yaml
+> wf apply -f manifests/frontend.yaml
+> ```
+>
+> Also, if you observe that some Wayfinder components are not running as expected, you can run:
+>
+> ```bash
+> wf deploy component project-allocator dev --component db --remove
+> wf deploy component project-allocator dev --component db --force
+> ```
 
 ## Setting up the Microsoft SSO
 
@@ -403,42 +431,6 @@ wf access env project-allocator dev --role namespace.admin
 ```
 
 Now if you launch Lens, you should see your pods running under **Workloads** > **Pods**.
-
-## Resolving GHCR Access Issues
-
-Sometimes the GitHub actions in the frontend and backend repsoitories may fail to push images to GHCR. In this case, you will additionally need to follow these steps to enable package access to GitHub Actions:
-
-1. From organisation top-page, click **Packages**
-2. Select the package with the failing GitHub action
-3. Go to **Package settings** > **Manage Actions access**, and click **Add Repository**
-4. Select the corresponding repository
-5. Click **Add repositories**
-6. Under **Role** dropdown, select **Write**
-
-## Resovling Wayfinder Conflicts
-
-If you previously customised your Wayfinder configurations on Web UI, you might get the following error when running the deployment workflow:
-
-```
-Error: AppComponent/frontend: AppComponent.app.appvia.io "frontend" is invalid:
- * spec.name: Component name must be unique within an application
-```
-
-in which case, you can run the following commands to re-apply your configurations:
-
-```bash
-wf delete -f manifests/frontend.yaml
-wf apply -f manifests/frontend.yaml
-```
-
-Also, if you observe that some components are not running as expected (e.g. `db`), you can run:
-
-```bash
-wf deploy component project-allocator dev --component db --remove
-wf deploy component project-allocator dev --component db --force
-```
-
-This often happens when you override the production database credentials by running `setup_prod.sh` twice.
 
 ## Customising the Project Allocator
 
