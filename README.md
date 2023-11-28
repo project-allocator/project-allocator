@@ -105,7 +105,7 @@ This should create a fork of each of thh original repositories under your GitHub
 
 ### Using the Setup Script
 
-First, you need to clone the deployment repository with `git clone https://github.com/<REPOSITORY_OWNER>/project-allocator-deploy`.
+First, you need to clone the deployment repository with `git clone git@github.com:<REPOSITORY_OWNER>/project-allocator-deploy.git`.
 
 > Replace `<REPOSITORY_OWNER>` with the name of your GitHub account/organisation you used in [Prerequisites](#prerequisites).
 
@@ -140,9 +140,9 @@ If you wish to manually setup the development environment, you can start by clon
 
 ```bash
 mkdir /path/to/project-allocator && cd /path/to/project-allocator
-git clone https://github.com/<REPOSITORY_OWNER>/project-allocator-deploy
-git clone https://github.com/<REPOSITORY_OWNER>/project-allocator-frontend
-git clone https://github.com/<REPOSITORY_OWNER>/project-allocator-backend
+git clone git@github.com:<REPOSITORY_OWNER>/project-allocator-deploy.git
+git clone git@github.com:<REPOSITORY_OWNER>/project-allocator-frontend.git
+git clone git@github.com:<REPOSITORY_OWNER>/project-allocator-backend.git
 ```
 
 > Make sure you replace `<REPOSITORY_OWNER>` with the name of your GitHub account/organisation you used in [Prerequisites](#prerequisites).
@@ -194,7 +194,7 @@ You can also visit [http://localhost:8000/docs](http://localhost:8000/docs) to c
 You can setup the production environment and enable automatic deployment of your application using Wayfinder.
 The deployment will be triggered every time you push to this repository on the `main` branch.
 
-First, make sure you have cloned the deployment repository. If not, you can clone it with `git clone https://github.com/<REPOSITORY_OWNER>/project-allocator-deploy`.
+First, make sure you have cloned the deployment repository. If not, you can clone it with `git clone git@github.com:<REPOSITORY_OWNER>/project-allocator-deploy.git`.
 
 > Make sure you replace `<REPOSITORY_OWNER>` with the name of your GitHub account/organisation you used in [Prerequisites](#prerequisites).
 
