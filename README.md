@@ -284,12 +284,14 @@ This will complete the following tasks for you:
 - Store the GitHub personal access token to Kubernetes secrets so that the Kubernetes cluster can pull your Docker images.
 - Trigger the frontend, backend and deploy workflows to deploy the Project Allocator.
 
-To check if the application deployed successfully, go to the deployment repository on GitHub and follow these steps:
+To check if the application has been deployed successfully, go to the deployment repository on GitHub and follow these steps:
 
 1. Click **Actions**
 2. Select one of the workflow runs
 3. Select `deploy`, and click **Print Application URL**
 4. Click the displayed application URL
+
+You should now see the Project Allocator up and running!
 
 > Sometimes the GitHub actions in the frontend and backend repsoitories may fail to push images to GHCR. In this case, you will additionally need to follow these steps to enable package access to GitHub Actions:
 >
@@ -517,3 +519,30 @@ You can also customise the algorithm used for project allocation,
 by implementing the `allocate_projects_custom()` function in `src/algorithms.py` at the backend repository.
 
 There are a few other, heavily-commented examples in `src/algorithms.py` so take a look at those before you start your implementation.
+
+## Resetting the Project Allocator
+
+The deployment repository has the `destroy` workflow which destroys all of the components and configurations created by the `deploy` workflow you setup with `setup_prod.sh`.
+
+You can run this workflow by following these steps:
+
+1. Go to the deployment repository
+2. Click **Actions**
+3. Under **All workflows**, click **Destroy application**
+4. Expand the dropdown that says **Run workflow**
+5. Leave **Use workflow from**, and click **Run workflow**
+
+After the workflow has finished running, you can trigger the `deploy` workflow by following similar steps, or by pushing a commit to the deployment repository.
+
+## Deleting the Project
+
+To delete the Project Allocator completely, you can simply run:
+
+```bash
+wf use workspace <WORKSPACE_NAME>
+wf delete app project-allocator
+```
+
+> Make sure you replace `<WORKSPACE_NAME>` with the name of your Wayfinder workspace.
+
+Finally, if you wish, you can also delete the repositories you have forked in your GitHub account/organisation, and delete all the cloned copies on your local machine.
