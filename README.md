@@ -103,6 +103,11 @@ For each of the original repositories below:
 
 This should create a fork of each of thh original repositories under your GitHub account/organisation. You can check this by visiting your GitHub account/organisation and clicking **Repositories**.
 
+Finally, you need to enable GitHub workflows for each of the forked repositories:
+
+1. Click **Actions** at the top
+2. Click **I understand my workflows, go ahead and enable them**
+
 ### Using the Setup Script
 
 First create a new directory for the Project Allocator:
@@ -245,6 +250,32 @@ Finally, you are ready to setup your production workflow! Simply run the `setup_
 
 When it prompts "Do you already have an empty Wayfinder workspace (y/n)?", type "y" to continue,
 and enter the name of the workspace you have just created.
+
+> Sometimes this script may fail due to Wayfinder authentication issues, even if the script says you're logged in to Wayfinder CLI, printing out the following error:
+>
+> ```bash
+> Error: request denied, check permissions
+> zsh: exit 1     ./scripts/setup_prod.sh
+> ```
+>
+> In this case, you can run the following command to re-authenticate Wayfinder CLI on your browser:
+>
+> ```bash
+> wf login
+> ```
+
+> Sometimes Wayfinder takes a long time to get ready to host your application, in which this script may fail with the following error:
+>
+> ```bash
+> Error: session (accessrolebinding namespace.admin.aks-stdnt1.<WORKSPACE_NAME>-project-allocator-dev.tm8212s499) is not ready -
+> zsh: exit 1     ./scripts/setup_prod.sh
+> ```
+>
+> In the script we wait 30 seconds to make sure this doesn't happen, but if it does, you can simply re-run the script to complete the setup:
+>
+> ```bash
+> ./scripts/setup_prod.sh
+> ```
 
 This will complete the following tasks for you:
 
