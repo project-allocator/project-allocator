@@ -1,4 +1,4 @@
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, Any, TYPE_CHECKING
 from sqlalchemy import Column, JSON
 from sqlmodel import Field, Relationship, SQLModel
 import ulid
@@ -67,12 +67,19 @@ class ProjectUpdate(SQLModel):
     approved: Optional[bool] = None
 
 
-class ProjectDetail(TimestampMixin, SQLModel, table=True):
+class ProjectDetailBase(SQLModel):
+    key: str
+    type: str
+    # Use Any type to allow input to be parsed.
+    # e.g. Project detail of type 'checkbox' is parsed as a list of strings.
+    value: Any
+
+
+class ProjectDetail(TimestampMixin, ProjectDetailBase, table=True):
     __tablename__ = "project_detail"
 
-    key: str = Field(primary_key=True)
-    type: str
-    value: Optional[str] = None
+    key: str = Field(primary_key=True)  # override as primary key
+    value: str  # must be stored as string in database
 
     project_id: Optional[str] = Field(
         primary_key=True,
@@ -81,6 +88,32 @@ class ProjectDetail(TimestampMixin, SQLModel, table=True):
         default=None,
     )
     project: "Project" = Relationship(back_populates="details")
+
+
+class ProjectDetailRead(ProjectDetailBase):
+    pass
+
+
+class ProjectDetailCreate(ProjectDetailBase):
+    pass
+
+
+class ProjectDetailUpdate(ProjectDetailBase):
+    key: Optional[str] = None
+    type: Optional[str] = None
+    value: Optional[Any] = None
+
+
+class ProjectReadWithDetails(ProjectRead):
+    details: list["ProjectDetailRead"] = []
+
+
+class ProjectCreateWithDetails(ProjectCreate):
+    details: list["ProjectDetailCreate"] = []
+
+
+class ProjectUpdateWithDetails(ProjectUpdate):
+    details: list["ProjectDetailUpdate"] = []
 
 
 class ProjectDetailConfig(TimestampMixin, SQLModel, table=True):

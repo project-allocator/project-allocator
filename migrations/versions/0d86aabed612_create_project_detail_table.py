@@ -24,7 +24,7 @@ def upgrade() -> None:
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.Column("key", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("type", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.Column("value", sqlmodel.sql.sqltypes.AutoString(), nullable=True),
+        sa.Column("value", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("project_id", sqlmodel.sql.sqltypes.AutoString(length=26), nullable=False),
         sa.ForeignKeyConstraint(["project_id"], ["project.id"]),
         sa.PrimaryKeyConstraint("key", "project_id"),
