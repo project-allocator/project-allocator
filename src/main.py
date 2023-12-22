@@ -22,16 +22,12 @@ from .routers import (
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Create database tables if they do not exist on startup.
-    # This does not recreate tables already present in the database.
-    SQLModel.metadata.create_all(engine)
-    # Load config for Open API
+    # Load config for OpenAPI before launching FastAPI.
     await azure_scheme.openid_config.load_config()
     yield
 
 
-# Create FastAPI application with the authentication scheme
-# for Swagger API documentation.
+# Create FastAPI application with the authentication scheme for OpenAPI documentation.
 app = FastAPI(
     lifespan=lifespan,
     **swagger_scheme,
@@ -85,5 +81,5 @@ async def test_auth(user: User = Depends(azure_scheme)):
     return {"ok": True, **user.dict()}
 
 
-# Add this router after path operations
+# Add this router after the above path operations
 app.include_router(router)
