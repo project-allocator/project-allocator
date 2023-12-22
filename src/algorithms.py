@@ -1,6 +1,5 @@
 import random
 import math
-from typing import List
 
 from .config import config
 from .models import Project, Shortlist, User
@@ -12,9 +11,9 @@ students_per_project = config["projects"]["allocations"]["students"]
 # Randomly allocate students to projects using `students_per_project` given in config.yaml
 # fmt:off
 def allocate_projects_random(
-    users: List[User],
-    projects: List[Project],
-    shortlists: List[Shortlist],
+    users: list[User],
+    projects: list[Project],
+    shortlists: list[Shortlist],
 ):
     # Only allocate students to approved projects
     projects = list(filter(lambda project: project.approved, projects))
@@ -32,9 +31,9 @@ def allocate_projects_random(
 # Ignores the value of `students_per_project` given in config.yaml
 # fmt:off
 def allocate_projects_random_adaptive(
-    users: List[User],
-    projects: List[Project],
-    shortlists: List[Shortlist],
+    users: list[User],
+    projects: list[Project],
+    shortlists: list[Shortlist],
 ):
     # Only allocate students to approved projects
     projects = list(filter(lambda project: project.approved, projects))
@@ -54,9 +53,9 @@ def allocate_projects_random_adaptive(
 # Randomly allocate the rest of students if any project has members less than `student_per_project` given in config.yaml
 # fmt:off
 def allocate_projects_shortlist(
-    projects: List[Project], 
-    shortlists: List[Shortlist],
-    users: List[User],
+    projects: list[Project], 
+    shortlists: list[Shortlist],
+    users: list[User],
 ):    
     # Only allocate students to approved projects
     projects = list(filter(lambda project: project.approved, projects))
