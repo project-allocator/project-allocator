@@ -77,8 +77,9 @@ def run_migrations_online() -> None:
         poolclass=pool.NullPool,
     )
 
+    url = config.get_main_option("sqlalchemy.url")
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        context.configure(url=url, connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()
