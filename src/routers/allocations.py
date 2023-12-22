@@ -1,4 +1,3 @@
-from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlmodel import Session, select
 
@@ -95,7 +94,7 @@ async def undo_allocation(
 
 @router.get(
     "/projects/{project_id}/allocatees",
-    response_model=List[UserRead],
+    response_model=list[UserRead],
     dependencies=[Security(check_staff)],
 )
 async def read_allocatees(
@@ -121,7 +120,7 @@ async def is_accepted(user: User = Depends(get_user)):
 )
 async def add_allocatees(
     project_id: int,
-    users: List[UserRead],
+    users: list[UserRead],
     session: Session = Depends(get_session),
 ):
     # Cannot add students to non approved projects
@@ -178,7 +177,7 @@ async def is_allocated(
 
 @router.get(
     "/projects/conflicting",
-    response_model=List[ProjectRead],
+    response_model=list[ProjectRead],
     dependencies=[Security(check_admin)],
 )
 async def read_conflicting_projects(session: Session = Depends(get_session)):
@@ -195,7 +194,7 @@ async def read_conflicting_projects(session: Session = Depends(get_session)):
 
 @router.get(
     "/users/unallocated",
-    response_model=List[UserRead],
+    response_model=list[UserRead],
     dependencies=[Security(check_admin)],
 )
 async def read_unallocated_users(session: Session = Depends(get_session)):

@@ -1,4 +1,3 @@
-from typing import List
 from fastapi import APIRouter, Depends, Security
 from sqlmodel import Session, select
 
@@ -10,7 +9,7 @@ router = APIRouter(tags=["proposal"])
 
 @router.get(
     "/users/me/proposed",
-    response_model=List[ProjectRead],
+    response_model=list[ProjectRead],
     dependencies=[Security(check_staff)],
 )
 async def read_proposed(

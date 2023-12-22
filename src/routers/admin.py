@@ -1,7 +1,6 @@
 import io
 import csv
 import json
-from typing import List
 from fastapi import APIRouter, Depends, Security
 from sqlmodel import Session, select, delete
 
@@ -162,8 +161,8 @@ async def export_csv(session: Session = Depends(get_session)):
     dependencies=[Security(check_admin)],
 )
 async def import_json(
-    users: List[UserImport],
-    projects: List[ProjectImport],
+    users: list[UserImport],
+    projects: list[ProjectImport],
     session: Session = Depends(get_session),
 ):
     for user in users:

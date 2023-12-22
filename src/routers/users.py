@@ -1,4 +1,3 @@
-from typing import List
 import requests
 from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlmodel import Session, select
@@ -18,11 +17,11 @@ router = APIRouter(tags=["user"])
 
 @router.post(
     "/users/missing",
-    response_model=List[str],
+    response_model=list[str],
     dependencies=[Security(check_admin)],
 )
 async def check_missing_users(
-    emails: List[str],
+    emails: list[str],
     session: Session = Depends(get_session),
 ):
     missing = []
@@ -33,7 +32,7 @@ async def check_missing_users(
     return missing
 
 
-@router.get("/users", response_model=List[UserRead])
+@router.get("/users", response_model=list[UserRead])
 async def read_users(
     role: str | None = None,
     session: Session = Depends(get_session),

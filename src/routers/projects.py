@@ -1,5 +1,4 @@
 from operator import or_
-from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlmodel import Session, select
 
@@ -21,7 +20,7 @@ from ..dependencies import (
 router = APIRouter(tags=["project"])
 
 
-@router.get("/projects/approved", response_model=List[ProjectRead])
+@router.get("/projects/approved", response_model=list[ProjectRead])
 async def read_approved_projects(session: Session = Depends(get_session)):
     # Only show approved projects.
     # 'Project.approved == True' does seem to be redundant
@@ -34,15 +33,13 @@ async def read_approved_projects(session: Session = Depends(get_session)):
 
 @router.get(
     "/projects/non-approved",
-    response_model=List[ProjectRead],
+    response_model=list[ProjectRead],
     dependencies=[Security(check_admin)],
 )
 async def read_non_approved_projects(session: Session = Depends(get_session)):
     # 'Project.approved == False' and 'Project.approved == None' seem to be redundant
     # but is required by SQLModel to construct a valid query.
-    return session.exec(
-        select(Project).where(or_(Project.approved == False, Project.approved == None))
-    ).all()
+    return session.exec(select(Project).where(or_(Project.approved == False, Project.approved == None))).all()
 
 
 @router.get("/projects/{project_id}", response_model=ProjectRead)

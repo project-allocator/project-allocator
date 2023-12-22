@@ -1,5 +1,4 @@
 import json
-from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Security
 import requests
 from sqlmodel import Session, select
@@ -12,14 +11,12 @@ from ..models import Notification, NotificationRead, NotificationUpdate, User
 router = APIRouter(tags=["notification"])
 
 
-@router.get("/users/me/notifications", response_model=List[NotificationRead])
+@router.get("/users/me/notifications", response_model=list[NotificationRead])
 async def read_notifications(
     user: User = Depends(get_user),
     session: Session = Depends(get_session),
 ):
-    notifications = session.exec(
-        select(Notification).where(Notification.user_id == user.id)
-    ).all()
+    notifications = session.exec(select(Notification).where(Notification.user_id == user.id)).all()
     notifications.sort(key=lambda notification: notification.updated_at, reverse=True)
     return notifications
 
@@ -27,7 +24,7 @@ async def read_notifications(
 # TODO: This endpoint is semantically misleading
 @router.put("/users/me/notifications")
 async def mark_notifications(
-    notifications: List[NotificationUpdate],
+    notifications: list[NotificationUpdate],
     session: Session = Depends(get_session),
 ):
     for notification in notifications:
@@ -61,7 +58,7 @@ async def delete_notification(
 def send_notifications(
     title: str,
     description: str,
-    roles: List[str],
+    roles: list[str],
     token: str = Depends(get_token),
     session: Session = Depends(get_session),
     current_user: User = Depends(get_user),

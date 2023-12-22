@@ -1,4 +1,3 @@
-from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlmodel import Session, select
 
@@ -16,7 +15,7 @@ router = APIRouter(tags=["shortlist"])
 
 @router.get(
     "/users/me/shortlisted",
-    response_model=List[ProjectRead],
+    response_model=list[ProjectRead],
     dependencies=[Security(check_student)],
 )
 async def read_shortlisted(
@@ -62,9 +61,7 @@ async def set_shortlisted(
     project = session.get(Project, project_id)
     if not project.approved:
         raise HTTPException(status_code=404, detail="Project not approved")
-    shortlists = session.exec(
-        select(Shortlist).where(Shortlist.user_id == user.id)
-    ).all()
+    shortlists = session.exec(select(Shortlist).where(Shortlist.user_id == user.id)).all()
     # Set new shortlist to lowest preference
     shortlist = Shortlist(
         user_id=user.id,
@@ -91,9 +88,7 @@ async def unset_shortlisted(
     session.delete(shortlist)
     session.commit()
     # Recalculate shortlist preferences
-    shortlists = session.exec(
-        select(Shortlist).where(Shortlist.user_id == user.id)
-    ).all()
+    shortlists = session.exec(select(Shortlist).where(Shortlist.user_id == user.id)).all()
     for preference, shortlist in enumerate(shortlists):
         shortlist.preference = preference
         session.add(shortlist)
@@ -106,7 +101,7 @@ async def unset_shortlisted(
     dependencies=[Security(check_student), Security(block_shortlists_if_shutdown)],
 )
 async def reorder_shortlisted(
-    project_ids: List[int],
+    project_ids: list[int],
     user: User = Depends(get_user),
     session: Session = Depends(get_session),
 ):
@@ -120,7 +115,7 @@ async def reorder_shortlisted(
 
 @router.get(
     "/projects/{project_id}/shortlisters",
-    response_model=List[UserRead],
+    response_model=list[UserRead],
     dependencies=[Security(check_staff)],
 )
 async def read_shortlisters(
