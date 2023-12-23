@@ -35,7 +35,7 @@ def seed(yes: Annotated[bool, typer.Option(help="Skip confirmation.")] = False):
             return
 
     with Session(engine) as session:
-        project_detail_configs = ProjectDetailConfigFactory.build_batch(10)
+        project_detail_configs = ProjectDetailConfigFactory.build_batch(5)
         session.add_all(project_detail_configs)
 
         users = []
