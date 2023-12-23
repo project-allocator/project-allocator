@@ -1,92 +1,104 @@
 import random
 import math
 
-from .config import config
-from .models import Project, Shortlist, User
+from .models import (
+    User,
+    Project,
+    Allocation,
+    Shortlist,
+)
 
-# Number of students per project.
-# You can add custom configuration entries to config.yaml and load them here.
-students_per_project = config["projects"]["allocations"]["students"]
 
-# Randomly allocate students to projects using `students_per_project` given in config.yaml
-# fmt:off
+# Randomly allocate students to projects using `allocations_per_project` given in config.yaml
 def allocate_projects_random(
     users: list[User],
     projects: list[Project],
     shortlists: list[Shortlist],
+    allocations_per_project: int,
 ):
     # Only allocate students to approved projects
-    projects = list(filter(lambda project: project.approved, projects))
-    non_allocatees = list(filter(lambda user: user.role == "student" and user.allocated == None, users))
+    projects = [project for project in projects if project.approved]
+    non_allocatees = [user for user in users if user.role == "student" and user.allocation == None]
     random.shuffle(non_allocatees)
+
     for project in projects:
         # Reset students allocated previously
-        project.allocatees = []
-        project.allocatees += non_allocatees[:students_per_project]
-        non_allocatees = non_allocatees[students_per_project:]
+        project.allocations = []
+        project.allocations += [
+            Allocation(allocatee=allocatee, allocated_project=project)
+            for allocatee in non_allocatees[:allocations_per_project]
+        ]
+        non_allocatees = non_allocatees[allocations_per_project:]
+
     return {"ok": True}
 
 
 # Randomly allocate students to projects but make sure every student gets allocated to a project
-# Ignores the value of `students_per_project` given in config.yaml
-# fmt:off
+# Ignores the value of `allocations_per_project` given in config.yaml
 def allocate_projects_random_adaptive(
     users: list[User],
     projects: list[Project],
     shortlists: list[Shortlist],
+    allocations_per_project: int,
 ):
     # Only allocate students to approved projects
     projects = list(filter(lambda project: project.approved, projects))
     non_allocatees = list(filter(lambda user: user.role == "student" and user.allocated == None, users))
     random.shuffle(non_allocatees)
     # Find the number of students per project based on the number of projects available.
-    students_per_project = math.ceil(len(non_allocatees) / len(projects))
+    allocations_per_project = math.ceil(len(non_allocatees) / len(projects))
     for project in projects:
         # Reset students allocated previously
         project.allocatees = []
-        project.allocatees += non_allocatees[:students_per_project]
-        non_allocatees = non_allocatees[students_per_project:]
+        project.allocatees += non_allocatees[:allocations_per_project]
+        non_allocatees = non_allocatees[allocations_per_project:]
     return {"ok": True}
 
 
 # Allocate students by prioritizing students who shortlisted projects with highest preference.
 # Randomly allocate the rest of students if any project has members less than `student_per_project` given in config.yaml
-# fmt:off
 def allocate_projects_shortlist(
-    projects: list[Project], 
+    projects: list[Project],
     shortlists: list[Shortlist],
     users: list[User],
-):    
+    allocations_per_project: int,
+):
     # Only allocate students to approved projects
-    projects = list(filter(lambda project: project.approved, projects))
+    projects = [project for project in projects if project.approved]
+
     # Allocate shortlisted students to projects
     for project in projects:
-        project_shortlists = list(filter(lambda shortlist: shortlist.project_id == project.id, shortlists))
+        project_shortlists = [shortlist for shortlist in shortlists if shortlist.shortlisted_project == project]
         project_shortlists.sort(key=lambda shortlist: shortlist.preference, reverse=True)
-        project_shortlisters = list(map(lambda shortlist: shortlist.user, project_shortlists))
+        project_shortlisters = [shortlist.shortlister for shortlist in project_shortlists]
+
         # Reset students allocated previously
-        project.allocatees = []
-        project.allocatees = project_shortlisters[: min(students_per_project, len(project_shortlisters))]
+        project.allocations = []
+        project.allocations = [
+            Allocation(allocatee=allocatee, allocated_project=project)
+            for allocatee in project_shortlisters[: min(allocations_per_project, len(project_shortlisters))]
+        ]
+
     # Allocate missing students to projects
     for project in projects:
-        # Changes in SQLModel models are automatically reflected in the related models
-        # In this case, adding `user` to `project.allocatees` automatically sets `user.allocated` to `project`,
-        # and so filtering users by `user.allocated` is valid here.
-        unallocated_users = list(filter(lambda user: user.role == "student" and user.allocated == None, users))
+        unallocated_users = [user for user in users if user.role == "student" and user.allocation == None]
+
         # If project does not have enough students, allocate the rest
-        missing_students = students_per_project - len(project.allocatees)
+        missing_students = allocations_per_project - len(project.allocations)
         if missing_students > 0:
-            project.allocatees += random.sample(unallocated_users, min(missing_students, len(unallocated_users)))
-    # Reset student's acceptance status
-    students = list(filter(lambda user: user.role == "student", users))
-    for student in students:
-        student.accepted = None
+            project.allocations += [
+                Allocation(allocatee=user, allocated_project=project)
+                for user in random.sample(unallocated_users, min(missing_students, len(unallocated_users)))
+            ]
+
     return {"ok": True}
+
 
 # Write your own version of allocation code by following the examples above.
 # You can also return HTTP errors by raising exception e.g. `raise HTTPException(status_code=401, detail="Error message here.")`
 def allocate_projects_custom():
     pass
+
 
 # Set this variable to the custom function of your choice.
 # Make sure that the custom function accepts three arguments: lists of users, projects and shortlists.
