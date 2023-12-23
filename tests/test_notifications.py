@@ -1,7 +1,9 @@
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
-from src.models import Notification, User
 from requests_mock import Mocker
+
+from src.models import User, Notification
+from src.factories import UserFactory, NotificationFactory
 
 
 def test_read_notifications(
@@ -13,7 +15,6 @@ def test_read_notifications(
         Notification(
             title="New Notification",
             description="New Notification",
-            seen=False,
             user=student_user,
         )
         for _ in range(10)
@@ -24,6 +25,7 @@ def test_read_notifications(
     response = student_client.get("/api/users/me/notifications")
     data = response.json()
     assert response.status_code == 200
+
     assert len(data) == len(notifications)
     # fmt: off
     assert set([notification["title"] for notification in data]) \
@@ -35,21 +37,13 @@ def test_mark_notifications(
     student_client: TestClient,
     session: Session,
 ):
-    notifications = [
-        Notification(
-            title="Old Notification",
-            description="Old Notification",
-            seen=False,
-            user=student_user,
-        )
-        for _ in range(10)
-    ]
+    notifications = NotificationFactory.build_batch(10, user=student_user)
     session.add_all(notifications)
     session.commit()
 
     response = student_client.put(
         "/api/users/me/notifications",
-        json=[{"id": notification.id, "seen": True} for notification in notifications],
+        json=[notification.id for notification in notifications],
     )
     data = response.json()
     assert response.status_code == 200
@@ -57,7 +51,7 @@ def test_mark_notifications(
 
     for notification in notifications:
         session.refresh(notification)
-        assert notification.seen is True
+        assert notification.read_at is not None
 
 
 def test_delete_notification(
@@ -65,12 +59,7 @@ def test_delete_notification(
     student_client: TestClient,
     session: Session,
 ):
-    notification = Notification(
-        title="New Notification",
-        description="New Notification",
-        seen=False,
-        user=student_user,
-    )
+    notification = NotificationFactory.build(user=student_user)
     session.add(notification)
     session.commit()
 
@@ -88,29 +77,31 @@ def test_send_notifications(
     session: Session,
     requests_mock: Mocker,
 ):
-    requests_mock.post(
-        "https://graph.microsoft.com/v1.0/me/sendMail",
-        # The response is not important.
-        json={},
-    )
+    student = UserFactory.build(role="student")
+    session.add(student)
+    session.commit()
+
+    notification = NotificationFactory.build()
+    roles = ["student"]
+
+    requests_mock.post("https://graph.microsoft.com/v1.0/me/sendMail", json={})  # response ignored
     response = admin_client.post(
         "/api/users/notifications",
-        params={
-            "title": "New Notification",
-            "description": "New Notification",
+        json={
+            "notification_data": notification.model_dump(include=["title", "description"]),
+            "roles": roles,
         },
-        json=["student"],
     )
     data = response.json()
     assert response.status_code == 200
     assert data["ok"] is True
 
-    roles = ["student"]
-    users = session.exec(select(User).where(User.role.in_(roles))).all()
+    query = select(User).where(User.role.in_(roles))
+    users = session.exec(query).all()
     for user in users:
         assert len(user.notifications) == 1
-        assert user.notifications[0].title == "New Notification"
-        assert user.notifications[0].description == "New Notification"
+        assert user.notifications[0].title == notification.title
+        assert user.notifications[0].description == notification.description
 
     history = requests_mock.request_history
     assert len(history) == len(users)

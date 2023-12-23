@@ -1,7 +1,9 @@
 from fastapi.testclient import TestClient
 from sqlmodel import Session
-from src.factories import ProjectFactory, UserFactory
-from src.models import User
+import random
+
+from src.models import User, Proposal
+from src.factories import ProjectFactory
 
 
 def test_read_proposed(
@@ -9,15 +11,16 @@ def test_read_proposed(
     staff_client: TestClient,
     session: Session,
 ):
-    projects = [ProjectFactory.build() for _ in range(5)]
-    for project in projects:
-        project.proposer = staff_user
+    projects = ProjectFactory.build_batch(5)
+    proposals = [Proposal(proposer=staff_user, proposed_project=project) for project in projects]
     session.add_all(projects)
+    session.add_all(proposals)
     session.commit()
 
     response = staff_client.get("/api/users/me/proposed")
     data = response.json()
     assert response.status_code == 200
+
     assert len(data) == len(projects)
     # fmt: off
     assert set([project["title"] for project in data]) \
@@ -26,12 +29,14 @@ def test_read_proposed(
 
 def test_is_proposed(
     staff_user: User,
+    admin_user: User,
     staff_client: TestClient,
     session: Session,
 ):
     project = ProjectFactory.build()
-    project.proposer = staff_user
+    proposal = Proposal(proposer=staff_user, proposed_project=project)
     session.add(project)
+    session.add(proposal)
     session.commit()
 
     response = staff_client.get(f"/api/users/me/proposed/{project.id}")
@@ -39,10 +44,8 @@ def test_is_proposed(
     assert response.status_code == 200
     assert data is True
 
-    proposer = UserFactory.build()
-    proposer.role = "staff"
-    project.proposer = proposer
-    session.add(project)
+    proposal = Proposal(proposer=admin_user, proposed_project=project)
+    session.merge(proposal)  # override previous proposal
     session.commit()
 
     response = staff_client.get(f"/api/users/me/proposed/{project.id}")
@@ -57,9 +60,9 @@ def test_approve_proposal(
     session: Session,
 ):
     project = ProjectFactory.build()
-    project.approved = False
-    project.proposer = staff_user
+    proposal = Proposal(proposer=staff_user, proposed_project=project)
     session.add(project)
+    session.add(proposal)
     session.commit()
 
     response = admin_client.post(f"/api/projects/{project.id}/approved")
@@ -77,9 +80,9 @@ def test_reject_proposal(
     session: Session,
 ):
     project = ProjectFactory.build()
-    project.approved = True
-    project.proposer = staff_user
+    proposal = Proposal(proposer=staff_user, proposed_project=project)
     session.add(project)
+    session.add(proposal)
     session.commit()
 
     response = admin_client.post(f"/api/projects/{project.id}/reject")
@@ -96,10 +99,10 @@ def test_undo_proposal(
     admin_client: TestClient,
     session: Session,
 ):
-    project = ProjectFactory.build()
-    project.approved = True
-    project.proposer = staff_user
+    project = ProjectFactory.build(approved=random.choice([True, False]))
+    proposal = Proposal(proposer=staff_user, proposed_project=project)
     session.add(project)
+    session.add(proposal)
     session.commit()
 
     response = admin_client.post(f"/api/projects/{project.id}/undo")

@@ -1,4 +1,3 @@
-import pytest
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 import random
@@ -6,12 +5,6 @@ import json
 import csv
 from io import StringIO
 
-from src.factories import (
-    UserFactory,
-    ProjectFactory,
-    ProjectDetailConfigFactory,
-    NotificationFactory,
-)
 from src.models import (
     User,
     Project,
@@ -23,10 +16,16 @@ from src.models import (
     Notification,
     Config,
 )
+from src.factories import (
+    UserFactory,
+    ProjectFactory,
+    ProjectDetailConfigFactory,
+    NotificationFactory,
+)
 
 
 def test_are_proposals_shutdown(student_client: TestClient, session: Session):
-    config = session.get(Config, "proposals.shutdown")
+    config = session.get(Config, "proposals_shutdown")
     config.value = "true"
     session.add(config)
     session.commit()
@@ -38,7 +37,7 @@ def test_are_proposals_shutdown(student_client: TestClient, session: Session):
 
 
 def test_are_shortlists_shutdown(student_client: TestClient, session: Session):
-    config = session.get(Config, "shortlists.shutdown")
+    config = session.get(Config, "shortlists_shutdown")
     config.value = "true"
     session.add(config)
     session.commit()
@@ -50,7 +49,7 @@ def test_are_shortlists_shutdown(student_client: TestClient, session: Session):
 
 
 def test_are_undos_shutdown(student_client: TestClient, session: Session):
-    config = session.get(Config, "undos.shutdown")
+    config = session.get(Config, "undos_shutdown")
     config.value = "true"
     session.add(config)
     session.commit()
@@ -68,12 +67,12 @@ def test_set_proposals_shutdown(admin_client: TestClient, session: Session):
     assert response.status_code == 200
     assert data["ok"] is True
 
-    config = session.get(Config, "proposals.shutdown")
+    config = session.get(Config, "proposals_shutdown")
     assert config.value == "true"
 
 
 def test_unset_proposals_shutdown(admin_client: TestClient, session: Session):
-    config = session.get(Config, "proposals.shutdown")
+    config = session.get(Config, "proposals_shutdown")
     config.value = True
     session.add(config)
     session.commit()
@@ -83,7 +82,7 @@ def test_unset_proposals_shutdown(admin_client: TestClient, session: Session):
     assert response.status_code == 200
     assert data["ok"] is True
 
-    config = session.get(Config, "proposals.shutdown")
+    config = session.get(Config, "proposals_shutdown")
     assert config.value == "false"
 
 
@@ -93,13 +92,13 @@ def test_set_shortlists_shutdown(admin_client: TestClient, session: Session):
     assert response.status_code == 200
     assert data["ok"] is True
 
-    config = session.get(Config, "shortlists.shutdown")
+    config = session.get(Config, "shortlists_shutdown")
     assert config.value == "true"
 
 
 def test_unset_shortlists_shutdown(admin_client: TestClient, session: Session):
     # Shortlists are not shutdown by default.
-    config = session.get(Config, "shortlists.shutdown")
+    config = session.get(Config, "shortlists_shutdown")
     config.value = "true"
     session.add(config)
     session.commit()
@@ -109,7 +108,7 @@ def test_unset_shortlists_shutdown(admin_client: TestClient, session: Session):
     assert response.status_code == 200
     assert data["ok"] is True
 
-    config = session.get(Config, "shortlists.shutdown")
+    config = session.get(Config, "shortlists_shutdown")
     assert config.value == "false"
 
 
@@ -120,13 +119,13 @@ def test_set_undos_shutdown(admin_client: TestClient, session: Session):
     assert response.status_code == 200
     assert data["ok"] is True
 
-    config = session.get(Config, "undos.shutdown")
+    config = session.get(Config, "undos_shutdown")
     assert config.value == "true"
 
 
 def test_unset_undos_shutdown(admin_client: TestClient, session: Session):
     # Undos are not shutdown by default.
-    config = session.get(Config, "undos.shutdown")
+    config = session.get(Config, "undos_shutdown")
     config.value = "true"
     session.add(config)
     session.commit()
@@ -136,16 +135,18 @@ def test_unset_undos_shutdown(admin_client: TestClient, session: Session):
     assert response.status_code == 200
     assert data["ok"] is True
 
-    config = session.get(Config, "undos.shutdown")
+    config = session.get(Config, "undos_shutdown")
     assert config.value == "false"
 
 
 def test_export_json_and_csv(admin_client: TestClient, session: Session):
-    students = UserFactory.build_batch(50, role="students")
+    students = UserFactory.build_batch(50, role="student")
     staff = UserFactory.build_batch(2, role="admin") + UserFactory.build_batch(10, role="staff")
-    project_detail_configs = ProjectDetailConfigFactory.build_batch(10)
+    project_detail_configs = ProjectDetailConfigFactory.build_batch(5)
     projects = ProjectFactory.build_batch(10, details__configs=project_detail_configs)
-    allocations = [Allocation(allocatee=student, allocated_project=random.choice(projects)) for student in students]
+    # fmt: off
+    approved_projects = [project for project in projects if project.approved]
+    allocations = [Allocation(allocatee=student, allocated_project=random.choice(approved_projects)) for student in students]
     proposals = [Proposal(proposer=random.choice(staff), proposed_project=project) for project in projects]
 
     session.add_all(students)
@@ -201,23 +202,25 @@ def test_export_json_and_csv(admin_client: TestClient, session: Session):
 
 
 def test_import_json(admin_client: TestClient, session: Session):
-    students = UserFactory.build_batch(50, role="students")
+    students = UserFactory.build_batch(50, role="student")
     staff = UserFactory.build_batch(2, role="admin") + UserFactory.build_batch(10, role="staff")
-    project_detail_configs = ProjectDetailConfigFactory.build_batch(10)
+    project_detail_configs = ProjectDetailConfigFactory.build_batch(5)
     projects = ProjectFactory.build_batch(10, details__configs=project_detail_configs)
     # We construct proposals and allocations manually instead of using SQLModel models
     # because the foreign keys are not updated until we commit the session.
     # fmt: off
+    approved_projects = [project for project in projects if project.approved]
+    allocations = [{"allocatee_id": student.id, "allocated_project_id": random.choice(approved_projects).id} for student in students]
     proposals = [{"proposer_id": random.choice(staff).id, "proposed_project_id": project.id} for project in projects]
-    allocations = [{"allocatee_id": student.id, "allocated_project_id": random.choice(projects).id} for student in students]
 
-    # Pydantic models have model_dump() which directly produces dict
-    # but we use json.loads() and model_dump_json() to stringify datetime etc.
-    users_data = [json.loads(user.model_dump_json()) for user in students + staff]
+    user_fields = ["id", "email", "name", "role"]
+    project_fields = ["id", "title", "description", "approved"]
+    project_detail_fields = ["key", "type", "value", "project_id"]
+    users_data = [user.model_dump(include=user_fields) for user in students + staff]
     projects_data = []
     for project in projects:
-        project_data = json.loads(project.model_dump_json())
-        project_data["details"] = [json.loads(detail.model_dump_json()) for detail in project.details]
+        project_data = project.model_dump(include=project_fields)
+        project_data["details"] = [detail.model_dump(include=project_detail_fields) for detail in project.details]
         project_data["proposal"] = next(proposal for proposal in proposals if proposal["proposed_project_id"] == project.id)
         project_data["allocations"] = [allocation for allocation in allocations if allocation["allocated_project_id"] == project.id]
         projects_data.append(project_data)
@@ -239,20 +242,18 @@ def test_import_json(admin_client: TestClient, session: Session):
     assert sum(len(project.allocations) for project in projects) == len(allocations)
 
 
-# Ignore RuntimeWarning from sqlmodel
-# otherwise it gives warnings about the user dependency.
-@pytest.mark.filterwarnings("ignore::RuntimeWarning")
-def test_reset_database(admin_client: TestClient, admin_user: User, session: Session):
-    students = UserFactory.build_batch(50, role="students")
+def test_reset_database(admin_client: TestClient, session: Session):
+    students = UserFactory.build_batch(50, role="student")
     staff = UserFactory.build_batch(2, role="admin") + UserFactory.build_batch(10, role="staff")
-    project_detail_configs = ProjectDetailConfigFactory.build_batch(10)
+    project_detail_configs = ProjectDetailConfigFactory.build_batch(5)
     projects = ProjectFactory.build_batch(10, details__configs=project_detail_configs)
-    allocations = [Allocation(allocatee=student, allocated_project=random.choice(projects)) for student in students]
-    proposals = [Proposal(proposer=random.choice(staff), proposed_project=project) for project in projects]
     # fmt: off
+    approved_projects = [project for project in projects if project.approved]
+    allocations = [Allocation(allocatee=student, allocated_project=random.choice(approved_projects)) for student in students]
+    proposals = [Proposal(proposer=random.choice(staff), proposed_project=project) for project in projects]
     shortlists = [[Shortlist(shortlister=student, shortlisted_project=project, preference=preference) for preference, project in enumerate(projects)] for student in students]
     shortlists = sum(shortlists, [])  # flatten list of lists
-    notifications = NotificationFactory.build_batch(100)
+    notifications = [NotificationFactory.build(user=user) for user in students + staff]
 
     session.add_all(students)
     session.add_all(staff)

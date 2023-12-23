@@ -14,8 +14,8 @@ from src.models import Config, User
 def student_user_fixture():
     return User(
         id="01HJARDCE2VD23YCQPQ9MDTS63",
-        email="bob@example.com",
-        name="Bob Smith",
+        email="alice@example.com",
+        name="Alice Smith",
         role="student",
     )
 
@@ -24,8 +24,8 @@ def student_user_fixture():
 def staff_user_fixture():
     return User(
         id="01HJARDCE2CB6EW40A8AG7E5A3",
-        email="alice@example.com",
-        name="Alice Smith",
+        email="bob@example.com",
+        name="Bob Smith",
         role="staff",
     )
 
@@ -40,13 +40,8 @@ def admin_user_fixture():
     )
 
 
-@pytest.fixture(name="default_users")
-def default_users_fixture(admin_user: User, staff_user: User, student_user: User):
-    return [admin_user, staff_user, student_user]
-
-
 @pytest.fixture(name="session")
-def session_fixture(default_users: list[User]):
+def session_fixture(admin_user: User, staff_user: User, student_user: User):
     # Setup a temporary SQLite database for testing.
     # Uses SQLite in-memory database.
     engine = create_engine(
@@ -58,15 +53,18 @@ def session_fixture(default_users: list[User]):
     with Session(engine) as session:
         # User table is filled with mock data.
         # The rest of the tables are empty and must be fed with mock data before testing.
-        session.add_all(default_users)
-        session.commit()
+        session.add(admin_user)
+        session.add(staff_user)
+        session.add(student_user)
 
         # Set default config values for the Project Allocator.
         session.add(Config(key="admin_emails", value='["rbc@ic.ac.uk"]'))
-        session.add(Config(key="allocations_per_project", value="5"))
-        session.add(Config(key="proposals.shutdown", value="false"))
-        session.add(Config(key="shortlists.shutdown", value="false"))
-        session.add(Config(key="undos.shutdown", value="false"))
+        session.add(Config(key="max_allocations", value="5"))
+        session.add(Config(key="max_shortlists", value="5"))
+        session.add(Config(key="proposals_shutdown", value="false"))
+        session.add(Config(key="shortlists_shutdown", value="false"))
+        session.add(Config(key="undos_shutdown", value="false"))
+
         session.commit()
 
         yield session

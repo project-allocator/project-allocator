@@ -1,8 +1,9 @@
-import random
 from fastapi.testclient import TestClient
-from sqlmodel import Session
-from src.factories import ProjectFactory, UserFactory
-from src.models import Shortlist, User
+from sqlmodel import Session, select
+import random
+
+from src.factories import UserFactory, ProjectFactory
+from src.models import User, Shortlist, Config
 
 
 def test_read_shortlisted(
@@ -10,12 +11,11 @@ def test_read_shortlisted(
     student_client: TestClient,
     session: Session,
 ):
-    projects = [ProjectFactory.build() for _ in range(10)]
-    shortlists = []
-    for i, project in enumerate(random.sample(projects, 5)):
-        # Students can only shortlist approved projects
-        project.approved = True
-        shortlists.append(Shortlist(user=student_user, project=project, preference=i))
+    projects = ProjectFactory.build_batch(5, approved=True)
+    shortlists = [
+        Shortlist(shortlister=student_user, shortlisted_project=project, preference=preference)
+        for preference, project in enumerate(projects)
+    ]
     session.add_all(projects)
     session.add_all(shortlists)
     session.commit()
@@ -23,10 +23,11 @@ def test_read_shortlisted(
     response = student_client.get("/api/users/me/shortlisted")
     data = response.json()
     assert response.status_code == 200
+
     assert len(data) == len(shortlists)
     # fmt: off
     assert set([project["title"] for project in data]) \
-        == set([shortlist.project.title for shortlist in shortlists])
+        == set([shortlist.shortlisted_project.title for shortlist in shortlists])
 
 
 def test_is_shortlisted(
@@ -34,9 +35,8 @@ def test_is_shortlisted(
     student_client: TestClient,
     session: Session,
 ):
-    project = ProjectFactory.build()
-    project.approved = True
-    shortlist = Shortlist(user=student_user, project=project, preference=0)
+    project = ProjectFactory.build(approved=True)
+    shortlist = Shortlist(shortlister=student_user, shortlisted_project=project, preference=0)
     session.add(project)
     session.add(shortlist)
     session.commit()
@@ -52,19 +52,28 @@ def test_set_shortlisted(
     student_client: TestClient,
     session: Session,
 ):
-    project = ProjectFactory.build()
-    project.approved = True
-    session.add(project)
+    session.merge(Config(key="max_shortlists", value="1"))  # override config
+
+    projects = ProjectFactory.build_batch(2, approved=True)
+    session.add_all(projects)
     session.commit()
 
-    response = student_client.post(f"/api/users/me/shortlisted/{project.id}")
+    response = student_client.post(f"/api/users/me/shortlisted/{projects[0].id}")
     data = response.json()
     assert response.status_code == 200
     assert data["ok"] is True
 
-    shortlist = session.get(Shortlist, (student_user.id, project.id))
+    shortlist = session.get(Shortlist, (student_user.id, projects[0].id))
     assert shortlist is not None
     assert shortlist.preference == 0
+
+    # Attempt to make more shortlists than allowed.
+    response = student_client.post(f"/api/users/me/shortlisted/{projects[1].id}")
+    data = response.json()
+    assert response.status_code == 400
+
+    shortlist = session.get(Shortlist, (student_user.id, projects[1].id))
+    assert shortlist is None
 
 
 def test_unset_shortlisted(
@@ -72,9 +81,8 @@ def test_unset_shortlisted(
     student_client: TestClient,
     session: Session,
 ):
-    project = ProjectFactory.build()
-    project.approved = True
-    shortlist = Shortlist(user=student_user, project=project, preference=0)
+    project = ProjectFactory.build(approved=True)
+    shortlist = Shortlist(shortlister=student_user, shortlisted_project=project, preference=0)
     session.add(project)
     session.add(shortlist)
     session.commit()
@@ -93,49 +101,46 @@ def test_reorder_shortlisted(
     student_client: TestClient,
     session: Session,
 ):
-    projects = [ProjectFactory.build() for _ in range(10)]
-    shortlists = []
-    for i, project in enumerate(random.sample(projects, 5)):
-        # Students can only shortlist approved projects
-        project.approved = True
-        shortlists.append(Shortlist(user=student_user, project=project, preference=i))
+    projects = ProjectFactory.build_batch(10, approved=True)
+    shortlists = [
+        Shortlist(shortlister=student_user, shortlisted_project=project, preference=preference)
+        for preference, project in enumerate(projects)
+    ]
     session.add_all(projects)
     session.add_all(shortlists)
     session.commit()
 
-    project_ids = [shortlist.project.id for shortlist in shortlists]
+    project_ids = [shortlist.shortlisted_project.id for shortlist in shortlists]
     random.shuffle(project_ids)
     response = student_client.put("/api/users/me/shortlisted", json=project_ids)
     data = response.json()
     assert response.status_code == 200
     assert data["ok"] is True
 
-    for shortlist in shortlists:
-        session.refresh(shortlist)
+    shortlists = session.exec(select(Shortlist).where(Shortlist.shortlister == student_user)).all()
     shortlists.sort(key=lambda shortlist: shortlist.preference)
     assert len(shortlists) == len(project_ids)
-    assert [shortlist.project.id for shortlist in shortlists] == project_ids
+    assert [shortlist.shortlisted_project.id for shortlist in shortlists] == project_ids
 
 
 def test_read_shortlisters(
-    staff_user: User,
     staff_client: TestClient,
     session: Session,
 ):
-    project = ProjectFactory.build()
-    project.approved = True
-    project.proposer = staff_user
-    users = [UserFactory.build() for _ in range(10)]
-    shortlists = []
-    for user in users:
-        shortlists.append(Shortlist(user=user, project=project, preference=0))
+    students = UserFactory.build_batch(5, role="student")
+    project = ProjectFactory.build(approved=True)
+    shortlists = [
+        Shortlist(shortlister=student, shortlisted_project=project, preference=random.randint(0, 4))
+        for student in students
+    ]
+    session.add_all(students)
     session.add(project)
-    session.add_all(users)
     session.add_all(shortlists)
     session.commit()
 
     response = staff_client.get(f"/api/projects/{project.id}/shortlisters")
     data = response.json()
     assert response.status_code == 200
+
     assert len(data) == len(shortlists)
-    assert set([user["email"] for user in data]) == set([user.email for user in users])
+    assert set([student["email"] for student in data]) == set([student.email for student in students])

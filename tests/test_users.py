@@ -1,5 +1,8 @@
 from fastapi.testclient import TestClient
+from sqlmodel import Session
 from requests_mock import Mocker
+
+from src.models import User
 
 
 def test_check_missing_users(admin_client: TestClient):
@@ -9,9 +12,11 @@ def test_check_missing_users(admin_client: TestClient):
         "charlie@example.com",
         "david@example.com",
     ]
+
     response = admin_client.post("/api/users/missing", json=emails)
     data = response.json()
     assert response.status_code == 200
+
     assert len(data) == 1
     assert data[0] == "david@example.com"
 
@@ -20,26 +25,25 @@ def test_read_current_user(student_client: TestClient):
     response = student_client.get("/api/users/me")
     data = response.json()
     assert response.status_code == 200
-    assert data["name"] == "Bob Smith"
+
+    assert data["name"] == "Alice Smith"
 
 
 def test_read_user(student_client: TestClient):
-    response = student_client.get("/api/users/1")
+    response = student_client.get("/api/users/01HJARDCE2VD23YCQPQ9MDTS63")
     data = response.json()
     assert response.status_code == 200
-    assert data["name"] == "Bob Smith"
+
+    assert data["name"] == "Alice Smith"
 
 
 def test_read_users(student_client: TestClient):
     response = student_client.get("/api/users")
     data = response.json()
     assert response.status_code == 200
+
     assert len(data) == 3
-    assert [user["name"] for user in data] == [
-        "Bob Smith",
-        "Alice Smith",
-        "Charlie Smith",
-    ]
+    assert set([user["name"] for user in data]) == set(["Alice Smith", "Bob Smith", "Charlie Smith"])
 
 
 def test_create_user(guest_client: TestClient, requests_mock: Mocker):
@@ -58,29 +62,25 @@ def test_create_user(guest_client: TestClient, requests_mock: Mocker):
 
     response = guest_client.get("/api/users")
     data = response.json()
-    assert len(data) == 4
-    assert [user["name"] for user in data] == [
-        "Bob Smith",
-        "Alice Smith",
-        "Charlie Smith",
-        "David Smith",
-    ]
-
-
-def test_update_user(admin_client: TestClient):
-    response = admin_client.put("/api/users/1", json={"role": "staff"})
     assert response.status_code == 200
 
-    response = admin_client.get("/api/users/1")
-    data = response.json()
-    assert data["role"] == "staff"
+    assert len(data) == 4
+    assert set([user["name"] for user in data]) == set(["Bob Smith", "Alice Smith", "Charlie Smith", "David Smith"])
 
 
-def test_delete_user(admin_client: TestClient):
-    response = admin_client.delete("/api/users/1")
+def test_update_user(admin_client: TestClient, session: Session):
+    response = admin_client.put("/api/users/01HJARDCE2VD23YCQPQ9MDTS63", json={"role": "staff"})
+    assert response.status_code == 200
+
+    user = session.get(User, "01HJARDCE2VD23YCQPQ9MDTS63")
+    assert user.role == "staff"
+
+
+def test_delete_user(admin_client: TestClient, session: Session):
+    response = admin_client.delete("/api/users/01HJARDCE2VD23YCQPQ9MDTS63")
     data = response.json()
     assert response.status_code == 200
     assert data["ok"] is True
 
-    response = admin_client.delete("/api/users/1")
-    assert response.status_code == 404
+    user = session.get(User, "01HJARDCE2VD23YCQPQ9MDTS63")
+    assert user is None
