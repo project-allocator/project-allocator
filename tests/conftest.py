@@ -7,13 +7,13 @@ from sqlmodel.pool import StaticPool
 from src.main import app
 from src.auth import azure_scheme
 from src.dependencies import get_session, get_token, get_user_or_none
-from src.models import Status, User
+from src.models import Config, User
 
 
 @pytest.fixture(name="student_user")
 def student_user_fixture():
     return User(
-        id=1,
+        id="01HJARDCE2VD23YCQPQ9MDTS63",
         email="bob@example.com",
         name="Bob Smith",
         role="student",
@@ -23,7 +23,7 @@ def student_user_fixture():
 @pytest.fixture(name="staff_user")
 def staff_user_fixture():
     return User(
-        id=2,
+        id="01HJARDCE2CB6EW40A8AG7E5A3",
         email="alice@example.com",
         name="Alice Smith",
         role="staff",
@@ -33,7 +33,7 @@ def staff_user_fixture():
 @pytest.fixture(name="admin_user")
 def admin_user_fixture():
     return User(
-        id=3,
+        id="01HJARDCE2WRJT4DJ3CAZA6ECX",
         email="charlie@example.com",
         name="Charlie Smith",
         role="admin",
@@ -61,10 +61,12 @@ def session_fixture(default_users: list[User]):
         session.add_all(default_users)
         session.commit()
 
-        # Set default status for the Project Allocator.
-        session.add(Status(key="proposals.shutdown", value=False))
-        session.add(Status(key="shortlists.shutdown", value=False))
-        session.add(Status(key="undos.shutdown", value=False))
+        # Set default config values for the Project Allocator.
+        session.add(Config(key="admin_emails", value='["rbc@ic.ac.uk"]'))
+        session.add(Config(key="allocations_per_project", value="5"))
+        session.add(Config(key="proposals.shutdown", value="false"))
+        session.add(Config(key="shortlists.shutdown", value="false"))
+        session.add(Config(key="undos.shutdown", value="false"))
         session.commit()
 
         yield session
@@ -84,6 +86,7 @@ def app_fixture(session: Session):
     app.dependency_overrides[get_token] = lambda: ""
 
     yield app
+
     app.dependency_overrides.clear()
 
 
