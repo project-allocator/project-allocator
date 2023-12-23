@@ -1,20 +1,9 @@
-from typing import TypeAlias
 from fastapi import APIRouter, Depends, HTTPException, Security
-from operator import or_
 from sqlmodel import Session, select
+from operator import or_
 import json
 
-from src.models.project import ProjectDetail
 
-
-from ..models import (
-    Project,
-    ProjectCreateWithDetails,
-    ProjectReadWithDetails,
-    ProjectUpdateWithDetails,
-    Proposal,
-    User,
-)
 from ..dependencies import (
     block_proposals_if_shutdown,
     check_admin,
@@ -22,38 +11,46 @@ from ..dependencies import (
     get_session,
     get_user,
 )
+from ..models import (
+    User,
+    Project,
+    ProjectDetail,
+    ProjectDetailConfig,
+    ProjectReadWithDetails,
+    ProjectCreateWithDetails,
+    ProjectUpdateWithDetails,
+    Proposal,
+)
 
 router = APIRouter(tags=["project"])
 
 
-class ProjectDetailValidator:
-    ProjectDataWithDetails: TypeAlias = ProjectCreateWithDetails | ProjectUpdateWithDetails
+def _serialize_project(
+    project: ProjectCreateWithDetails | ProjectUpdateWithDetails,
+) -> ProjectCreateWithDetails | ProjectUpdateWithDetails:
+    project = project.model_copy(deep=True)
+    for detail in project.details:
+        match detail.type:
+            case "number" | "slider":
+                detail.value = str(detail.value)
+            case "switch":
+                detail.value = "true" if detail.value else "false"
+            case "checkbox" | "categories":
+                detail.value = json.dumps(detail.value)
+    return project
 
-    @staticmethod
-    def serialize(project: ProjectDataWithDetails) -> ProjectDataWithDetails:
-        project = project.model_copy(deep=True)
-        for detail in project.details:
-            match detail.type:
-                case "number" | "slider":
-                    detail.value = str(detail.value)
-                case "switch":
-                    detail.value = "true" if detail.value else "false"
-                case "checkbox" | "categories":
-                    detail.value = json.dumps(detail.value)
-        return project
 
-    @staticmethod
-    def parse(project: Project) -> ProjectReadWithDetails:
-        project = ProjectReadWithDetails.model_validate(project)
-        for detail in project.details:
-            match detail.type:
-                case "number" | "slider":
-                    detail.value = int(detail.value)
-                case "switch":
-                    detail.value = detail.value == "true"
-                case "checkbox" | "categories":
-                    detail.value = json.loads(detail.value)
-        return project
+def _parse_project(project: Project) -> ProjectReadWithDetails:
+    project = ProjectReadWithDetails.model_validate(project)
+    for detail in project.details:
+        match detail.type:
+            case "number" | "slider":
+                detail.value = int(detail.value)
+            case "switch":
+                detail.value = detail.value == "true"
+            case "checkbox" | "categories":
+                detail.value = json.loads(detail.value)
+    return project
 
 
 @router.get(
@@ -62,15 +59,13 @@ class ProjectDetailValidator:
 )
 async def read_approved_projects(session: Session = Depends(get_session)):
     # Only show projects approved by admins.
-    # Note: 'Project.approved == True' is necessary.
-    # This is used by SQLModel to construct a valid query, so do not replace it with 'Project.approved'
     query = select(Project).where(Project.approved == True)
     projects = session.exec(query).all()
 
     # Sort the projects so that the last updated project is returned first.
     projects.sort(key=lambda project: project.updated_at, reverse=True)
 
-    return list(map(ProjectDetailValidator.parse, projects))
+    return [_parse_project(project) for project in projects]
 
 
 @router.get(
@@ -82,7 +77,7 @@ async def read_non_approved_projects(session: Session = Depends(get_session)):
     query = select(Project).where(or_(Project.approved == False, Project.approved == None))
     projects = session.exec(query).all()
 
-    return list(map(ProjectDetailValidator.parse, projects))
+    return [_parse_project(project) for project in projects]
 
 
 @router.get(
@@ -94,10 +89,10 @@ async def read_project(
     session: Session = Depends(get_session),
 ):
     project = session.get(Project, project_id)
-    if project is None:
+    if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    return ProjectDetailValidator.parse(project)
+    return _parse_project(project)
 
 
 @router.post(
@@ -110,7 +105,7 @@ async def create_project(
     user: User = Depends(get_user),
     session: Session = Depends(get_session),
 ):
-    project_data = ProjectDetailValidator.serialize(project_data)
+    project_data = _serialize_project(project_data)
 
     # Exclude details to prevent error while parsing project.
     project_data_details = project_data.details
@@ -122,15 +117,13 @@ async def create_project(
         project_detail = ProjectDetail.model_validate(project_data_detail)
         project_details.append(project_detail)
     project.details = project_details
+    session.add(project)
 
     proposal = Proposal(proposer=user, proposed_project=project)
-    project.proposal = proposal
-
-    session.add(project)
     session.add(proposal)
     session.commit()
 
-    return ProjectDetailValidator.parse(project)
+    return _parse_project(project)
 
 
 @router.put(
@@ -151,7 +144,7 @@ async def update_project(
         # Only project proposer can edit the project.
         raise HTTPException(status_code=401, detail="Project not proposed by user")
 
-    project_data = ProjectDetailValidator.serialize(project_data)
+    project_data = _serialize_project(project_data)
     # Update each property of the project.
     for key, value in project_data.model_dump(exclude_unset=True, exclude=["details"]).items():
         setattr(project, key, value)
@@ -162,8 +155,9 @@ async def update_project(
                 project_detail.value = project_data_detail.value
 
     session.add(project)
+    session.add_all(project.details)
     session.commit()
-    return ProjectDetailValidator.parse(project)
+    return _parse_project(project)
 
 
 @router.delete(
@@ -184,3 +178,8 @@ async def delete_project(
     session.delete(project)
     session.commit()
     return {"ok": True}
+
+
+@router.get("/config")
+async def read_project_config(session: Session = Depends(get_session)):
+    return session.exec(select(ProjectDetailConfig)).all()

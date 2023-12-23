@@ -22,16 +22,14 @@ async def read_shortlisted(
     user: User = Depends(get_user),
     session: Session = Depends(get_session),
 ):
-    # fmt: off
-    shortlists = session.exec(select(Shortlist).where(Shortlist.user_id == user.id)).all()
+    query = select(Shortlist).where(Shortlist.shortlister_id == user.id)
+    shortlists = session.exec(query).all()
+
     # Sort by ascending order of preference
     # because preference of zero has the highest preference.
     shortlists.sort(key=lambda shortlist: shortlist.preference)
-    projects = []
-    for shortlist in shortlists:
-        project = session.get(Project, shortlist.project_id)
-        projects.append(project)
-    return projects
+
+    return [session.get(Project, shortlist.project_id) for shortlist in shortlists]
 
 
 @router.get(
@@ -57,17 +55,15 @@ async def set_shortlisted(
     user: User = Depends(get_user),
     session: Session = Depends(get_session),
 ):
-    # Cannot shortlist to non approved projects
     project = session.get(Project, project_id)
     if not project.approved:
+        # Cannot shortlist to non approved projects.
         raise HTTPException(status_code=404, detail="Project not approved")
-    shortlists = session.exec(select(Shortlist).where(Shortlist.user_id == user.id)).all()
+
     # Set new shortlist to lowest preference
-    shortlist = Shortlist(
-        user_id=user.id,
-        project_id=project_id,
-        preference=len(shortlists),
-    )
+    query = select(Shortlist).where(Shortlist.shortlister_id == user.id)
+    shortlists = session.exec(query).all()
+    shortlist = Shortlist(user_id=user.id, project_id=project_id, preference=len(shortlists))
     session.add(shortlist)
     session.commit()
     return {"ok": True}
@@ -85,14 +81,17 @@ async def unset_shortlisted(
     shortlist = session.get(Shortlist, (user.id, project_id))
     if not shortlist:
         raise HTTPException(status_code=404, detail="Shortlist not found")
+
     session.delete(shortlist)
     session.commit()
-    # Recalculate shortlist preferences
-    shortlists = session.exec(select(Shortlist).where(Shortlist.user_id == user.id)).all()
+
+    # Recalculate shortlist preferences.
+    query = select(Shortlist).where(Shortlist.shortlister_id == user.id)
+    shortlists = session.exec(query).all()
     for preference, shortlist in enumerate(shortlists):
         shortlist.preference = preference
         session.add(shortlist)
-        session.commit()
+    session.commit()
     return {"ok": True}
 
 
@@ -109,7 +108,7 @@ async def reorder_shortlisted(
         shortlist = session.get(Shortlist, (user.id, id))
         shortlist.preference = preference
         session.add(shortlist)
-        session.commit()
+    session.commit()
     return {"ok": True}
 
 
@@ -126,11 +125,9 @@ async def read_shortlisters(
     project = session.get(Project, project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
-    # fmt: off
-    shortlists = session.exec(select(Shortlist).where(Shortlist.project_id == project_id)).all()
+
+    query = select(Shortlist).where(Shortlist.project_id == project_id)
+    shortlists = session.exec(query).all()
     shortlists.sort(key=lambda shortlist: shortlist.preference)
-    users = []
-    for shortlist in shortlists:
-        user = session.get(User, shortlist.user_id)
-        users.append(user)
-    return users
+
+    return [session.get(User, shortlist.shortlister_id) for shortlist in shortlists]

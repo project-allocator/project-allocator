@@ -1,9 +1,9 @@
-import json
-from fastapi import APIRouter, Depends, HTTPException, Security
-import requests
+from fastapi import APIRouter, HTTPException, Depends, Security
 from sqlmodel import Session, select
-
-from src.config import ROOT_DIR
+from os.path import dirname, abspath
+from datetime import datetime
+import requests
+import json
 
 from ..dependencies import check_admin, get_session, get_token, get_user
 from ..models import Notification, NotificationRead, NotificationUpdate, User
@@ -16,7 +16,8 @@ async def read_notifications(
     user: User = Depends(get_user),
     session: Session = Depends(get_session),
 ):
-    notifications = session.exec(select(Notification).where(Notification.user_id == user.id)).all()
+    query = select(Notification).where(Notification.user_id == user.id)
+    notifications = session.exec(query).all()
     notifications.sort(key=lambda notification: notification.updated_at, reverse=True)
     return notifications
 
@@ -29,9 +30,9 @@ async def mark_notifications(
 ):
     for notification in notifications:
         notification = session.get(Notification, notification.id)
-        notification.seen = True
+        notification.read_at = datetime.now().isoformat()
         session.add(notification)
-        session.commit()
+    session.commit()
     return {"ok": True}
 
 
@@ -46,6 +47,7 @@ async def delete_notification(
         raise HTTPException(status_code=404, detail="Notification does not exist")
     if notification.user != user:
         raise HTTPException(status_code=401, detail="Notification is not owned")
+
     session.delete(notification)
     session.commit()
     return {"ok": True}
@@ -61,34 +63,31 @@ def send_notifications(
     roles: list[str],
     token: str = Depends(get_token),
     session: Session = Depends(get_session),
-    current_user: User = Depends(get_user),
 ):
     # Get the email template.
-    with open(f"{ROOT_DIR}/src/resources/email-template.html") as file:
+    base_path = dirname(dirname(abspath(__file__)))
+    template_path = f"{base_path}/src/resources/email-template.html"
+    with open(template_path) as file:
         template = file.read()
+
     # Get the target users.
-    # TODO: Comment out when in production.
-    # users = [session.exec(select(User).where(User.email == current_user.email)).one()]
     users = session.exec(select(User).where(User.role.in_(roles))).all()
     for user in users:
         # Create notification entries in the database.
         notification = Notification(title=title, description=description)
-        user.notifications.append(notification)
-        session.add(user)
+        session.add(notification)
         session.commit()
         session.refresh(user)
+
         # Send email to every user as admin.
+        body = {
+            "contentType": "HTML",
+            "content": template.format(name=user.name, title=title, description=description),
+        }
         data = {
             "message": {
                 "subject": f"[Project Allocator] {title}",
-                "body": {
-                    "contentType": "HTML",
-                    "content": template.format(
-                        name=user.name,
-                        title=title,
-                        description=description,
-                    ),
-                },
+                "body": body,
                 "toRecipients": [{"emailAddress": {"address": user.email}}],
             },
             "saveToSentItems": "false",
@@ -102,4 +101,5 @@ def send_notifications(
             },
             timeout=30,
         )
+
     return {"ok": True}

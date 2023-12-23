@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi import APIRouter, HTTPException, Depends, Security
 from sqlmodel import Session, select
+from operator import and_
 
 from .. import algorithms
 from ..dependencies import (
@@ -10,7 +11,15 @@ from ..dependencies import (
     get_session,
     get_user,
 )
-from ..models import Project, ProjectRead, Shortlist, User, UserRead
+from ..models import (
+    User,
+    UserRead,
+    Project,
+    ProjectRead,
+    Allocation,
+    Shortlist,
+    Config,
+)
 
 router = APIRouter(tags=["allocation"])
 
@@ -23,13 +32,21 @@ async def allocate_projects(session: Session = Depends(get_session)):
     users = session.exec(select(User)).all()
     projects = session.exec(select(Project)).all()
     shortlists = session.exec(select(Shortlist)).all()
+
     # Allocate projects using the custom algorithm
-    res = algorithms.allocate_projects(users, projects, shortlists)
-    # Reflect changes to the models made by the custom algorithm
-    for entity in users + projects + shortlists:
-        session.add(entity)
+    allocations_per_project = session.get(Config, "allocations_per_project")
+    response = algorithms.allocate_projects(users, projects, shortlists, allocations_per_project)
+
+    # Commit the changes made by the custom algorithm
+    for user in users:
+        session.add(user)
+    for project in projects:
+        session.add(project)
+    for shortlist in shortlists:
+        session.add(shortlist)
+
     session.commit()
-    return res
+    return response
 
 
 @router.delete(
@@ -37,16 +54,10 @@ async def allocate_projects(session: Session = Depends(get_session)):
     dependencies=[Security(check_admin)],
 )
 async def deallocate_projects(session: Session = Depends(get_session)):
-    projects = session.exec(select(Project)).all()
-    for project in projects:
-        project.allocatees = []
-        session.add(project)
-        session.commit()
-    students = session.exec(select(User).where(User.role == "student")).all()
-    for student in students:
-        student.accepted = None
-        session.add(student)
-        session.commit()
+    allocations = session.exec(select(Allocation)).all()
+    for allocation in allocations:
+        session.delete(allocation)
+    session.commit()
     return {"ok": True}
 
 
@@ -58,7 +69,7 @@ async def accept_allocation(
     user: User = Depends(get_user),
     session: Session = Depends(get_session),
 ):
-    user.accepted = True
+    user.allocation.accepted = True
     session.add(user)
     session.commit()
     return {"ok": True}
@@ -72,7 +83,7 @@ async def decline_allocation(
     user: User = Depends(get_user),
     session: Session = Depends(get_session),
 ):
-    user.accepted = False
+    user.allocation.accepted = False
     session.add(user)
     session.commit()
     return {"ok": True}
@@ -86,7 +97,7 @@ async def undo_allocation(
     user: User = Depends(get_user),
     session: Session = Depends(get_session),
 ):
-    user.accepted = None
+    user.allocation.accepted = None
     session.add(user)
     session.commit()
     return {"ok": True}
@@ -102,7 +113,7 @@ async def read_allocatees(
     session: Session = Depends(get_session),
 ):
     project = session.get(Project, project_id)
-    return project.allocatees
+    return [allocation.allocatee for allocation in project.allocations]
 
 
 @router.get(
@@ -111,7 +122,7 @@ async def read_allocatees(
     dependencies=[Security(check_student)],
 )
 async def is_accepted(user: User = Depends(get_user)):
-    return user.accepted
+    return user.allocation.accepted
 
 
 @router.post(
@@ -123,18 +134,20 @@ async def add_allocatees(
     users: list[UserRead],
     session: Session = Depends(get_session),
 ):
-    # Cannot add students to non approved projects
     project = session.get(Project, project_id)
     if not project.approved:
+        # Cannot add students to non approved projects
         raise HTTPException(status_code=404, detail="Project not approved")
+
     for user in users:
         user = session.get(User, user.id)
         if user.role != "student":
             raise HTTPException(status_code=404, detail="User not a student")
-        user.allocated = project
-        user.accepted = None
-        session.add(project)
-        session.commit()
+
+        allocation = Allocation(allocatee=user, allocated_project=project)
+        session.add(allocation)
+
+    session.commit()
     return {"ok": True}
 
 
@@ -146,10 +159,8 @@ async def remove_allocatee(
     user_id: int,
     session: Session = Depends(get_session),
 ):
-    user = session.get(User, user_id)
-    user.allocated = None
-    user.accepted = None
-    session.add(user)
+    allocation = session.get(Allocation, user_id)
+    session.delete(allocation)
     session.commit()
     return {"ok": True}
 
@@ -160,7 +171,7 @@ async def remove_allocatee(
     dependencies=[Security(check_student)],
 )
 async def read_allocated(user: User = Depends(get_user)):
-    return user.allocated
+    return user.allocation.allocated_project
 
 
 @router.get(
@@ -172,7 +183,7 @@ async def is_allocated(
     project_id: int,
     user: User = Depends(get_user),
 ):
-    return user.allocated is not None and user.allocated.id == project_id
+    return user.allocation is not None and user.allocation.allocated_project.id == project_id
 
 
 @router.get(
@@ -184,12 +195,9 @@ async def read_conflicting_projects(session: Session = Depends(get_session)):
     # Only show approved projects.
     # 'Project.approved == True' does seem to be redundant
     # but is required by SQLModel to construct a valid query.
-    projects = session.exec(select(Project).where(Project.approved == True)).all()
-    # fmt: off
-    return [
-        project for project in projects
-        if not all([user.accepted for user in project.allocatees])
-    ]
+    query = select(Project).where(Project.approved == True)
+    projects = session.exec(query).all()
+    return [project for project in projects if not all([allocation.accepted for allocation in project.allocations])]
 
 
 @router.get(
@@ -198,5 +206,5 @@ async def read_conflicting_projects(session: Session = Depends(get_session)):
     dependencies=[Security(check_admin)],
 )
 async def read_unallocated_users(session: Session = Depends(get_session)):
-    # fmt: off
-    return session.exec(select(User).where(User.role == "student").where(User.allocated == None)).all()
+    query = select(User).where(and_(User.role == "student", User.allocated == None))
+    return session.exec(query).all()

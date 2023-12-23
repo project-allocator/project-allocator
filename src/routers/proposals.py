@@ -16,7 +16,8 @@ async def read_proposed(
     user: User = Depends(get_user),
     session: Session = Depends(get_session),
 ):
-    return session.exec(select(Project).where(Project.proposer_id == user.id)).all()
+    query = select(Project).where(Project.proposal.proposer == user)
+    return session.exec(query).all()
 
 
 @router.get(
@@ -30,7 +31,7 @@ async def is_proposed(
     session: Session = Depends(get_session),
 ):
     project = session.get(Project, project_id)
-    return project.proposer == user
+    return project.proposal.proposer == user
 
 
 @router.post(

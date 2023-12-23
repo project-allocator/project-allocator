@@ -1,9 +1,9 @@
-import requests
 from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlmodel import Session, select
+import requests
+import json
 
-from ..config import config
-from ..models import User, UserRead, UserUpdate
+from ..models import User, UserRead, UserUpdate, Config
 from ..dependencies import (
     check_admin,
     get_session,
@@ -26,7 +26,8 @@ async def check_missing_users(
 ):
     missing = []
     for email in emails:
-        user = session.exec(select(User).where(User.email == email)).one_or_none()
+        query = select(User).where(User.email == email)
+        user = session.exec(query).one_or_none()
         if not user:
             missing.append(email)
     return missing
@@ -39,7 +40,9 @@ async def read_users(
 ):
     if not role:
         return session.exec(select(User)).all()
-    return session.exec(select(User).where(User.role == role)).all()
+
+    query = select(User).where(User.role == role)
+    return session.exec(query).all()
 
 
 @router.get("/users/me", response_model=UserRead)
@@ -53,8 +56,9 @@ async def read_user(
     session: Session = Depends(get_session),
 ):
     user = session.get(User, user_id)
-    if user is None:
+    if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
     return user
 
 
@@ -67,18 +71,23 @@ async def create_user(
     # Return the user if the user exists in the database.
     if user:
         return user
+
     # If logging in for the first time,
     # retrieve user data via Microsoft Graph API and create user in the database.
     response = requests.get(
         "https://graph.microsoft.com/v1.0/me",
         headers={"Authorization": f"Bearer {token}"},
     ).json()
+
     # Find out the user role based on response.
+    admin_emails = session.get(Config, "admin_emails")
+    admin_emails = json.loads(admin_emails)
     role = "staff"
     if response["jobTitle"] == "Undergraduate":
         role = "student"
-    if response["userPrincipalName"] in config["users"]["admins"]:
+    if response["userPrincipalName"] in admin_emails:
         role = "admin"
+
     # Create a new user and store it in the database.
     user = User(
         email=response["userPrincipalName"],
@@ -87,7 +96,6 @@ async def create_user(
     )
     session.add(user)
     session.commit()
-    session.refresh(user)
     return user
 
 
@@ -106,6 +114,7 @@ async def update_user(
         raise HTTPException(status_code=404, detail="User not found")
     if user_data.role not in ["admin", "staff", "student"]:
         raise HTTPException(status_code=400, detail="Invalid user role")
+
     user.role = user_data.role
     session.add(user)
     session.commit()
@@ -123,6 +132,7 @@ async def delete_user(
     user = session.get(User, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+
     session.delete(user)
     session.commit()
     return {"ok": True}
