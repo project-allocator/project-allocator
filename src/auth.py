@@ -10,7 +10,13 @@ OPENAPI_CLIENT_ID = os.environ.get("OPENAPI_CLIENT_ID")
 azure_scheme = SingleTenantAzureAuthorizationCodeBearer(
     app_client_id=APP_CLIENT_ID,
     tenant_id=TENANT_ID,
-    scopes={f"api://{APP_CLIENT_ID}/user_impersonation": "user_impersonation"},
+    scopes={
+        # Key is the scope name, value is the description.
+        f"api://{APP_CLIENT_ID}/user_impersonation": "User impersonation",
+        # TODO: Check if these scopes are correctly specified.
+        "User.Read": "Read user profile",
+        "Mail.Send": "Send mail as user",
+    },
 )
 
 swagger_scheme = {
