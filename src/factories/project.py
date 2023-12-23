@@ -65,7 +65,7 @@ class ProjectDetailConfigFactory(factory.alchemy.SQLAlchemyModelFactory):
     class Meta:
         model = ProjectDetailConfig
 
-    key = factory.Faker("slug")
+    key = factory.Sequence(lambda n: f"detail-{n}")
     type = factory.Faker(
         "random_element",
         elements=[
