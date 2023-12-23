@@ -48,7 +48,7 @@ def check_student(user=Depends(get_user)):
 
 
 def block_proposals_if_shutdown(session: Session = Depends(get_session)):
-    config = session.get(Config, "proposals.shutdown")
+    config = session.get(Config, "proposals_shutdown")
     if config.value == "true":
         raise HTTPException(
             status_code=403,
@@ -57,7 +57,7 @@ def block_proposals_if_shutdown(session: Session = Depends(get_session)):
 
 
 def block_shortlists_if_shutdown(session: Session = Depends(get_session)):
-    config = session.get(Config, "shortlists.shutdown")
+    config = session.get(Config, "shortlists_shutdown")
     if config.value == "true":
         raise HTTPException(
             status_code=403,
@@ -66,7 +66,7 @@ def block_shortlists_if_shutdown(session: Session = Depends(get_session)):
 
 
 def block_undos_if_shutdown(session: Session = Depends(get_session)):
-    config = session.get(Config, "undos.shutdown")
+    config = session.get(Config, "undos_shutdown")
     if config.value == "true":
         raise HTTPException(
             status_code=403,
