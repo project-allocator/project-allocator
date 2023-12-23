@@ -16,7 +16,7 @@ from ..models import (
     Notification,
     Config,
 )
-from ..dependencies import check_admin, get_session, get_user
+from ..dependencies import check_admin, get_session
 
 router = APIRouter(tags=["admin"])
 
@@ -122,13 +122,15 @@ async def export_json(session: Session = Depends(get_session)):
     users = session.exec(select(User)).all()
     projects = session.exec(select(Project)).all()
 
+    # Pydantic models have model_dump() which directly produces dict
+    # but we use json.loads() and model_dump_json() to stringify datetime etc.
     for user in users:
         output_users.append(json.loads(user.model_dump_json()))
     for project in projects:
+        # fmt: off
         output_project = json.loads(project.model_dump_json())
         output_project["details"] = [json.loads(detail.model_dump_json()) for detail in project.details]
         output_project["proposal"] = json.loads(project.proposal.model_dump_json())
-        # fmt: off
         output_project["allocations"] = [json.loads(allocation.model_dump_json()) for allocation in project.allocations]
         output_projects.append(output_project)
 
@@ -143,16 +145,22 @@ async def export_json(session: Session = Depends(get_session)):
 async def export_csv(session: Session = Depends(get_session)):
     output = io.StringIO()
     writer = csv.writer(output)
+
+    project_detail_configs = session.exec(select(ProjectDetailConfig)).all()
     writer.writerow(
         [
             "Project ID",
             "Project Title",
             "Project Description",
+            "Project Approved",
+            *[f"Project Detail: {config.title}" for config in project_detail_configs],
             "Proposer Name",
+            "Proposer Email",
             "Allocatee Names",
             "Allocatee Emails",
         ]
     )
+
     projects = session.exec(select(Project)).all()
     for project in projects:
         names = [allocation.allocatee.name for allocation in project.allocations]
@@ -162,11 +170,15 @@ async def export_csv(session: Session = Depends(get_session)):
                 project.id,
                 project.title,
                 project.description,
+                project.approved,
+                *[detail.value for detail in project.details],
                 project.proposal.proposer.name,
+                project.proposal.proposer.email,
                 ",".join(names),
                 ",".join(emails),
             ]
         )
+
     return output.getvalue()
 
 
@@ -175,8 +187,8 @@ async def export_csv(session: Session = Depends(get_session)):
     dependencies=[Security(check_admin)],
 )
 async def import_json(
-    users: dict[str, Any],
-    projects: dict[str, Any],
+    users: list[Any],
+    projects: list[Any],
     session: Session = Depends(get_session),
 ):
     for user in users:
@@ -184,20 +196,20 @@ async def import_json(
         session.add(user)
         session.commit()
     for project in projects:
-        project_details = project.details
-        project_allocations = project.allocations
-        project_proposal = project.proposal
-        del project.details
-        del project.allocations
-        del project.proposal
+        project_details = project["details"]
+        project_allocations = project["allocations"]
+        project_proposal = project["proposal"]
+        del project["details"]
+        del project["allocations"]
+        del project["proposal"]
         project = Project.model_validate(project)
         project_details = [ProjectDetail.model_validate(detail) for detail in project_details]
         project_allocations = [Allocation.model_validate(allocation) for allocation in project_allocations]
         project_proposal = Proposal.model_validate(project_proposal)
         session.add(project)
         session.add_all(project_details)
-        session.add_all(project_allocations)
         session.add(project_proposal)
+        session.add_all(project_allocations)
         session.commit()
     return {"ok": True}
 
@@ -206,21 +218,22 @@ async def import_json(
     "/database/reset",
     dependencies=[Security(check_admin)],
 )
-async def reset_database(
-    user: User | None = Depends(get_user),
-    session: Session = Depends(get_session),
-):
+async def reset_database(session: Session = Depends(get_session)):
+    admins = session.exec(select(User).where(User.role == "admin")).all()
+
     session.exec(delete(User))
     session.exec(delete(Project))
     session.exec(delete(ProjectDetail))
-    session.exec(delete(ProjectDetailConfig))
-    session.exec(delete(Allocation))
+    # Do not delete ProjectDetailConfig
+    # session.exec(delete(ProjectDetailConfig))
     session.exec(delete(Proposal))
+    session.exec(delete(Allocation))
     session.exec(delete(Shortlist))
     session.exec(delete(Notification))
     # Do not delete Config
     # session.exec(delete(Config))
 
-    session.add(User(email=user.email, name=user.name, role=user.role))
+    for admin in admins:
+        session.add(User(email=admin.email, name=admin.name, role=admin.role))
     session.commit()
     return {"ok": True}
