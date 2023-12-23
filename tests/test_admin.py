@@ -1,18 +1,34 @@
-import datetime
-import random
-from fastapi.testclient import TestClient
 import pytest
+from fastapi.testclient import TestClient
 from sqlmodel import Session, select
-from src.config import config
-from src.factories import ProjectFactory, UserFactory
-from src.models import Project, Status, User
+import random
 import json
+import csv
+from io import StringIO
+
+from src.factories import (
+    UserFactory,
+    ProjectFactory,
+    ProjectDetailConfigFactory,
+    NotificationFactory,
+)
+from src.models import (
+    User,
+    Project,
+    ProjectDetail,
+    ProjectDetailConfig,
+    Proposal,
+    Allocation,
+    Shortlist,
+    Notification,
+    Config,
+)
 
 
 def test_are_proposals_shutdown(student_client: TestClient, session: Session):
-    status = session.get(Status, "proposals.shutdown")
-    status.value = True
-    session.add(status)
+    config = session.get(Config, "proposals.shutdown")
+    config.value = "true"
+    session.add(config)
     session.commit()
 
     response = student_client.get("/api/proposals/shutdown")
@@ -22,9 +38,9 @@ def test_are_proposals_shutdown(student_client: TestClient, session: Session):
 
 
 def test_are_shortlists_shutdown(student_client: TestClient, session: Session):
-    status = session.get(Status, "shortlists.shutdown")
-    status.value = True
-    session.add(status)
+    config = session.get(Config, "shortlists.shutdown")
+    config.value = "true"
+    session.add(config)
     session.commit()
 
     response = student_client.get("/api/shortlists/shutdown")
@@ -34,9 +50,9 @@ def test_are_shortlists_shutdown(student_client: TestClient, session: Session):
 
 
 def test_are_undos_shutdown(student_client: TestClient, session: Session):
-    status = session.get(Status, "undos.shutdown")
-    status.value = True
-    session.add(status)
+    config = session.get(Config, "undos.shutdown")
+    config.value = "true"
+    session.add(config)
     session.commit()
 
     response = student_client.get("/api/undos/shutdown")
@@ -52,14 +68,14 @@ def test_set_proposals_shutdown(admin_client: TestClient, session: Session):
     assert response.status_code == 200
     assert data["ok"] is True
 
-    status = session.get(Status, "proposals.shutdown")
-    assert status.value is True
+    config = session.get(Config, "proposals.shutdown")
+    assert config.value == "true"
 
 
 def test_unset_proposals_shutdown(admin_client: TestClient, session: Session):
-    status = session.get(Status, "proposals.shutdown")
-    status.value = True
-    session.add(status)
+    config = session.get(Config, "proposals.shutdown")
+    config.value = True
+    session.add(config)
     session.commit()
 
     response = admin_client.delete("/api/proposals/shutdown")
@@ -67,25 +83,25 @@ def test_unset_proposals_shutdown(admin_client: TestClient, session: Session):
     assert response.status_code == 200
     assert data["ok"] is True
 
-    status = session.get(Status, "proposals.shutdown")
-    assert status.value is False
+    config = session.get(Config, "proposals.shutdown")
+    assert config.value == "false"
 
 
 def test_set_shortlists_shutdown(admin_client: TestClient, session: Session):
-    # Status for shortlist shutdowns is False by default
     response = admin_client.post("/api/shortlists/shutdown")
     data = response.json()
     assert response.status_code == 200
     assert data["ok"] is True
 
-    status = session.get(Status, "shortlists.shutdown")
-    assert status.value is True
+    config = session.get(Config, "shortlists.shutdown")
+    assert config.value == "true"
 
 
 def test_unset_shortlists_shutdown(admin_client: TestClient, session: Session):
-    status = session.get(Status, "shortlists.shutdown")
-    status.value = True
-    session.add(status)
+    # Shortlists are not shutdown by default.
+    config = session.get(Config, "shortlists.shutdown")
+    config.value = "true"
+    session.add(config)
     session.commit()
 
     response = admin_client.delete("/api/shortlists/shutdown")
@@ -93,8 +109,8 @@ def test_unset_shortlists_shutdown(admin_client: TestClient, session: Session):
     assert response.status_code == 200
     assert data["ok"] is True
 
-    status = session.get(Status, "shortlists.shutdown")
-    assert status.value is False
+    config = session.get(Config, "shortlists.shutdown")
+    assert config.value == "false"
 
 
 def test_set_undos_shutdown(admin_client: TestClient, session: Session):
@@ -104,14 +120,15 @@ def test_set_undos_shutdown(admin_client: TestClient, session: Session):
     assert response.status_code == 200
     assert data["ok"] is True
 
-    status = session.get(Status, "undos.shutdown")
-    assert status.value is True
+    config = session.get(Config, "undos.shutdown")
+    assert config.value == "true"
 
 
 def test_unset_undos_shutdown(admin_client: TestClient, session: Session):
-    status = session.get(Status, "undos.shutdown")
-    status.value = True
-    session.add(status)
+    # Undos are not shutdown by default.
+    config = session.get(Config, "undos.shutdown")
+    config.value = "true"
+    session.add(config)
     session.commit()
 
     response = admin_client.delete("/api/projects/undos/shutdown")
@@ -119,79 +136,95 @@ def test_unset_undos_shutdown(admin_client: TestClient, session: Session):
     assert response.status_code == 200
     assert data["ok"] is True
 
-    status = session.get(Status, "undos.shutdown")
-    assert status.value is False
+    config = session.get(Config, "undos.shutdown")
+    assert config.value == "false"
 
 
-def test_export_json(admin_client: TestClient, session: Session):
-    students = [UserFactory.build() for _ in range(50)]
-    staff = [UserFactory.build() for _ in range(10)]
-    projects = [ProjectFactory.build() for _ in range(10)]
-    for student in students:
-        student.role = "student"
-        student.allocated = random.choice(projects)
-    for project in projects:
-        project.proposer = random.choice(staff)
+def test_export_json_and_csv(admin_client: TestClient, session: Session):
+    students = UserFactory.build_batch(50, role="students")
+    staff = UserFactory.build_batch(2, role="admin") + UserFactory.build_batch(10, role="staff")
+    project_detail_configs = ProjectDetailConfigFactory.build_batch(10)
+    projects = ProjectFactory.build_batch(10, details__configs=project_detail_configs)
+    allocations = [Allocation(allocatee=student, allocated_project=random.choice(projects)) for student in students]
+    proposals = [Proposal(proposer=random.choice(staff), proposed_project=project) for project in projects]
+
     session.add_all(students)
     session.add_all(staff)
+    session.add_all(project_detail_configs)
     session.add_all(projects)
+    session.add_all(allocations)
+    session.add_all(proposals)
     session.commit()
 
+    # Test json export.
     response = admin_client.get("/api/export/json")
+    # Response is a stringified json so must be parsed.
     data = json.loads(response.json())
-    print(data[0])
     assert response.status_code == 200
-    assert len(data) == 10
-    assert "proposer" in data[0].keys() and "allocatees" in data[0].keys()
+    assert len(data["users"]) == len(students) + len(staff) + 3  # 3 existing users
+    assert len(data["projects"]) == len(projects)
 
+    user_fields = [
+        "id",
+        "email",
+        "name",
+        "role",
+        "created_at",
+        "updated_at",
+    ]
+    project_fields = [
+        "id",
+        "title",
+        "description",
+        "approved",
+        "created_at",
+        "updated_at",
+        "details",
+        "proposal",
+        "allocations",
+    ]
 
-def test_export_csv(admin_client: TestClient, session: Session):
-    students = [UserFactory.build() for _ in range(50)]
-    staff = [UserFactory.build() for _ in range(10)]
-    projects = [ProjectFactory.build() for _ in range(10)]
-    for student in students:
-        student.role = "student"
-        student.allocated = random.choice(projects)
-    for project in projects:
-        project.proposer = random.choice(staff)
-    session.add_all(students)
-    session.add_all(staff)
-    session.add_all(projects)
-    session.commit()
+    assert all(set(user_fields) == set(user.keys()) for user in data["users"])
+    assert all(set(project_fields) == set(project.keys()) for project in data["projects"])
+    assert all(len(project["details"]) == len(project_detail_configs) for project in data["projects"])
+    assert all(project["proposal"] != {} for project in data["projects"])
+    assert sum(len(project["allocations"]) for project in data["projects"]) == len(allocations)
 
+    # Test csv export.
     response = admin_client.get("/api/export/csv")
     data = response.json()
     assert response.status_code == 200
 
-    lines = data.split("\n")
-    assert len(lines) == 10 + 2  # 10 projects + 2 header lines
-    assert len(lines[0].split(",")) >= 3
+    reader = csv.reader(StringIO(data))
+    assert len(list(reader)) == len(projects) + 1  # 1 header line
+    assert all(len(row) == (8 + len(project_detail_configs)) for row in reader)  # 8 project/user fields
 
 
-def test_import_json(staff_user: User, admin_client: TestClient, session: Session):
+def test_import_json(admin_client: TestClient, session: Session):
+    students = UserFactory.build_batch(50, role="students")
+    staff = UserFactory.build_batch(2, role="admin") + UserFactory.build_batch(10, role="staff")
+    project_detail_configs = ProjectDetailConfigFactory.build_batch(10)
+    projects = ProjectFactory.build_batch(10, details__configs=project_detail_configs)
+    # We construct proposals and allocations manually instead of using SQLModel models
+    # because the foreign keys are not updated until we commit the session.
     # fmt: off
-    users = [
-        {"id": 4, "email": "david@example.com", "name": "David Smith", "role": "student"},
-        {"id": 5, "email": "elizabeth@example.com", "name": "Elizabeth Smith", "role": "student"},
-    ]
-    projects = [
-        {"id": 1, "title": "Project 1", "description": "Description 1", "categories": ["category-1"], "proposer_id": staff_user.id},
-        {"id": 2, "title": "Project 2", "description": "Description 2", "categories": ["category-2"], "proposer_id": staff_user.id},
-    ]
-    for project in projects:
-        # We need to use ProjectFactory to randomly generate custom project details according to config.yaml.
-        custom_project = ProjectFactory.build()
-        for detail in config["projects"]["details"]:
-            custom_detail = getattr(custom_project, detail["name"])
-            # We need to format datetime objects to string because JSON does not support datetime.
-            if isinstance(custom_detail, datetime.datetime):
-                custom_detail = custom_detail.strftime("%Y-%m-%dT%H:%M:%S")
-            project[detail["name"]] = custom_detail
+    proposals = [{"proposer_id": random.choice(staff).id, "proposed_project_id": project.id} for project in projects]
+    allocations = [{"allocatee_id": student.id, "allocated_project_id": random.choice(projects).id} for student in students]
 
-    # fmt: on
+    # Pydantic models have model_dump() which directly produces dict
+    # but we use json.loads() and model_dump_json() to stringify datetime etc.
+    users_data = [json.loads(user.model_dump_json()) for user in students + staff]
+    projects_data = []
+    for project in projects:
+        project_data = json.loads(project.model_dump_json())
+        project_data["details"] = [json.loads(detail.model_dump_json()) for detail in project.details]
+        project_data["proposal"] = next(proposal for proposal in proposals if proposal["proposed_project_id"] == project.id)
+        project_data["allocations"] = [allocation for allocation in allocations if allocation["allocated_project_id"] == project.id]
+        projects_data.append(project_data)
+
     response = admin_client.post(
         "/api/import/json",
-        json={"users": users, "projects": projects},
+        json={"users": users_data, "projects": projects_data},
     )
     data = response.json()
     assert response.status_code == 200
@@ -199,19 +232,40 @@ def test_import_json(staff_user: User, admin_client: TestClient, session: Sessio
 
     users = session.exec(select(User)).all()
     projects = session.exec(select(Project)).all()
-    assert len(users) == 3 + 2  # 3 existing users + 2 new users
-    assert len(projects) == 2  # 2 new projects
+    assert len(users) == len(users_data) + 3  # 3 existing users
+    assert len(projects) == len(projects_data)
+    assert all(len(project.details) == len(project_detail_configs) for project in projects)
+    assert all(project.proposal is not None for project in projects)
+    assert sum(len(project.allocations) for project in projects) == len(allocations)
 
 
 # Ignore RuntimeWarning from sqlmodel
 # otherwise it gives warnings about the user dependency.
 @pytest.mark.filterwarnings("ignore::RuntimeWarning")
-def test_reset_database(admin_client: TestClient, session: Session):
-    users = [UserFactory.build() for _ in range(10)]
-    projects = [ProjectFactory.build() for _ in range(10)]
-    session.add_all(users)
+def test_reset_database(admin_client: TestClient, admin_user: User, session: Session):
+    students = UserFactory.build_batch(50, role="students")
+    staff = UserFactory.build_batch(2, role="admin") + UserFactory.build_batch(10, role="staff")
+    project_detail_configs = ProjectDetailConfigFactory.build_batch(10)
+    projects = ProjectFactory.build_batch(10, details__configs=project_detail_configs)
+    allocations = [Allocation(allocatee=student, allocated_project=random.choice(projects)) for student in students]
+    proposals = [Proposal(proposer=random.choice(staff), proposed_project=project) for project in projects]
+    # fmt: off
+    shortlists = [[Shortlist(shortlister=student, shortlisted_project=project, preference=preference) for preference, project in enumerate(projects)] for student in students]
+    shortlists = sum(shortlists, [])  # flatten list of lists
+    notifications = NotificationFactory.build_batch(100)
+
+    session.add_all(students)
+    session.add_all(staff)
+    session.add_all(project_detail_configs)
     session.add_all(projects)
+    session.add_all(allocations)
+    session.add_all(proposals)
+    session.add_all(shortlists)
+    session.add_all(notifications)
     session.commit()
+
+    old_admins = session.exec(select(User).where(User.role == "admin")).all()
+    old_configs = session.exec(select(Config)).all()
 
     response = admin_client.post("/api/database/reset")
     data = response.json()
@@ -219,8 +273,21 @@ def test_reset_database(admin_client: TestClient, session: Session):
     assert data["ok"] is True
 
     users = session.exec(select(User)).all()
+    project_detail_configs = session.exec(select(ProjectDetailConfig)).all()
+    project_details = session.exec(select(ProjectDetail)).all()
     projects = session.exec(select(Project)).all()
-    statuses = session.exec(select(Status)).all()
-    assert len(users) == 1  # 1 admin user
+    allocations = session.exec(select(Allocation)).all()
+    proposals = session.exec(select(Proposal)).all()
+    shortlists = session.exec(select(Shortlist)).all()
+    notifications = session.exec(select(Notification)).all()
+    configs = session.exec(select(Config)).all()
+
+    assert len(users) == len(old_admins) # admins should not be deleted
+    assert len(project_detail_configs) == len(project_detail_configs)
+    assert len(project_details) == 0
     assert len(projects) == 0
-    assert len(statuses) == 3  # 3 default statuses
+    assert len(allocations) == 0
+    assert len(proposals) == 0
+    assert len(shortlists) == 0
+    assert len(notifications) == 0
+    assert configs == old_configs # configs should not be deleted
