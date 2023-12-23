@@ -61,14 +61,9 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
 
 
-@router.get("/test/guest")
-async def test_guest():
+@router.get("/test/alive")
+async def test_alive():
     return {"ok": True}
-
-
-@router.get("/test/auth")
-async def test_auth(user: User = Depends(azure_scheme)):
-    return {"ok": True, **user.model_dump()}
 
 
 # Add this router after the above path operations
