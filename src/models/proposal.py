@@ -12,7 +12,6 @@ class Proposal(TimestampMixin, SQLModel, table=True):
     __tablename__ = "proposal"
 
     proposer_id: Optional[str] = Field(
-        primary_key=True,
         foreign_key="user.id",
         max_length=26,
         default=None,
@@ -20,7 +19,6 @@ class Proposal(TimestampMixin, SQLModel, table=True):
     proposed_project_id: Optional[str] = Field(
         primary_key=True,
         foreign_key="project.id",
-        unique=True,
         max_length=26,
         default=None,
     )

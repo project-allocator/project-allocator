@@ -18,12 +18,10 @@ class Allocation(TimestampMixin, SQLModel, table=True):
     allocatee_id: Optional[str] = Field(
         primary_key=True,
         foreign_key="user.id",
-        unique=True,
         max_length=26,
         default=None,
     )
     allocated_project_id: Optional[str] = Field(
-        primary_key=True,
         foreign_key="project.id",
         max_length=26,
         default=None,
