@@ -4,10 +4,7 @@ from fastapi import FastAPI, APIRouter, Request, Security, Depends
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi_azure_auth.user import User
-from sqlmodel import SQLModel
 
-from .db import engine
-from .config import config
 from .auth import swagger_scheme, azure_scheme
 from .routers import (
     projects,
@@ -64,13 +61,6 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     )
 
 
-@router.get("/config")
-async def read_config():
-    # Make the config object loaded from `config.yaml` accessible to the frontend.
-    # This endpoint allows us to store config in a single location.
-    return config
-
-
 @router.get("/test/guest")
 async def test_guest():
     return {"ok": True}
@@ -78,7 +68,7 @@ async def test_guest():
 
 @router.get("/test/auth")
 async def test_auth(user: User = Depends(azure_scheme)):
-    return {"ok": True, **user.dict()}
+    return {"ok": True, **user.model_dump()}
 
 
 # Add this router after the above path operations

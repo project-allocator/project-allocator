@@ -2,7 +2,7 @@ from fastapi import Depends, HTTPException, Header
 from fastapi_azure_auth.user import User as AzureUser
 from sqlmodel import Session, select
 
-from .models import Status, User
+from .models import Config, User
 from .db import engine
 from .auth import azure_scheme
 
@@ -48,8 +48,8 @@ def check_student(user=Depends(get_user)):
 
 
 def block_proposals_if_shutdown(session: Session = Depends(get_session)):
-    status = session.get(Status, "proposals.shutdown")
-    if status.value == "true":
+    config = session.get(Config, "proposals.shutdown")
+    if config.value == "true":
         raise HTTPException(
             status_code=403,
             detail="Proposals are currently shutdown.",
@@ -57,8 +57,8 @@ def block_proposals_if_shutdown(session: Session = Depends(get_session)):
 
 
 def block_shortlists_if_shutdown(session: Session = Depends(get_session)):
-    status = session.get(Status, "shortlists.shutdown")
-    if status.value == "true":
+    config = session.get(Config, "shortlists.shutdown")
+    if config.value == "true":
         raise HTTPException(
             status_code=403,
             detail="Shortlists are currently shutdown.",
@@ -66,8 +66,8 @@ def block_shortlists_if_shutdown(session: Session = Depends(get_session)):
 
 
 def block_undos_if_shutdown(session: Session = Depends(get_session)):
-    status = session.get(Status, "undos.shutdown")
-    if status.value == "true":
+    config = session.get(Config, "undos.shutdown")
+    if config.value == "true":
         raise HTTPException(
             status_code=403,
             detail="Undos are currently shutdown.",

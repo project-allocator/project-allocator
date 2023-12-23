@@ -13,7 +13,6 @@ azure_scheme = SingleTenantAzureAuthorizationCodeBearer(
     scopes={
         # Key is the scope name, value is the description.
         f"api://{APP_CLIENT_ID}/user_impersonation": "User impersonation",
-        # TODO: Check if these scopes are correctly specified.
         "User.Read": "Read user profile",
         "Mail.Send": "Send mail as user",
     },

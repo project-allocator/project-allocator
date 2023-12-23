@@ -1,18 +1,22 @@
-from enum import Enum
-import random
 from typing import Annotated
 import typer
 from rich import print
 from rich.progress import track
-from sqlmodel import SQLModel, Session, select
-
-from src.factories.project import ProjectDetailConfigFactory
-from src.models.allocation import Allocation
-from src.models.proposal import Proposal
+from sqlmodel import Session
+import random
 
 from .db import engine
-from .models import User, Shortlist, Status
-from .factories import UserFactory, ProjectFactory, NotificationFactory
+from .models import (
+    Shortlist,
+    Allocation,
+    Proposal,
+)
+from .factories import (
+    UserFactory,
+    ProjectFactory,
+    ProjectDetailConfigFactory,
+    NotificationFactory,
+)
 
 
 app = typer.Typer()
@@ -27,17 +31,11 @@ def callback():
 def seed(yes: Annotated[bool, typer.Option(help="Skip confirmation.")] = False):
     if not yes:
         print("❗[red]This command should not be run in production.")
-        if not typer.confirm("Are you sure to seed the database?"):
+        print("❗[red]Make sure the database is empty before you proceed.")
+        if not typer.confirm("Are you sure to continue?"):
             return
 
-    SQLModel.metadata.drop_all(engine)
-    SQLModel.metadata.create_all(engine)
-
     with Session(engine) as session:
-        session.add(Status(key="proposals.shutdown", value="false"))
-        session.add(Status(key="shortlists.shutdown", value="false"))
-        session.add(Status(key="undos.shutdown", value="false"))
-
         configs = ProjectDetailConfigFactory.build_batch(10)
         session.add_all(configs)
 
@@ -83,26 +81,3 @@ def seed(yes: Annotated[bool, typer.Option(help="Skip confirmation.")] = False):
         session.commit()
 
     print("✨[green]Successfully seeded the database.")
-
-
-class Role(str, Enum):
-    admin = "admin"
-    staff = "staff"
-    student = "student"
-
-
-@app.command()
-def change_role(
-    email: Annotated[str, typer.Argument(help="The email of the user")],
-    new_role: Annotated[Role, typer.Argument(help="The new role of the user")],
-):
-    with Session(engine) as session:
-        user = session.exec(select(User).where(User.email == email)).one_or_none()
-        if not user:
-            print(f"❌[red]User with the given email {email} does not exist!")
-            raise typer.Exit()
-        user.role = new_role
-        session.add(user)
-        session.commit()
-
-    print(f"✨[green]Successfully updated the user {email} to role '{new_role.value}'.")
