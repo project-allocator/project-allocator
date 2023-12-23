@@ -28,6 +28,7 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["shortlisted_project_id"], ["project.id"]),
         sa.ForeignKeyConstraint(["shortlister_id"], ["user.id"]),
         sa.PrimaryKeyConstraint("shortlister_id", "shortlisted_project_id"),
+        sa.UniqueConstraint("preference", "shortlister_id"),
     )
 
 
