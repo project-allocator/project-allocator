@@ -65,7 +65,7 @@ class ProjectDetailConfigFactory(factory.alchemy.SQLAlchemyModelFactory):
     class Meta:
         model = ProjectDetailConfig
 
-    key = factory.Sequence(lambda n: f"detail-{n}")
+    key = factory.Sequence(lambda n: f"detail-{n + 1}")
     type = factory.Faker(
         "random_element",
         elements=[
@@ -89,6 +89,10 @@ class ProjectDetailConfigFactory(factory.alchemy.SQLAlchemyModelFactory):
         if self.type in ["select", "checkbox", "radio", "categories"]:
             return _fake.words(nb=5, unique=True)
 
-    title = factory.Faker("sentence")
+    @factory.lazy_attribute
+    def title(self):
+        # Cannot use 'sentence' because of the period at the end.
+        return " ".join(_fake.words(nb=5))
+
     description = factory.Faker("paragraph")
     message = factory.Faker("sentence")
