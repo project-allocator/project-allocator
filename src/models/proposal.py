@@ -11,16 +11,14 @@ if TYPE_CHECKING:
 class Proposal(TimestampMixin, SQLModel, table=True):
     __tablename__ = "proposal"
 
-    proposer_id: Optional[str] = Field(
+    proposer_id: str = Field(
         foreign_key="user.id",
         max_length=26,
-        default=None,
     )
     proposed_project_id: str = Field(
         primary_key=True,
         foreign_key="project.id",
         max_length=26,
-        default=None,
     )
     proposer: "User" = Relationship(back_populates="proposals")
     proposed_project: "Project" = Relationship(back_populates="proposal")

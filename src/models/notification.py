@@ -24,7 +24,7 @@ class Notification(TimestampMixin, NotificationBase, table=True):
         default_factory=lambda: str(ulid.new()),
     )
 
-    user_id: Optional[str] = Field(
+    user_id: str = Field(
         foreign_key="user.id",
         max_length=26,
         default=None,
@@ -36,8 +36,5 @@ class NotificationRead(NotificationBase):
     id: str
 
 
-class NotificationUpdate(SQLModel):
-    # TODO: id field is update model is usually not required
-    # but this one is used by mark_notifications endpoint.
-    id: str
-    read_at: Optional[datetime]
+class NotificationCreate(NotificationBase):
+    pass

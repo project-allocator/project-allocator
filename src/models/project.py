@@ -116,13 +116,11 @@ class ProjectUpdateWithDetails(ProjectUpdate):
     details: list["ProjectDetailUpdate"] = []
 
 
-class ProjectDetailConfig(TimestampMixin, SQLModel, table=True):
-    __tablename__ = "project_detail_config"
-
-    key: str = Field(primary_key=True)
+class ProjectDetailConfigBase(SQLModel):
+    key: str
     type: str
     required: bool
-    options: Optional[list[str]] = Field(sa_column=Column(JSON), default=None)
+    options: Optional[list[str]]
 
     # Used by the frontend to describe the detail.
     title: str
@@ -130,8 +128,12 @@ class ProjectDetailConfig(TimestampMixin, SQLModel, table=True):
     message: str  # error message
 
 
-# Schema used for importing data from JSON.
-# Administrators can now specify the proposer using the existing user IDs.
-class ProjectImport(ProjectBase):
-    id: str
-    proposer_id: str
+class ProjectDetailConfig(TimestampMixin, ProjectDetailConfigBase, table=True):
+    __tablename__ = "project_detail_config"
+
+    key: str = Field(primary_key=True)
+    options: Optional[list[str]] = Field(sa_column=Column(JSON), default=None)
+
+
+class ProjectDetailConfigRead(ProjectDetailConfigBase):
+    pass

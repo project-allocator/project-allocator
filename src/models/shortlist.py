@@ -23,13 +23,11 @@ class Shortlist(TimestampMixin, SQLModel, table=True):
         primary_key=True,
         foreign_key="user.id",
         max_length=26,
-        default=None,
     )
     shortlisted_project_id: str = Field(
         primary_key=True,
         foreign_key="project.id",
         max_length=26,
-        default=None,
     )
     shortlister: "User" = Relationship(back_populates="shortlists")
     shortlisted_project: "Project" = Relationship(back_populates="shortlists")
