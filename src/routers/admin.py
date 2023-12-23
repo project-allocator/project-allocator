@@ -23,19 +23,19 @@ router = APIRouter(tags=["admin"])
 
 @router.get("/proposals/shutdown", response_model=bool)
 async def are_proposals_shutdown(session: Session = Depends(get_session)):
-    config = session.get(Config, "proposals.shutdown")
+    config = session.get(Config, "proposals_shutdown")
     return config.value == "true"
 
 
 @router.get("/shortlists/shutdown", response_model=bool)
 async def are_shortlists_shutdown(session: Session = Depends(get_session)):
-    config = session.get(Config, "shortlists.shutdown")
+    config = session.get(Config, "shortlists_shutdown")
     return config.value == "true"
 
 
 @router.get("/undos/shutdown", response_model=bool)
 async def are_undos_shutdown(session: Session = Depends(get_session)):
-    config = session.get(Config, "undos.shutdown")
+    config = session.get(Config, "undos_shutdown")
     return config.value == "true"
 
 
@@ -44,7 +44,7 @@ async def are_undos_shutdown(session: Session = Depends(get_session)):
     dependencies=[Security(check_admin)],
 )
 async def set_proposals_shutdown(session: Session = Depends(get_session)):
-    config = session.get(Config, "proposals.shutdown")
+    config = session.get(Config, "proposals_shutdown")
     config.value = "true"
     session.add(config)
     session.commit()
@@ -56,7 +56,7 @@ async def set_proposals_shutdown(session: Session = Depends(get_session)):
     dependencies=[Security(check_admin)],
 )
 async def unset_proposals_shutdown(session: Session = Depends(get_session)):
-    config = session.get(Config, "proposals.shutdown")
+    config = session.get(Config, "proposals_shutdown")
     config.value = "false"
     session.add(config)
     session.commit()
@@ -68,7 +68,7 @@ async def unset_proposals_shutdown(session: Session = Depends(get_session)):
     dependencies=[Security(check_admin)],
 )
 async def set_shortlists_shutdown(session: Session = Depends(get_session)):
-    config = session.get(Config, "shortlists.shutdown")
+    config = session.get(Config, "shortlists_shutdown")
     config.value = "true"
     session.add(config)
     session.commit()
@@ -80,7 +80,7 @@ async def set_shortlists_shutdown(session: Session = Depends(get_session)):
     dependencies=[Security(check_admin)],
 )
 async def unset_shortlists_shutdown(session: Session = Depends(get_session)):
-    config = session.get(Config, "shortlists.shutdown")
+    config = session.get(Config, "shortlists_shutdown")
     config.value = "false"
     session.add(config)
     session.commit()
@@ -92,7 +92,7 @@ async def unset_shortlists_shutdown(session: Session = Depends(get_session)):
     dependencies=[Security(check_admin)],
 )
 async def set_undos_shutdown(session: Session = Depends(get_session)):
-    config = session.get(Config, "undos.shutdown")
+    config = session.get(Config, "undos_shutdown")
     config.value = "true"
     session.add(config)
     session.commit()
@@ -104,7 +104,7 @@ async def set_undos_shutdown(session: Session = Depends(get_session)):
     dependencies=[Security(check_admin)],
 )
 async def unset_undos_shutdown(session: Session = Depends(get_session)):
-    config = session.get(Config, "undos.shutdown")
+    config = session.get(Config, "undos_shutdown")
     config.value = "false"
     session.add(config)
     session.commit()
@@ -122,20 +122,19 @@ async def export_json(session: Session = Depends(get_session)):
     users = session.exec(select(User)).all()
     projects = session.exec(select(Project)).all()
 
-    # Pydantic models have model_dump() which directly produces dict
-    # but we use json.loads() and model_dump_json() to stringify datetime etc.
     for user in users:
-        output_users.append(json.loads(user.model_dump_json()))
+        output_users.append(user.model_dump())
     for project in projects:
         # fmt: off
-        output_project = json.loads(project.model_dump_json())
-        output_project["details"] = [json.loads(detail.model_dump_json()) for detail in project.details]
-        output_project["proposal"] = json.loads(project.proposal.model_dump_json())
-        output_project["allocations"] = [json.loads(allocation.model_dump_json()) for allocation in project.allocations]
+        output_project = project.model_dump()
+        output_project["details"] = [detail.model_dump() for detail in project.details]
+        output_project["proposal"] = project.proposal.model_dump()
+        output_project["allocations"] = [allocation.model_dump() for allocation in project.allocations]
         output_projects.append(output_project)
 
     output = {"users": output_users, "projects": output_projects}
-    return json.dumps(output)
+    # Use default=str to serialize datetime.
+    return json.dumps(output, default=str)
 
 
 @router.get(

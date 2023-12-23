@@ -1,7 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlmodel import Session, select
 
-from ..models import Project, ProjectRead, Shortlist, User, UserRead
+from ..models import (
+    User,
+    UserRead,
+    Project,
+    ProjectRead,
+    Shortlist,
+    Config,
+)
 from ..dependencies import (
     block_shortlists_if_shutdown,
     check_staff,
@@ -28,8 +35,7 @@ async def read_shortlisted(
     # Sort by ascending order of preference
     # because preference of zero has the highest preference.
     shortlists.sort(key=lambda shortlist: shortlist.preference)
-
-    return [session.get(Project, shortlist.project_id) for shortlist in shortlists]
+    return [shortlist.shortlisted_project for shortlist in shortlists]
 
 
 @router.get(
@@ -38,7 +44,7 @@ async def read_shortlisted(
     dependencies=[Security(check_student)],
 )
 async def is_shortlisted(
-    project_id: int,
+    project_id: str,
     user: User = Depends(get_user),
     session: Session = Depends(get_session),
 ):
@@ -51,7 +57,7 @@ async def is_shortlisted(
     dependencies=[Security(check_student), Security(block_shortlists_if_shutdown)],
 )
 async def set_shortlisted(
-    project_id: int,
+    project_id: str,
     user: User = Depends(get_user),
     session: Session = Depends(get_session),
 ):
@@ -63,7 +69,13 @@ async def set_shortlisted(
     # Set new shortlist to lowest preference
     query = select(Shortlist).where(Shortlist.shortlister_id == user.id)
     shortlists = session.exec(query).all()
-    shortlist = Shortlist(user_id=user.id, project_id=project_id, preference=len(shortlists))
+
+    max_shortlists = session.get(Config, "max_shortlists")
+    max_shortlists = int(max_shortlists.value)
+    if len(shortlists) >= max_shortlists:
+        raise HTTPException(status_code=400, detail=f"Max shortlists reached")
+
+    shortlist = Shortlist(shortlister=user, shortlisted_project=project, preference=len(shortlists))
     session.add(shortlist)
     session.commit()
     return {"ok": True}
@@ -74,14 +86,13 @@ async def set_shortlisted(
     dependencies=[Security(check_student), Security(block_shortlists_if_shutdown)],
 )
 async def unset_shortlisted(
-    project_id: int,
+    project_id: str,
     user: User = Depends(get_user),
     session: Session = Depends(get_session),
 ):
     shortlist = session.get(Shortlist, (user.id, project_id))
     if not shortlist:
         raise HTTPException(status_code=404, detail="Shortlist not found")
-
     session.delete(shortlist)
     session.commit()
 
@@ -100,15 +111,29 @@ async def unset_shortlisted(
     dependencies=[Security(check_student), Security(block_shortlists_if_shutdown)],
 )
 async def reorder_shortlisted(
-    project_ids: list[int],
+    project_ids: list[str],
     user: User = Depends(get_user),
     session: Session = Depends(get_session),
 ):
-    for preference, id in enumerate(project_ids):
-        shortlist = session.get(Shortlist, (user.id, id))
-        shortlist.preference = preference
-        session.add(shortlist)
+    new_shortlists = []
+    for preference, project_id in enumerate(project_ids):
+        shortlist = session.get(Shortlist, (user.id, project_id))
+        if not shortlist:
+            raise HTTPException(status_code=404, detail="Shortlist not found")
+
+        # Make a new shortlist with the new preference.
+        # Delete old shortlist to avoid violating the unique constraint on (preference, shortlister_id).
+        new_shortlist = Shortlist(
+            **shortlist.model_dump(include=["shortlister_id", "shortlisted_project_id"]),
+            preference=preference,
+        )
+        new_shortlists.append(new_shortlist)
+        session.delete(shortlist)
     session.commit()
+
+    session.add_all(new_shortlists)
+    session.commit()
+
     return {"ok": True}
 
 
@@ -118,16 +143,14 @@ async def reorder_shortlisted(
     dependencies=[Security(check_staff)],
 )
 async def read_shortlisters(
-    project_id: int,
-    user: User = Depends(get_user),
+    project_id: str,
     session: Session = Depends(get_session),
 ):
     project = session.get(Project, project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    query = select(Shortlist).where(Shortlist.project_id == project_id)
+    query = select(Shortlist).where(Shortlist.shortlisted_project_id == project_id)
     shortlists = session.exec(query).all()
     shortlists.sort(key=lambda shortlist: shortlist.preference)
-
-    return [session.get(User, shortlist.shortlister_id) for shortlist in shortlists]
+    return [shortlist.shortlister for shortlist in shortlists]

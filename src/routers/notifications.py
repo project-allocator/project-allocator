@@ -5,8 +5,8 @@ from datetime import datetime
 import requests
 import json
 
-from ..dependencies import check_admin, get_session, get_token, get_user
-from ..models import Notification, NotificationRead, NotificationUpdate, User
+from ..dependencies import check_admin, get_user, get_session, get_token
+from ..models import User, Notification, NotificationRead, NotificationCreate
 
 router = APIRouter(tags=["notification"])
 
@@ -25,12 +25,12 @@ async def read_notifications(
 # TODO: This endpoint is semantically misleading
 @router.put("/users/me/notifications")
 async def mark_notifications(
-    notifications: list[NotificationUpdate],
+    notification_ids: list[str],
     session: Session = Depends(get_session),
 ):
-    for notification in notifications:
-        notification = session.get(Notification, notification.id)
-        notification.read_at = datetime.now().isoformat()
+    for notification_id in notification_ids:
+        notification = session.get(Notification, notification_id)
+        notification.read_at = datetime.now()
         session.add(notification)
     session.commit()
     return {"ok": True}
@@ -38,7 +38,7 @@ async def mark_notifications(
 
 @router.delete("/users/me/notifications/{notification_id}")
 async def delete_notification(
-    notification_id: int,
+    notification_id: str,
     user: User = Depends(get_user),
     session: Session = Depends(get_session),
 ):
@@ -58,48 +58,52 @@ async def delete_notification(
     dependencies=[Security(check_admin)],
 )
 def send_notifications(
-    title: str,
-    description: str,
+    notification_data: NotificationCreate,
     roles: list[str],
     token: str = Depends(get_token),
     session: Session = Depends(get_session),
 ):
     # Get the email template.
     base_path = dirname(dirname(abspath(__file__)))
-    template_path = f"{base_path}/src/resources/email-template.html"
+    template_path = f"{base_path}/resources/email-template.html"
     with open(template_path) as file:
         template = file.read()
 
     # Get the target users.
     users = session.exec(select(User).where(User.role.in_(roles))).all()
     for user in users:
-        # Create notification entries in the database.
-        notification = Notification(title=title, description=description)
+        # Create in-app notification.
+        notification = Notification.model_validate(notification_data)
+        notification.user = user
         session.add(notification)
         session.commit()
-        session.refresh(user)
+        session.refresh(notification)
 
         # Send email to every user as admin.
         body = {
             "contentType": "HTML",
-            "content": template.format(name=user.name, title=title, description=description),
+            "content": template.format(
+                name=user.name,
+                title=notification.title,
+                description=notification.description,
+            ),
         }
         data = {
             "message": {
-                "subject": f"[Project Allocator] {title}",
-                "body": body,
+                "subject": f"[Project Allocator] {notification.title}",
                 "toRecipients": [{"emailAddress": {"address": user.email}}],
+                "body": body,
             },
             "saveToSentItems": "false",
         }
         requests.post(
             "https://graph.microsoft.com/v1.0/me/sendMail",
             data=json.dumps(data),
+            timeout=30,
             headers={
                 "Authorization": f"Bearer {token}",
                 "Content-Type": "application/json",
             },
-            timeout=30,
         )
 
     return {"ok": True}

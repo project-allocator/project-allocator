@@ -52,7 +52,7 @@ async def read_current_user(user: User = Depends(get_user)):
 
 @router.get("/users/{user_id}", response_model=UserRead)
 async def read_user(
-    user_id: int,
+    user_id: str,
     session: Session = Depends(get_session),
 ):
     user = session.get(User, user_id)
@@ -81,7 +81,7 @@ async def create_user(
 
     # Find out the user role based on response.
     admin_emails = session.get(Config, "admin_emails")
-    admin_emails = json.loads(admin_emails)
+    admin_emails = json.loads(admin_emails.value)
     role = "staff"
     if response["jobTitle"] == "Undergraduate":
         role = "student"
@@ -105,7 +105,7 @@ async def create_user(
     dependencies=[Security(check_admin)],
 )
 async def update_user(
-    user_id: int,
+    user_id: str,
     user_data: UserUpdate,
     session: Session = Depends(get_session),
 ):
@@ -115,6 +115,7 @@ async def update_user(
     if user_data.role not in ["admin", "staff", "student"]:
         raise HTTPException(status_code=400, detail="Invalid user role")
 
+    # Only user role is updatable for consistency.
     user.role = user_data.role
     session.add(user)
     session.commit()
@@ -126,13 +127,15 @@ async def update_user(
     dependencies=[Security(check_admin)],
 )
 async def delete_user(
-    user_id: int,
+    user_id: str,
     session: Session = Depends(get_session),
 ):
     user = session.get(User, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    # We use cascade delete to make sure that
+    # user's proposals, allocations, shortlists and notifications are also deleted.
     session.delete(user)
     session.commit()
     return {"ok": True}

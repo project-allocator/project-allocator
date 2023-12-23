@@ -29,24 +29,19 @@ router = APIRouter(tags=["allocation"])
     dependencies=[Security(check_admin)],
 )
 async def allocate_projects(session: Session = Depends(get_session)):
-    users = session.exec(select(User)).all()
+    students = session.exec(select(User).where(User.role == "student")).all()
     projects = session.exec(select(Project)).all()
     shortlists = session.exec(select(Shortlist)).all()
 
     # Allocate projects using the custom algorithm
-    allocations_per_project = session.get(Config, "allocations_per_project")
-    response = algorithms.allocate_projects(users, projects, shortlists, allocations_per_project)
+    max_allocations = session.get(Config, "max_allocations")
+    max_allocations = int(max_allocations.value)
+    allocations = algorithms.allocate_projects(students, projects, shortlists, max_allocations)
 
     # Commit the changes made by the custom algorithm
-    for user in users:
-        session.add(user)
-    for project in projects:
-        session.add(project)
-    for shortlist in shortlists:
-        session.add(shortlist)
-
+    session.add_all(allocations)
     session.commit()
-    return response
+    return {"ok": True}
 
 
 @router.delete(
@@ -109,10 +104,13 @@ async def undo_allocation(
     dependencies=[Security(check_staff)],
 )
 async def read_allocatees(
-    project_id: int,
+    project_id: str,
     session: Session = Depends(get_session),
 ):
     project = session.get(Project, project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
     return [allocation.allocatee for allocation in project.allocations]
 
 
@@ -130,11 +128,13 @@ async def is_accepted(user: User = Depends(get_user)):
     dependencies=[Security(check_admin)],
 )
 async def add_allocatees(
-    project_id: int,
+    project_id: str,
     users: list[UserRead],
     session: Session = Depends(get_session),
 ):
     project = session.get(Project, project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
     if not project.approved:
         # Cannot add students to non approved projects
         raise HTTPException(status_code=404, detail="Project not approved")
@@ -152,14 +152,18 @@ async def add_allocatees(
 
 
 @router.delete(
-    "/users/{user_id}/allocated",
+    "/projects/{project_id}/allocatees/{user_id}",
     dependencies=[Security(check_admin)],
 )
 async def remove_allocatee(
-    user_id: int,
+    project_id: str,
+    user_id: str,
     session: Session = Depends(get_session),
 ):
     allocation = session.get(Allocation, user_id)
+    if not allocation or allocation.allocated_project.id != project_id:
+        raise HTTPException(status_code=404, detail="User not allocated to project")
+
     session.delete(allocation)
     session.commit()
     return {"ok": True}
@@ -180,10 +184,10 @@ async def read_allocated(user: User = Depends(get_user)):
     dependencies=[Security(check_student)],
 )
 async def is_allocated(
-    project_id: int,
+    project_id: str,
     user: User = Depends(get_user),
 ):
-    return user.allocation is not None and user.allocation.allocated_project.id == project_id
+    return user.allocation and user.allocation.allocated_project.id == project_id
 
 
 @router.get(
@@ -206,5 +210,5 @@ async def read_conflicting_projects(session: Session = Depends(get_session)):
     dependencies=[Security(check_admin)],
 )
 async def read_unallocated_users(session: Session = Depends(get_session)):
-    query = select(User).where(and_(User.role == "student", User.allocated == None))
+    query = select(User).where(and_(User.role == "student", User.allocation == None))
     return session.exec(query).all()

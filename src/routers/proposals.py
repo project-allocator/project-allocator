@@ -12,12 +12,8 @@ router = APIRouter(tags=["proposal"])
     response_model=list[ProjectRead],
     dependencies=[Security(check_staff)],
 )
-async def read_proposed(
-    user: User = Depends(get_user),
-    session: Session = Depends(get_session),
-):
-    query = select(Project).where(Project.proposal.proposer == user)
-    return session.exec(query).all()
+async def read_proposed(user: User = Depends(get_user)):
+    return [proposal.proposed_project for proposal in user.proposals]
 
 
 @router.get(
@@ -26,7 +22,7 @@ async def read_proposed(
     dependencies=[Security(check_staff)],
 )
 async def is_proposed(
-    project_id: int,
+    project_id: str,
     user: User = Depends(get_user),
     session: Session = Depends(get_session),
 ):
@@ -39,7 +35,7 @@ async def is_proposed(
     dependencies=[Security(check_admin)],
 )
 async def approve_proposal(
-    project_id: int,
+    project_id: str,
     session: Session = Depends(get_session),
 ):
     project = session.get(Project, project_id)
@@ -54,7 +50,7 @@ async def approve_proposal(
     dependencies=[Security(check_admin)],
 )
 async def reject_proposal(
-    project_id: int,
+    project_id: str,
     session: Session = Depends(get_session),
 ):
     project = session.get(Project, project_id)
@@ -69,7 +65,7 @@ async def reject_proposal(
     dependencies=[Security(check_admin)],
 )
 async def undo_proposal(
-    project_id: int,
+    project_id: str,
     session: Session = Depends(get_session),
 ):
     project = session.get(Project, project_id)
