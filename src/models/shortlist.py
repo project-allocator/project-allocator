@@ -1,4 +1,5 @@
 from typing import Optional, TYPE_CHECKING
+from sqlalchemy import UniqueConstraint
 from sqlmodel import Field, Relationship, SQLModel
 
 from ..mixins.timestamp import TimestampMixin
@@ -11,17 +12,20 @@ if TYPE_CHECKING:
 class Shortlist(TimestampMixin, SQLModel, table=True):
     __tablename__ = "shortlist"
 
+    # Preference cannot overlap for the same shortlister.
+    __table_args__ = (UniqueConstraint("preference", "shortlister_id"),)
+
     # Student's preference for the shortlisted project
     # where preference of 0 has the highest preference.
-    preference: int
+    preference: int = Field(default=0)
 
-    shortlister_id: Optional[str] = Field(
+    shortlister_id: str = Field(
         primary_key=True,
         foreign_key="user.id",
         max_length=26,
         default=None,
     )
-    shortlisted_project_id: Optional[str] = Field(
+    shortlisted_project_id: str = Field(
         primary_key=True,
         foreign_key="project.id",
         max_length=26,

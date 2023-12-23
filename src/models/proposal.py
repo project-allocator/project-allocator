@@ -16,7 +16,7 @@ class Proposal(TimestampMixin, SQLModel, table=True):
         max_length=26,
         default=None,
     )
-    proposed_project_id: Optional[str] = Field(
+    proposed_project_id: str = Field(
         primary_key=True,
         foreign_key="project.id",
         max_length=26,
