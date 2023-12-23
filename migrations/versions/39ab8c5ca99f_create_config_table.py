@@ -41,27 +41,34 @@ def upgrade() -> None:
                 "created_at": timestamp,
                 "updated_at": timestamp,
             },
-            # Number of students allocated per project.
+            # Maximum number of students allocated per project.
             {
-                "key": "allocations_per_project",
+                "key": "max_allocations",
+                "value": "5",
+                "created_at": timestamp,
+                "updated_at": timestamp,
+            },
+            # Maximum number of students allocated per student.
+            {
+                "key": "max_shortlists",
                 "value": "5",
                 "created_at": timestamp,
                 "updated_at": timestamp,
             },
             {
-                "key": "proposals.shutdown",
+                "key": "proposals_shutdown",
                 "value": "false",
                 "created_at": timestamp,
                 "updated_at": timestamp,
             },
             {
-                "key": "shortlists.shutdown",
+                "key": "shortlists_shutdown",
                 "value": "false",
                 "created_at": timestamp,
                 "updated_at": timestamp,
             },
             {
-                "key": "undos.shutdown",
+                "key": "undos_shutdown",
                 "value": "false",
                 "created_at": timestamp,
                 "updated_at": timestamp,
