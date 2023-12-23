@@ -21,7 +21,7 @@ from .notification import *
 #         "radio": (str, ...),
 #         # Use JSON format to store a list of strings.
 #         # PostgreSQL's list type is not supported by Pydantic.
-#         "checkbox": (List[str], Field(sa_column=Column(JSON))),
+#         "checkbox": (list[str], Field(sa_column=Column(JSON))),
 #         # Use JSON format to store a list of strings.
 #         # PostgreSQL's list type is not supported by Pydantic.
 #         "categories": (Optional[bool], Field(default=None)),

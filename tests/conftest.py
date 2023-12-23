@@ -1,4 +1,3 @@
-from typing import List
 from fastapi import FastAPI
 import pytest
 from fastapi.testclient import TestClient
@@ -47,7 +46,7 @@ def default_users_fixture(admin_user: User, staff_user: User, student_user: User
 
 
 @pytest.fixture(name="session")
-def session_fixture(default_users: List[User]):
+def session_fixture(default_users: list[User]):
     # Setup a temporary SQLite database for testing.
     # Uses SQLite in-memory database.
     engine = create_engine(
