@@ -31,13 +31,12 @@ def callback():
 def seed(yes: Annotated[bool, typer.Option(help="Skip confirmation.")] = False):
     if not yes:
         print("❗[red]This command should not be run in production.")
-        print("❗[red]Make sure the database is empty before you proceed.")
         if not typer.confirm("Are you sure to continue?"):
             return
 
     with Session(engine) as session:
-        configs = ProjectDetailConfigFactory.build_batch(10)
-        session.add_all(configs)
+        project_detail_configs = ProjectDetailConfigFactory.build_batch(10)
+        session.add_all(project_detail_configs)
 
         users = []
         projects = []
@@ -50,7 +49,7 @@ def seed(yes: Annotated[bool, typer.Option(help="Skip confirmation.")] = False):
             # Propose 5 new projects for each staff.
             for _ in range(5):
                 # Passing configs as details__configs to generate project details.
-                project = ProjectFactory.build(details__configs=configs)
+                project = ProjectFactory.build(details__configs=project_detail_configs)
                 projects.append(project)
                 session.add(project)
 
