@@ -1,4 +1,4 @@
-"""create project config table
+"""create project detail config table
 
 Revision ID: 7a959237829d
 Revises: 0d86aabed612

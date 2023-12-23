@@ -27,8 +27,7 @@ def upgrade() -> None:
         sa.Column("allocated_project_id", sqlmodel.sql.sqltypes.AutoString(length=26), nullable=False),
         sa.ForeignKeyConstraint(["allocated_project_id"], ["project.id"]),
         sa.ForeignKeyConstraint(["allocatee_id"], ["user.id"]),
-        sa.PrimaryKeyConstraint("allocatee_id", "allocated_project_id"),
-        sa.UniqueConstraint("allocatee_id"),
+        sa.PrimaryKeyConstraint("allocatee_id"),
     )
 
 
