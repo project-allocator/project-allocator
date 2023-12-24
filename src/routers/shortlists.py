@@ -1,3 +1,4 @@
+from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlmodel import Session, select
 
@@ -26,8 +27,8 @@ router = APIRouter(tags=["shortlist"])
     dependencies=[Security(check_student)],
 )
 async def read_shortlisted(
-    user: User = Depends(get_user),
-    session: Session = Depends(get_session),
+    user: Annotated[User, Depends(get_user)],
+    session: Annotated[Session, Depends(get_session)],
 ):
     query = select(Shortlist).where(Shortlist.shortlister_id == user.id)
     shortlists = session.exec(query).all()
@@ -45,8 +46,8 @@ async def read_shortlisted(
 )
 async def is_shortlisted(
     project_id: str,
-    user: User = Depends(get_user),
-    session: Session = Depends(get_session),
+    user: Annotated[User, Depends(get_user)],
+    session: Annotated[Session, Depends(get_session)],
 ):
     shortlist = session.get(Shortlist, (user.id, project_id))
     return bool(shortlist)
@@ -58,8 +59,8 @@ async def is_shortlisted(
 )
 async def set_shortlisted(
     project_id: str,
-    user: User = Depends(get_user),
-    session: Session = Depends(get_session),
+    user: Annotated[User, Depends(get_user)],
+    session: Annotated[Session, Depends(get_session)],
 ):
     project = session.get(Project, project_id)
     if not project.approved:
@@ -87,8 +88,8 @@ async def set_shortlisted(
 )
 async def unset_shortlisted(
     project_id: str,
-    user: User = Depends(get_user),
-    session: Session = Depends(get_session),
+    user: Annotated[User, Depends(get_user)],
+    session: Annotated[Session, Depends(get_session)],
 ):
     shortlist = session.get(Shortlist, (user.id, project_id))
     if not shortlist:
@@ -112,8 +113,8 @@ async def unset_shortlisted(
 )
 async def reorder_shortlisted(
     project_ids: list[str],
-    user: User = Depends(get_user),
-    session: Session = Depends(get_session),
+    user: Annotated[User, Depends(get_user)],
+    session: Annotated[Session, Depends(get_session)],
 ):
     new_shortlists = []
     for preference, project_id in enumerate(project_ids):
@@ -144,7 +145,7 @@ async def reorder_shortlisted(
 )
 async def read_shortlisters(
     project_id: str,
-    session: Session = Depends(get_session),
+    session: Annotated[Session, Depends(get_session)],
 ):
     project = session.get(Project, project_id)
     if not project:

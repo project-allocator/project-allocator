@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, Depends, Security
+from typing import Annotated
+from fastapi import APIRouter, HTTPException, Depends, Security, Body
 from sqlmodel import Session, select
 from os.path import dirname, abspath
 from datetime import datetime
@@ -11,10 +12,13 @@ from ..models import User, Notification, NotificationRead, NotificationCreate
 router = APIRouter(tags=["notification"])
 
 
-@router.get("/users/me/notifications", response_model=list[NotificationRead])
+@router.get(
+    "/users/me/notifications",
+    response_model=list[NotificationRead],
+)
 async def read_notifications(
-    user: User = Depends(get_user),
-    session: Session = Depends(get_session),
+    user: Annotated[User, Depends(get_user)],
+    session: Annotated[Session, Depends(get_session)],
 ):
     query = select(Notification).where(Notification.user_id == user.id)
     notifications = session.exec(query).all()
@@ -26,7 +30,7 @@ async def read_notifications(
 @router.put("/users/me/notifications")
 async def mark_notifications(
     notification_ids: list[str],
-    session: Session = Depends(get_session),
+    session: Annotated[Session, Depends(get_session)],
 ):
     for notification_id in notification_ids:
         notification = session.get(Notification, notification_id)
@@ -39,8 +43,8 @@ async def mark_notifications(
 @router.delete("/users/me/notifications/{notification_id}")
 async def delete_notification(
     notification_id: str,
-    user: User = Depends(get_user),
-    session: Session = Depends(get_session),
+    user: Annotated[User, Depends(get_user)],
+    session: Annotated[Session, Depends(get_session)],
 ):
     notification = session.get(Notification, notification_id)
     if not notification.user:
@@ -58,10 +62,10 @@ async def delete_notification(
     dependencies=[Security(check_admin)],
 )
 def send_notifications(
-    notification_data: NotificationCreate,
+    notification_data: Annotated[NotificationCreate, Body(alias="notification")],
     roles: list[str],
-    token: str = Depends(get_token),
-    session: Session = Depends(get_session),
+    token: Annotated[str, Depends(get_token)],
+    session: Annotated[Session, Depends(get_session)],
 ):
     # Get the email template.
     base_path = dirname(dirname(abspath(__file__)))

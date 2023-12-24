@@ -1,9 +1,9 @@
+from typing import Annotated, Any
+from fastapi import APIRouter, Depends, Security
+from sqlmodel import Session, select, delete
 import io
 import csv
 import json
-from typing import Any
-from fastapi import APIRouter, Depends, Security
-from sqlmodel import Session, select, delete
 
 from ..models import (
     User,
@@ -22,19 +22,21 @@ router = APIRouter(tags=["admin"])
 
 
 @router.get("/proposals/shutdown", response_model=bool)
-async def are_proposals_shutdown(session: Session = Depends(get_session)):
+async def are_proposals_shutdown(session: Annotated[Session, Depends(get_session)]):
     config = session.get(Config, "proposals_shutdown")
     return config.value == "true"
 
 
 @router.get("/shortlists/shutdown", response_model=bool)
-async def are_shortlists_shutdown(session: Session = Depends(get_session)):
+async def are_shortlists_shutdown(session: Annotated[Session, Depends(get_session)]):
     config = session.get(Config, "shortlists_shutdown")
     return config.value == "true"
 
 
 @router.get("/undos/shutdown", response_model=bool)
-async def are_undos_shutdown(session: Session = Depends(get_session)):
+async def are_undos_shutdown(
+    session: Annotated[Session, Depends(get_session)],
+):
     config = session.get(Config, "undos_shutdown")
     return config.value == "true"
 
@@ -43,7 +45,7 @@ async def are_undos_shutdown(session: Session = Depends(get_session)):
     "/proposals/shutdown",
     dependencies=[Security(check_admin)],
 )
-async def set_proposals_shutdown(session: Session = Depends(get_session)):
+async def set_proposals_shutdown(session: Annotated[Session, Depends(get_session)]):
     config = session.get(Config, "proposals_shutdown")
     config.value = "true"
     session.add(config)
@@ -55,7 +57,7 @@ async def set_proposals_shutdown(session: Session = Depends(get_session)):
     "/proposals/shutdown",
     dependencies=[Security(check_admin)],
 )
-async def unset_proposals_shutdown(session: Session = Depends(get_session)):
+async def unset_proposals_shutdown(session: Annotated[Session, Depends(get_session)]):
     config = session.get(Config, "proposals_shutdown")
     config.value = "false"
     session.add(config)
@@ -67,7 +69,7 @@ async def unset_proposals_shutdown(session: Session = Depends(get_session)):
     "/shortlists/shutdown",
     dependencies=[Security(check_admin)],
 )
-async def set_shortlists_shutdown(session: Session = Depends(get_session)):
+async def set_shortlists_shutdown(session: Annotated[Session, Depends(get_session)]):
     config = session.get(Config, "shortlists_shutdown")
     config.value = "true"
     session.add(config)
@@ -79,7 +81,7 @@ async def set_shortlists_shutdown(session: Session = Depends(get_session)):
     "/shortlists/shutdown",
     dependencies=[Security(check_admin)],
 )
-async def unset_shortlists_shutdown(session: Session = Depends(get_session)):
+async def unset_shortlists_shutdown(session: Annotated[Session, Depends(get_session)]):
     config = session.get(Config, "shortlists_shutdown")
     config.value = "false"
     session.add(config)
@@ -91,7 +93,7 @@ async def unset_shortlists_shutdown(session: Session = Depends(get_session)):
     "/projects/undos/shutdown",
     dependencies=[Security(check_admin)],
 )
-async def set_undos_shutdown(session: Session = Depends(get_session)):
+async def set_undos_shutdown(session: Annotated[Session, Depends(get_session)]):
     config = session.get(Config, "undos_shutdown")
     config.value = "true"
     session.add(config)
@@ -103,7 +105,7 @@ async def set_undos_shutdown(session: Session = Depends(get_session)):
     "/projects/undos/shutdown",
     dependencies=[Security(check_admin)],
 )
-async def unset_undos_shutdown(session: Session = Depends(get_session)):
+async def unset_undos_shutdown(session: Annotated[Session, Depends(get_session)]):
     config = session.get(Config, "undos_shutdown")
     config.value = "false"
     session.add(config)
@@ -115,7 +117,7 @@ async def unset_undos_shutdown(session: Session = Depends(get_session)):
     "/export/json",
     dependencies=[Security(check_admin)],
 )
-async def export_json(session: Session = Depends(get_session)):
+async def export_json(session: Annotated[Session, Depends(get_session)]):
     output_users = []
     output_projects = []
 
@@ -141,7 +143,7 @@ async def export_json(session: Session = Depends(get_session)):
     "/export/csv",
     dependencies=[Security(check_admin)],
 )
-async def export_csv(session: Session = Depends(get_session)):
+async def export_csv(session: Annotated[Session, Depends(get_session)]):
     output = io.StringIO()
     writer = csv.writer(output)
 
@@ -188,7 +190,7 @@ async def export_csv(session: Session = Depends(get_session)):
 async def import_json(
     users: list[Any],
     projects: list[Any],
-    session: Session = Depends(get_session),
+    session: Annotated[Session, Depends(get_session)],
 ):
     for user in users:
         user = User.model_validate(user)
@@ -217,7 +219,7 @@ async def import_json(
     "/database/reset",
     dependencies=[Security(check_admin)],
 )
-async def reset_database(session: Session = Depends(get_session)):
+async def reset_database(session: Annotated[Session, Depends(get_session)]):
     admins = session.exec(select(User).where(User.role == "admin")).all()
 
     session.exec(delete(User))

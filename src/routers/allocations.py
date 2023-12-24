@@ -1,3 +1,4 @@
+from typing import Annotated
 from fastapi import APIRouter, HTTPException, Depends, Security
 from sqlmodel import Session, select
 from operator import and_
@@ -28,7 +29,7 @@ router = APIRouter(tags=["allocation"])
     "/projects/allocatees",
     dependencies=[Security(check_admin)],
 )
-async def allocate_projects(session: Session = Depends(get_session)):
+async def allocate_projects(session: Annotated[Session, Depends(get_session)]):
     students = session.exec(select(User).where(User.role == "student")).all()
     projects = session.exec(select(Project)).all()
     shortlists = session.exec(select(Shortlist)).all()
@@ -48,7 +49,7 @@ async def allocate_projects(session: Session = Depends(get_session)):
     "/projects/allocatees",
     dependencies=[Security(check_admin)],
 )
-async def deallocate_projects(session: Session = Depends(get_session)):
+async def deallocate_projects(session: Annotated[Session, Depends(get_session)]):
     allocations = session.exec(select(Allocation)).all()
     for allocation in allocations:
         session.delete(allocation)
@@ -61,8 +62,8 @@ async def deallocate_projects(session: Session = Depends(get_session)):
     dependencies=[Security(check_student)],
 )
 async def accept_allocation(
-    user: User = Depends(get_user),
-    session: Session = Depends(get_session),
+    user: Annotated[User, Depends(get_user)],
+    session: Annotated[Session, Depends(get_session)],
 ):
     user.allocation.accepted = True
     session.add(user)
@@ -75,8 +76,8 @@ async def accept_allocation(
     dependencies=[Security(check_student)],
 )
 async def decline_allocation(
-    user: User = Depends(get_user),
-    session: Session = Depends(get_session),
+    user: Annotated[User, Depends(get_user)],
+    session: Annotated[Session, Depends(get_session)],
 ):
     user.allocation.accepted = False
     session.add(user)
@@ -89,8 +90,8 @@ async def decline_allocation(
     dependencies=[Security(check_student), Security(block_undos_if_shutdown)],
 )
 async def undo_allocation(
-    user: User = Depends(get_user),
-    session: Session = Depends(get_session),
+    user: Annotated[User, Depends(get_user)],
+    session: Annotated[Session, Depends(get_session)],
 ):
     user.allocation.accepted = None
     session.add(user)
@@ -105,7 +106,7 @@ async def undo_allocation(
 )
 async def read_allocatees(
     project_id: str,
-    session: Session = Depends(get_session),
+    session: Annotated[Session, Depends(get_session)],
 ):
     project = session.get(Project, project_id)
     if not project:
@@ -130,7 +131,7 @@ async def is_accepted(user: User = Depends(get_user)):
 async def add_allocatees(
     project_id: str,
     users: list[UserRead],
-    session: Session = Depends(get_session),
+    session: Annotated[Session, Depends(get_session)],
 ):
     project = session.get(Project, project_id)
     if not project:
@@ -158,7 +159,7 @@ async def add_allocatees(
 async def remove_allocatee(
     project_id: str,
     user_id: str,
-    session: Session = Depends(get_session),
+    session: Annotated[Session, Depends(get_session)],
 ):
     allocation = session.get(Allocation, user_id)
     if not allocation or allocation.allocated_project.id != project_id:
@@ -174,7 +175,7 @@ async def remove_allocatee(
     response_model=ProjectRead | None,
     dependencies=[Security(check_student)],
 )
-async def read_allocated(user: User = Depends(get_user)):
+async def read_allocated(user: Annotated[User, Depends(get_user)]):
     return user.allocation.allocated_project
 
 
@@ -185,7 +186,7 @@ async def read_allocated(user: User = Depends(get_user)):
 )
 async def is_allocated(
     project_id: str,
-    user: User = Depends(get_user),
+    user: Annotated[User, Depends(get_user)],
 ):
     return user.allocation and user.allocation.allocated_project.id == project_id
 
@@ -195,7 +196,7 @@ async def is_allocated(
     response_model=list[ProjectRead],
     dependencies=[Security(check_admin)],
 )
-async def read_conflicting_projects(session: Session = Depends(get_session)):
+async def read_conflicting_projects(session: Annotated[Session, Depends(get_session)]):
     # Only show approved projects.
     # 'Project.approved == True' does seem to be redundant
     # but is required by SQLModel to construct a valid query.
@@ -209,6 +210,6 @@ async def read_conflicting_projects(session: Session = Depends(get_session)):
     response_model=list[UserRead],
     dependencies=[Security(check_admin)],
 )
-async def read_unallocated_users(session: Session = Depends(get_session)):
+async def read_unallocated_users(session: Annotated[Session, Depends(get_session)]):
     query = select(User).where(and_(User.role == "student", User.allocation == None))
     return session.exec(query).all()

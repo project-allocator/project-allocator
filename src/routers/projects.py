@@ -1,3 +1,4 @@
+from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlmodel import Session, select
 from operator import or_
@@ -58,7 +59,7 @@ def _parse_project(project: Project) -> ProjectReadWithDetails:
     "/projects/approved",
     response_model=list[ProjectReadWithDetails],
 )
-async def read_approved_projects(session: Session = Depends(get_session)):
+async def read_approved_projects(session: Annotated[Session, Depends(get_session)]):
     # Only show projects approved by admins.
     query = select(Project).where(Project.approved == True)
     projects = session.exec(query).all()
@@ -74,7 +75,7 @@ async def read_approved_projects(session: Session = Depends(get_session)):
     response_model=list[ProjectReadWithDetails],
     dependencies=[Security(check_admin)],
 )
-async def read_non_approved_projects(session: Session = Depends(get_session)):
+async def read_non_approved_projects(session: Annotated[Session, Depends(get_session)]):
     query = select(Project).where(or_(Project.approved == False, Project.approved == None))
     projects = session.exec(query).all()
 
@@ -103,8 +104,8 @@ async def read_project(
 )
 async def create_project(
     project_data: ProjectCreateWithDetails,
-    user: User = Depends(get_user),
-    session: Session = Depends(get_session),
+    user: Annotated[User, Depends(get_user)],
+    session: Annotated[Session, Depends(get_session)],
 ):
     project_data = _serialize_project(project_data)
 
@@ -150,8 +151,8 @@ async def create_project(
 async def update_project(
     project_id: str,
     project_data: ProjectUpdateWithDetails,
-    user: User = Depends(get_user),
-    session: Session = Depends(get_session),
+    user: Annotated[User, Depends(get_user)],
+    session: Annotated[Session, Depends(get_session)],
 ):
     project = session.get(Project, project_id)
     if not project:
@@ -195,8 +196,8 @@ async def update_project(
 )
 async def delete_project(
     project_id: str,
-    user: User = Depends(get_user),
-    session: Session = Depends(get_session),
+    user: Annotated[User, Depends(get_user)],
+    session: Annotated[Session, Depends(get_session)],
 ):
     project = session.get(Project, project_id)
     if not project:

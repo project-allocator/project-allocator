@@ -1,3 +1,4 @@
+from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlmodel import Session, select
 import requests
@@ -22,7 +23,7 @@ router = APIRouter(tags=["user"])
 )
 async def check_missing_users(
     emails: list[str],
-    session: Session = Depends(get_session),
+    session: Annotated[Session, Depends(get_session)],
 ):
     missing = []
     for email in emails:
@@ -33,10 +34,14 @@ async def check_missing_users(
     return missing
 
 
-@router.get("/users", response_model=list[UserRead])
+@router.get(
+    "/users",
+    response_model=list[UserRead],
+)
 async def read_users(
+    *,  # prevent default parameter ordering error
     role: str | None = None,
-    session: Session = Depends(get_session),
+    session: Annotated[Session, Depends(get_session)],
 ):
     if not role:
         return session.exec(select(User)).all()
@@ -45,15 +50,21 @@ async def read_users(
     return session.exec(query).all()
 
 
-@router.get("/users/me", response_model=UserRead)
+@router.get(
+    "/users/me",
+    response_model=UserRead,
+)
 async def read_current_user(user: User = Depends(get_user)):
     return user
 
 
-@router.get("/users/{user_id}", response_model=UserRead)
+@router.get(
+    "/users/{user_id}",
+    response_model=UserRead,
+)
 async def read_user(
     user_id: str,
-    session: Session = Depends(get_session),
+    session: Annotated[Session, Depends(get_session)],
 ):
     user = session.get(User, user_id)
     if not user:
@@ -62,11 +73,14 @@ async def read_user(
     return user
 
 
-@router.post("/users", response_model=UserRead)
+@router.post(
+    "/users",
+    response_model=UserRead,
+)
 async def create_user(
-    user: User | None = Depends(get_user_or_none),
-    token: str = Depends(get_token),
-    session: Session = Depends(get_session),
+    token: Annotated[str, Depends(get_token)],
+    user: Annotated[User | None, Depends(get_user_or_none)],
+    session: Annotated[Session, Depends(get_session)],
 ):
     # Return the user if the user exists in the database.
     if user:
@@ -107,7 +121,7 @@ async def create_user(
 async def update_user(
     user_id: str,
     user_data: UserUpdate,
-    session: Session = Depends(get_session),
+    session: Annotated[Session, Depends(get_session)],
 ):
     user = session.get(User, user_id)
     if not user:
@@ -128,7 +142,7 @@ async def update_user(
 )
 async def delete_user(
     user_id: str,
-    session: Session = Depends(get_session),
+    session: Annotated[Session, Depends(get_session)],
 ):
     user = session.get(User, user_id)
     if not user:
