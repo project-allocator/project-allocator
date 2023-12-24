@@ -16,8 +16,8 @@ from ..models import (
     User,
     Project,
     ProjectDetail,
-    ProjectDetailConfig,
-    ProjectDetailConfigRead,
+    ProjectDetailTemplate,
+    ProjectDetailTemplateRead,
     ProjectReadWithDetails,
     ProjectCreateWithDetails,
     ProjectUpdateWithDetails,
@@ -117,17 +117,14 @@ async def create_project(
     del project_data.details
     project = Project.model_validate(project_data)
 
+    templates = session.exec(select(ProjectDetailTemplate)).all()
     project_details = []
-    project_detail_configs = session.exec(select(ProjectDetailConfig)).all()
     for project_data_detail in project_data_details:
-        # Check if the project detail key and type are consistent with the config.
-        # fmt: off
-        project_detail_config = next((project_detail_config
-            for project_detail_config in project_detail_configs
-            if project_detail_config.key == project_data_detail.key), None)
-        if not project_detail_config:
+        # Check if the project detail key and type are consistent with the template.
+        template = next((template for template in templates if template.key == project_data_detail.key), None)
+        if not template:
             raise HTTPException(status_code=400, detail="Invalid project detail key")
-        if project_detail_config.type != project_data_detail.type:
+        if template.type != project_data_detail.type:
             raise HTTPException(status_code=400, detail="Invalid project detail type")
 
         project_detail = ProjectDetail.model_validate(project_data_detail)
@@ -169,14 +166,13 @@ async def update_project(
     # Update each property of the project.
     for key, value in project_data.model_dump(exclude_unset=True, exclude=["details"]).items():
         setattr(project, key, value)
+
     # Update each property of the project details.
     for project_data_detail in project_data.details:
         # Check if the project detail key and type are consistent with the existing project detail
-        # which is guaranteed to be consistent with the config on creation.
+        # which is guaranteed to be consistent with the template on creation.
         # fmt: off
-        project_detail = next((project_detail 
-            for project_detail in project.details 
-            if project_detail.key == project_data_detail.key), None)
+        project_detail = next((project_detail for project_detail in project.details if project_detail.key == project_data_detail.key), None)
         if not project_detail:
             raise HTTPException(status_code=400, detail="Invalid project detail key")
         if project_detail.type != project_data_detail.type:
@@ -212,6 +208,6 @@ async def delete_project(
     return {"ok": True}
 
 
-@router.get("/config", response_model=list[ProjectDetailConfigRead])
-async def read_project_config(session: Session = Depends(get_session)):
-    return session.exec(select(ProjectDetailConfig)).all()
+@router.get("/projects/details/templates", response_model=list[ProjectDetailTemplateRead])
+async def read_project_detail_templates(session: Session = Depends(get_session)):
+    return session.exec(select(ProjectDetailTemplate)).all()

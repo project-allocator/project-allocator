@@ -9,7 +9,7 @@ from ..models import (
     User,
     Project,
     ProjectDetail,
-    ProjectDetailConfig,
+    ProjectDetailTemplate,
     Proposal,
     Allocation,
     Shortlist,
@@ -147,14 +147,14 @@ async def export_csv(session: Annotated[Session, Depends(get_session)]):
     output = io.StringIO()
     writer = csv.writer(output)
 
-    project_detail_configs = session.exec(select(ProjectDetailConfig)).all()
+    templates = session.exec(select(ProjectDetailTemplate)).all()
     writer.writerow(
         [
             "Project ID",
             "Project Title",
             "Project Description",
             "Project Approved",
-            *[f"Project Detail: {config.title}" for config in project_detail_configs],
+            *[f"Project Detail: {template.title}" for template in templates],
             "Proposer Name",
             "Proposer Email",
             "Allocatee Names",
@@ -225,8 +225,8 @@ async def reset_database(session: Annotated[Session, Depends(get_session)]):
     session.exec(delete(User))
     session.exec(delete(Project))
     session.exec(delete(ProjectDetail))
-    # Do not delete ProjectDetailConfig
-    # session.exec(delete(ProjectDetailConfig))
+    # Do not delete ProjectDetailTemplate
+    # session.exec(delete(ProjectDetailTemplate))
     session.exec(delete(Proposal))
     session.exec(delete(Allocation))
     session.exec(delete(Shortlist))

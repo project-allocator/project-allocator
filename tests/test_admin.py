@@ -9,7 +9,7 @@ from src.models import (
     User,
     Project,
     ProjectDetail,
-    ProjectDetailConfig,
+    ProjectDetailTemplate,
     Proposal,
     Allocation,
     Shortlist,
@@ -19,7 +19,7 @@ from src.models import (
 from src.factories import (
     UserFactory,
     ProjectFactory,
-    ProjectDetailConfigFactory,
+    ProjectDetailTemplateFactory,
     NotificationFactory,
 )
 
@@ -142,8 +142,8 @@ def test_unset_undos_shutdown(admin_client: TestClient, session: Session):
 def test_export_json_and_csv(admin_client: TestClient, session: Session):
     students = UserFactory.build_batch(50, role="student")
     staff = UserFactory.build_batch(2, role="admin") + UserFactory.build_batch(10, role="staff")
-    project_detail_configs = ProjectDetailConfigFactory.build_batch(5)
-    projects = ProjectFactory.build_batch(10, details__configs=project_detail_configs)
+    templates = ProjectDetailTemplateFactory.build_batch(5)
+    projects = ProjectFactory.build_batch(10, details__templates=templates)
     # fmt: off
     approved_projects = [project for project in projects if project.approved]
     allocations = [Allocation(allocatee=student, allocated_project=random.choice(approved_projects)) for student in students]
@@ -151,7 +151,7 @@ def test_export_json_and_csv(admin_client: TestClient, session: Session):
 
     session.add_all(students)
     session.add_all(staff)
-    session.add_all(project_detail_configs)
+    session.add_all(templates)
     session.add_all(projects)
     session.add_all(allocations)
     session.add_all(proposals)
@@ -187,7 +187,7 @@ def test_export_json_and_csv(admin_client: TestClient, session: Session):
 
     assert all(set(user_fields) == set(user.keys()) for user in data["users"])
     assert all(set(project_fields) == set(project.keys()) for project in data["projects"])
-    assert all(len(project["details"]) == len(project_detail_configs) for project in data["projects"])
+    assert all(len(project["details"]) == len(templates) for project in data["projects"])
     assert all(project["proposal"] != {} for project in data["projects"])
     assert sum(len(project["allocations"]) for project in data["projects"]) == len(allocations)
 
@@ -198,14 +198,14 @@ def test_export_json_and_csv(admin_client: TestClient, session: Session):
 
     reader = csv.reader(StringIO(data))
     assert len(list(reader)) == len(projects) + 1  # 1 header line
-    assert all(len(row) == (8 + len(project_detail_configs)) for row in reader)  # 8 project/user fields
+    assert all(len(row) == (8 + len(templates)) for row in reader)  # 8 project/user fields
 
 
 def test_import_json(admin_client: TestClient, session: Session):
     students = UserFactory.build_batch(50, role="student")
     staff = UserFactory.build_batch(2, role="admin") + UserFactory.build_batch(10, role="staff")
-    project_detail_configs = ProjectDetailConfigFactory.build_batch(5)
-    projects = ProjectFactory.build_batch(10, details__configs=project_detail_configs)
+    templates = ProjectDetailTemplateFactory.build_batch(5)
+    projects = ProjectFactory.build_batch(10, details__templates=templates)
     # We construct proposals and allocations manually instead of using SQLModel models
     # because the foreign keys are not updated until we commit the session.
     # fmt: off
@@ -237,7 +237,7 @@ def test_import_json(admin_client: TestClient, session: Session):
     projects = session.exec(select(Project)).all()
     assert len(users) == len(users_data) + 3  # 3 existing users
     assert len(projects) == len(projects_data)
-    assert all(len(project.details) == len(project_detail_configs) for project in projects)
+    assert all(len(project.details) == len(templates) for project in projects)
     assert all(project.proposal is not None for project in projects)
     assert sum(len(project.allocations) for project in projects) == len(allocations)
 
@@ -245,8 +245,8 @@ def test_import_json(admin_client: TestClient, session: Session):
 def test_reset_database(admin_client: TestClient, session: Session):
     students = UserFactory.build_batch(50, role="student")
     staff = UserFactory.build_batch(2, role="admin") + UserFactory.build_batch(10, role="staff")
-    project_detail_configs = ProjectDetailConfigFactory.build_batch(5)
-    projects = ProjectFactory.build_batch(10, details__configs=project_detail_configs)
+    templates = ProjectDetailTemplateFactory.build_batch(5)
+    projects = ProjectFactory.build_batch(10, details__templates=templates)
     # fmt: off
     approved_projects = [project for project in projects if project.approved]
     allocations = [Allocation(allocatee=student, allocated_project=random.choice(approved_projects)) for student in students]
@@ -257,7 +257,7 @@ def test_reset_database(admin_client: TestClient, session: Session):
 
     session.add_all(students)
     session.add_all(staff)
-    session.add_all(project_detail_configs)
+    session.add_all(templates)
     session.add_all(projects)
     session.add_all(allocations)
     session.add_all(proposals)
@@ -274,7 +274,7 @@ def test_reset_database(admin_client: TestClient, session: Session):
     assert data["ok"] is True
 
     users = session.exec(select(User)).all()
-    project_detail_configs = session.exec(select(ProjectDetailConfig)).all()
+    templates = session.exec(select(ProjectDetailTemplate)).all()
     project_details = session.exec(select(ProjectDetail)).all()
     projects = session.exec(select(Project)).all()
     allocations = session.exec(select(Allocation)).all()
@@ -284,7 +284,7 @@ def test_reset_database(admin_client: TestClient, session: Session):
     configs = session.exec(select(Config)).all()
 
     assert len(users) == len(old_admins) # admins should not be deleted
-    assert len(project_detail_configs) == len(project_detail_configs)
+    assert len(templates) == len(templates)
     assert len(project_details) == 0
     assert len(projects) == 0
     assert len(allocations) == 0

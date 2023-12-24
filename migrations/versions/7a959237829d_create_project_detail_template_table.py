@@ -1,4 +1,4 @@
-"""create project detail config table
+"""create project detail template table
 
 Revision ID: 7a959237829d
 Revises: 0d86aabed612
@@ -19,7 +19,7 @@ depends_on = None
 
 def upgrade() -> None:
     op.create_table(
-        "project_detail_config",
+        "project_detail_template",
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.Column("key", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
@@ -34,4 +34,4 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    op.drop_table("project_detail_config")
+    op.drop_table("project_detail_template")

@@ -14,7 +14,7 @@ from .models import (
 from .factories import (
     UserFactory,
     ProjectFactory,
-    ProjectDetailConfigFactory,
+    ProjectDetailTemplateFactory,
     NotificationFactory,
 )
 
@@ -35,8 +35,8 @@ def seed(yes: Annotated[bool, typer.Option(help="Skip confirmation.")] = False):
             return
 
     with Session(engine) as session:
-        project_detail_configs = ProjectDetailConfigFactory.build_batch(5)
-        session.add_all(project_detail_configs)
+        templates = ProjectDetailTemplateFactory.build_batch(5)
+        session.add_all(templates)
 
         users = []
         projects = []
@@ -48,8 +48,8 @@ def seed(yes: Annotated[bool, typer.Option(help="Skip confirmation.")] = False):
 
             # Propose 5 new projects for each staff.
             for _ in range(5):
-                # Passing configs as details__configs to generate project details.
-                project = ProjectFactory.build(details__configs=project_detail_configs)
+                # Passing templates as details__templates to generate project details.
+                project = ProjectFactory.build(details__templates=templates)
                 projects.append(project)
                 session.add(project)
 

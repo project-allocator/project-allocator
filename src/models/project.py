@@ -116,7 +116,7 @@ class ProjectUpdateWithDetails(ProjectUpdate):
     details: list["ProjectDetailUpdate"] = []
 
 
-class ProjectDetailConfigBase(SQLModel):
+class ProjectDetailTemplateBase(SQLModel):
     key: str
     type: str
     required: bool
@@ -128,12 +128,12 @@ class ProjectDetailConfigBase(SQLModel):
     message: str  # error message
 
 
-class ProjectDetailConfig(TimestampMixin, ProjectDetailConfigBase, table=True):
-    __tablename__ = "project_detail_config"
+class ProjectDetailTemplate(TimestampMixin, ProjectDetailTemplateBase, table=True):
+    __tablename__ = "project_detail_template"
 
     key: str = Field(primary_key=True)
     options: Optional[list[str]] = Field(sa_column=Column(JSON), default=None)
 
 
-class ProjectDetailConfigRead(ProjectDetailConfigBase):
+class ProjectDetailTemplateRead(ProjectDetailTemplateBase):
     pass

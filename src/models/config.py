@@ -3,8 +3,16 @@ from sqlmodel import Field, SQLModel
 from ..mixins.timestamp import TimestampMixin
 
 
-class Config(TimestampMixin, SQLModel, table=True):
+class ConfigBase(SQLModel):
+    key: str
+    value: str
+
+
+class Config(TimestampMixin, ConfigBase, table=True):
     __tablename__ = "config"
 
     key: str = Field(primary_key=True)
-    value: str
+
+
+class ConfigRead(ConfigBase):
+    pass

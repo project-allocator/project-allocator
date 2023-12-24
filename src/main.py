@@ -1,19 +1,19 @@
 import logging
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, APIRouter, Request, Security, Depends
+from fastapi import FastAPI, APIRouter, Request, Security
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from fastapi_azure_auth.user import User
 
 from .auth import swagger_scheme, azure_scheme
 from .routers import (
-    projects,
     users,
+    projects,
     proposals,
     allocations,
     shortlists,
-    admin,
     notifications,
+    admin,
+    configs,
 )
 
 
@@ -48,6 +48,7 @@ router.include_router(admin.router)
 router.include_router(projects.router)
 router.include_router(users.router)
 router.include_router(notifications.router)
+router.include_router(configs.router)
 
 
 @app.exception_handler(RequestValidationError)

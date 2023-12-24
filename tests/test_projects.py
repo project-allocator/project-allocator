@@ -2,7 +2,7 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session
 
 from src.models import User, Project, Proposal
-from src.factories import ProjectFactory, ProjectDetailConfigFactory
+from src.factories import ProjectFactory, ProjectDetailTemplateFactory
 
 
 def test_read_approved_projects(
@@ -54,10 +54,10 @@ def test_read_project(
     student_client: TestClient,
     session: Session,
 ):
-    project_detail_configs = ProjectDetailConfigFactory.build_batch(5)
-    project = ProjectFactory.build(details__configs=project_detail_configs, approved=True)
+    templates = ProjectDetailTemplateFactory.build_batch(5)
+    project = ProjectFactory.build(details__templates=templates, approved=True)
     proposal = Proposal(proposer=staff_user, proposed_project=project)
-    session.add_all(project_detail_configs)
+    session.add_all(templates)
     session.add(project)
     session.add(proposal)
     session.commit()
@@ -69,7 +69,7 @@ def test_read_project(
     assert data["title"] == project.title
     assert data["description"] == project.description
     assert data["approved"] == project.approved
-    assert len(data["details"]) == len(project.details) == len(project_detail_configs)
+    assert len(data["details"]) == len(project.details) == len(templates)
 
 
 def test_create_project(
@@ -77,11 +77,11 @@ def test_create_project(
     staff_client: TestClient,
     session: Session,
 ):
-    project_detail_configs = ProjectDetailConfigFactory.build_batch(5)
-    session.add_all(project_detail_configs)
+    templates = ProjectDetailTemplateFactory.build_batch(5)
+    session.add_all(templates)
     session.commit()
 
-    project = ProjectFactory.build(details__configs=project_detail_configs)
+    project = ProjectFactory.build(details__templates=templates)
 
     # fmt: off
     response = staff_client.post(
@@ -114,15 +114,15 @@ def test_update_project(
     staff_client: TestClient,
     session: Session,
 ):
-    project_detail_configs = ProjectDetailConfigFactory.build_batch(5)
-    project = ProjectFactory.build(details__configs=project_detail_configs)
+    templates = ProjectDetailTemplateFactory.build_batch(5)
+    project = ProjectFactory.build(details__templates=templates)
     proposal = Proposal(proposer=staff_user, proposed_project=project)
-    session.add_all(project_detail_configs)
+    session.add_all(templates)
     session.add(proposal)
     session.add(project)
     session.commit()
 
-    new_project = ProjectFactory.build(details__configs=project_detail_configs)
+    new_project = ProjectFactory.build(details__templates=templates)
 
     # fmt: off
     response = staff_client.put(

@@ -2,7 +2,7 @@ import factory
 from faker import Faker
 import json
 
-from ..models import Project, ProjectDetail, ProjectDetailConfig
+from ..models import Project, ProjectDetail, ProjectDetailTemplate
 
 _fake = Faker()
 
@@ -15,8 +15,9 @@ class ProjectFactory(factory.alchemy.SQLAlchemyModelFactory):
     description = factory.Faker("paragraph")
     approved = factory.Faker("boolean")
 
-    # Default value for configs passed to details post-generation hook.
-    details__configs = []
+    # Default value for project detail templates passed to details post-generation hook.
+    # The part before '__' must be the same as the relationship name.
+    details__templates = []
 
     @factory.post_generation
     def details(self, create, extracted, **kwargs):
@@ -27,12 +28,12 @@ class ProjectFactory(factory.alchemy.SQLAlchemyModelFactory):
 
         self.details = [
             ProjectDetailFactory.build(
-                key=config.key,
-                type=config.type,
-                options=config.options,
+                key=template.key,
+                type=template.type,
+                options=template.options,
                 project_id=self.id,
             )
-            for config in kwargs["configs"]
+            for template in kwargs["templates"]
         ]
 
 
@@ -61,9 +62,9 @@ class ProjectDetailFactory(factory.alchemy.SQLAlchemyModelFactory):
                 return json.dumps(_fake.random_elements(elements=self.options, unique=True))
 
 
-class ProjectDetailConfigFactory(factory.alchemy.SQLAlchemyModelFactory):
+class ProjectDetailTemplateFactory(factory.alchemy.SQLAlchemyModelFactory):
     class Meta:
-        model = ProjectDetailConfig
+        model = ProjectDetailTemplate
 
     key = factory.Sequence(lambda n: f"detail-{n + 1}")
     type = factory.Faker(
