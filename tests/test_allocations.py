@@ -206,6 +206,10 @@ def test_read_allocated(
     student_client: TestClient,
     session: Session,
 ):
+    response = student_client.get("/api/users/me/allocated")
+    data = response.json()
+    assert response.status_code == 404
+
     project = ProjectFactory.build(approved=True)
     allocation = Allocation(allocatee=student_user, allocated_project=project)
     session.add(project)
