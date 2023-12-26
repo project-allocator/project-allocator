@@ -1,3 +1,4 @@
+from operator import and_
 from typing import Annotated, Any
 from fastapi import APIRouter, Depends, Security
 from sqlmodel import Session, select, delete
@@ -7,114 +8,65 @@ import json
 
 from ..models import (
     User,
+    UserRead,
     Project,
+    ProjectRead,
     ProjectDetail,
     ProjectDetailTemplate,
     Proposal,
     Allocation,
     Shortlist,
     Notification,
-    Config,
 )
 from ..dependencies import check_admin, get_session
 
 router = APIRouter(tags=["admin"])
 
 
-@router.get("/proposals/shutdown", response_model=bool)
-async def are_proposals_shutdown(session: Annotated[Session, Depends(get_session)]):
-    config = session.get(Config, "proposals_shutdown")
-    return config.value == "true"
-
-
-@router.get("/shortlists/shutdown", response_model=bool)
-async def are_shortlists_shutdown(session: Annotated[Session, Depends(get_session)]):
-    config = session.get(Config, "shortlists_shutdown")
-    return config.value == "true"
-
-
-@router.get("/undos/shutdown", response_model=bool)
-async def are_undos_shutdown(
+@router.post(
+    "/admins/missing-users",
+    response_model=list[str],
+    dependencies=[Security(check_admin)],
+)
+async def check_missing_users(
+    emails: list[str],
     session: Annotated[Session, Depends(get_session)],
 ):
-    config = session.get(Config, "undos_shutdown")
-    return config.value == "true"
-
-
-@router.post(
-    "/proposals/shutdown",
-    dependencies=[Security(check_admin)],
-)
-async def set_proposals_shutdown(session: Annotated[Session, Depends(get_session)]):
-    config = session.get(Config, "proposals_shutdown")
-    config.value = "true"
-    session.add(config)
-    session.commit()
-    return {"ok": True}
-
-
-@router.delete(
-    "/proposals/shutdown",
-    dependencies=[Security(check_admin)],
-)
-async def unset_proposals_shutdown(session: Annotated[Session, Depends(get_session)]):
-    config = session.get(Config, "proposals_shutdown")
-    config.value = "false"
-    session.add(config)
-    session.commit()
-    return {"ok": True}
-
-
-@router.post(
-    "/shortlists/shutdown",
-    dependencies=[Security(check_admin)],
-)
-async def set_shortlists_shutdown(session: Annotated[Session, Depends(get_session)]):
-    config = session.get(Config, "shortlists_shutdown")
-    config.value = "true"
-    session.add(config)
-    session.commit()
-    return {"ok": True}
-
-
-@router.delete(
-    "/shortlists/shutdown",
-    dependencies=[Security(check_admin)],
-)
-async def unset_shortlists_shutdown(session: Annotated[Session, Depends(get_session)]):
-    config = session.get(Config, "shortlists_shutdown")
-    config.value = "false"
-    session.add(config)
-    session.commit()
-    return {"ok": True}
-
-
-@router.post(
-    "/projects/undos/shutdown",
-    dependencies=[Security(check_admin)],
-)
-async def set_undos_shutdown(session: Annotated[Session, Depends(get_session)]):
-    config = session.get(Config, "undos_shutdown")
-    config.value = "true"
-    session.add(config)
-    session.commit()
-    return {"ok": True}
-
-
-@router.delete(
-    "/projects/undos/shutdown",
-    dependencies=[Security(check_admin)],
-)
-async def unset_undos_shutdown(session: Annotated[Session, Depends(get_session)]):
-    config = session.get(Config, "undos_shutdown")
-    config.value = "false"
-    session.add(config)
-    session.commit()
-    return {"ok": True}
+    missing = []
+    for email in emails:
+        query = select(User).where(User.email == email)
+        user = session.exec(query).one_or_none()
+        if not user:
+            missing.append(email)
+    return missing
 
 
 @router.get(
-    "/export/json",
+    "/admins/conflicting-projects",
+    response_model=list[ProjectRead],
+    dependencies=[Security(check_admin)],
+)
+async def read_conflicting_projects(session: Annotated[Session, Depends(get_session)]):
+    # Only show approved projects.
+    # 'Project.approved == True' does seem to be redundant
+    # but is required by SQLModel to construct a valid query.
+    query = select(Project).where(Project.approved == True)
+    projects = session.exec(query).all()
+    return [project for project in projects if not all([allocation.accepted for allocation in project.allocations])]
+
+
+@router.get(
+    "/admins/unallocated-users",
+    response_model=list[UserRead],
+    dependencies=[Security(check_admin)],
+)
+async def read_unallocated_users(session: Annotated[Session, Depends(get_session)]):
+    query = select(User).where(and_(User.role == "student", User.allocation == None))
+    return session.exec(query).all()
+
+
+@router.get(
+    "/admins/export/json",
     dependencies=[Security(check_admin)],
 )
 async def export_json(session: Annotated[Session, Depends(get_session)]):
@@ -140,7 +92,7 @@ async def export_json(session: Annotated[Session, Depends(get_session)]):
 
 
 @router.get(
-    "/export/csv",
+    "/admins/export/csv",
     dependencies=[Security(check_admin)],
 )
 async def export_csv(session: Annotated[Session, Depends(get_session)]):
@@ -184,7 +136,7 @@ async def export_csv(session: Annotated[Session, Depends(get_session)]):
 
 
 @router.post(
-    "/import/json",
+    "/admins/import/json",
     dependencies=[Security(check_admin)],
 )
 async def import_json(
@@ -216,7 +168,7 @@ async def import_json(
 
 
 @router.post(
-    "/database/reset",
+    "/admins/database/reset",
     dependencies=[Security(check_admin)],
 )
 async def reset_database(session: Annotated[Session, Depends(get_session)]):

@@ -73,6 +73,7 @@ class ProjectDetailBase(SQLModel):
     value: Any  # any type to allow input to be parsed
 
 
+# No need to inherit ConfigBase as all the fields are overridden.
 class ProjectDetail(TimestampMixin, SQLModel, table=True):
     __tablename__ = "project_detail"
 
@@ -117,7 +118,7 @@ class ProjectDetailTemplateBase(SQLModel):
     key: str
     type: str
     required: bool
-    options: list[str] = []
+    options: list[str]
 
     # Used by the frontend to describe the detail.
     title: str

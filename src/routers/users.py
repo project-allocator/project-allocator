@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Optional
 from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlmodel import Session, select
 import requests
@@ -16,31 +16,13 @@ from ..dependencies import (
 router = APIRouter(tags=["user"])
 
 
-@router.post(
-    "/users/missing",
-    response_model=list[str],
-    dependencies=[Security(check_admin)],
-)
-async def check_missing_users(
-    emails: list[str],
-    session: Annotated[Session, Depends(get_session)],
-):
-    missing = []
-    for email in emails:
-        query = select(User).where(User.email == email)
-        user = session.exec(query).one_or_none()
-        if not user:
-            missing.append(email)
-    return missing
-
-
 @router.get(
     "/users",
     response_model=list[UserRead],
 )
 async def read_users(
     *,  # prevent default parameter ordering error
-    role: str | None = None,
+    role: Optional[str] = None,
     session: Annotated[Session, Depends(get_session)],
 ):
     if not role:
@@ -79,7 +61,7 @@ async def read_user(
 )
 async def create_user(
     token: Annotated[str, Depends(get_token)],
-    user: Annotated[User | None, Depends(get_user_or_none)],
+    user: Annotated[Optional[User], Depends(get_user_or_none)],
     session: Annotated[Session, Depends(get_session)],
 ):
     # Return the user if the user exists in the database.

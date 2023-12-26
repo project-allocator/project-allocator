@@ -51,7 +51,7 @@ def test_deallocate_projects(admin_client: TestClient, session: Session):
         assert len(project.allocations) == 0
 
 
-def test_accept_allocation(
+def test_set_allocation_status(
     student_user: User,
     student_client: TestClient,
     session: Session,
@@ -62,36 +62,17 @@ def test_accept_allocation(
     session.add(allocation)
     session.commit()
 
-    response = student_client.post("/api/users/me/allocated/accepted")
+    accepted = random.choice([True, False])
+    response = student_client.post("/api/users/me/allocated/status", json={"accepted": accepted})
     data = response.json()
     assert response.status_code == 200
     assert data["ok"] is True
 
     session.refresh(student_user)
-    assert student_user.allocation.accepted is True
+    assert student_user.allocation.accepted is accepted
 
 
-def test_decline_allocation(
-    student_user: User,
-    student_client: TestClient,
-    session: Session,
-):
-    project = ProjectFactory.build(approved=True)
-    allocation = Allocation(allocatee=student_user, allocated_project=project, accepted=None)
-    session.add(project)
-    session.add(allocation)
-    session.commit()
-
-    response = student_client.post("/api/users/me/allocated/declined")
-    data = response.json()
-    assert response.status_code == 200
-    assert data["ok"] is True
-
-    session.refresh(student_user)
-    assert student_user.allocation.accepted is False
-
-
-def test_undo_allocation(
+def test_set_allocation_status(
     student_user: User,
     student_client: TestClient,
     session: Session,
@@ -102,7 +83,8 @@ def test_undo_allocation(
     session.add(allocation)
     session.commit()
 
-    response = student_client.post("/api/users/me/allocated/undo")
+    accepted = random.choice([True, False])
+    response = student_client.delete("/api/users/me/allocated/status")
     data = response.json()
     assert response.status_code == 200
     assert data["ok"] is True
@@ -129,23 +111,6 @@ def test_read_allocatees(
 
     assert len(data) == len(students)
     assert set([student["id"] for student in data]) == set([student.id for student in students])
-
-
-def test_is_accepted(
-    student_user: User,
-    student_client: TestClient,
-    session: Session,
-):
-    project = ProjectFactory.build(approved=True)
-    allocation = Allocation(allocatee=student_user, allocated_project=project, accepted=True)
-    session.add(project)
-    session.add(allocation)
-    session.commit()
-
-    response = student_client.get("/api/users/me/allocated/accepted")
-    data = response.json()
-    assert response.status_code == 200
-    assert data is True
 
 
 def test_add_allocatees(
@@ -239,58 +204,18 @@ def test_is_allocated(
     assert data is True
 
 
-def test_read_conflicting_projects(admin_client: TestClient, session: Session):
-    students = UserFactory.build_batch(50, role="student")
-    projects = ProjectFactory.build_batch(10, approved=True)
-    allocations = [
-        Allocation(
-            allocatee=student,
-            allocated_project=random.choice(projects),
-            accepted=random.choice([True, False, None]),
-        )
-        for student in students
-    ]
-    session.add_all(students)
-    session.add_all(projects)
-    session.add_all(allocations)
-    session.commit()
-
-    # fmt: off
-    conflicting_projects = [project for project in projects if not all([allocation.accepted for allocation in project.allocations])]
-
-    response = admin_client.get("/api/projects/conflicting")
-    data = response.json()
-    assert response.status_code == 200
-
-    assert len(data) == len(conflicting_projects)
-    assert set([project["id"] for project in data]) == set([project.id for project in conflicting_projects])
-
-
-def test_read_unallocated_users(
+def test_is_accepted(
     student_user: User,
-    admin_client: TestClient,
+    student_client: TestClient,
     session: Session,
 ):
-    allocatees = UserFactory.build_batch(50, role="student") + [student_user]
-    non_allocatees = UserFactory.build_batch(10, role="student")
-    projects = ProjectFactory.build_batch(10, approved=True)
-    allocations = [
-        Allocation(
-            allocatee=allocatee,
-            allocated_project=random.choice(projects),
-            accepted=random.choice([True, False, None]),
-        )
-        for allocatee in allocatees
-    ]
-    session.add_all(allocatees)
-    session.add_all(non_allocatees)
-    session.add_all(projects)
-    session.add_all(allocations)
+    project = ProjectFactory.build(approved=True)
+    allocation = Allocation(allocatee=student_user, allocated_project=project, accepted=True)
+    session.add(project)
+    session.add(allocation)
     session.commit()
 
-    response = admin_client.get("/api/users/unallocated")
+    response = student_client.get("/api/users/me/allocated/accepted")
     data = response.json()
     assert response.status_code == 200
-
-    assert len(data) == len(non_allocatees)
-    assert set([student["id"] for student in data]) == set([non_allocatee.id for non_allocatee in non_allocatees])
+    assert data is True

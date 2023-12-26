@@ -1,18 +1,19 @@
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, APIRouter, Request, Security
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from .auth import swagger_scheme, azure_scheme
 from .routers import (
+    admins,
     users,
     projects,
     proposals,
     allocations,
     shortlists,
     notifications,
-    admin,
     configs,
 )
 
@@ -44,7 +45,7 @@ router = APIRouter(
 router.include_router(allocations.router)
 router.include_router(proposals.router)
 router.include_router(shortlists.router)
-router.include_router(admin.router)
+router.include_router(admins.router)
 router.include_router(projects.router)
 router.include_router(users.router)
 router.include_router(notifications.router)

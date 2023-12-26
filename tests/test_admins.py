@@ -24,119 +24,77 @@ from src.factories import (
 )
 
 
-def test_are_proposals_shutdown(student_client: TestClient, session: Session):
-    config = session.get(Config, "proposals_shutdown")
-    config.value = "true"
-    session.add(config)
+def test_check_missing_users(admin_client: TestClient):
+    emails = [
+        "alice@example.com",
+        "bob@example.com",
+        "charlie@example.com",
+        "david@example.com",
+    ]
+
+    response = admin_client.post("/api/admins/missing-users", json=emails)
+    data = response.json()
+    assert response.status_code == 200
+
+    assert len(data) == 1
+    assert data[0] == "david@example.com"
+
+
+def test_read_conflicting_projects(admin_client: TestClient, session: Session):
+    students = UserFactory.build_batch(50, role="student")
+    projects = ProjectFactory.build_batch(10, approved=True)
+    allocations = [
+        Allocation(
+            allocatee=student,
+            allocated_project=random.choice(projects),
+            accepted=random.choice([True, False, None]),
+        )
+        for student in students
+    ]
+    session.add_all(students)
+    session.add_all(projects)
+    session.add_all(allocations)
     session.commit()
 
-    response = student_client.get("/api/proposals/shutdown")
+    # fmt: off
+    conflicting_projects = [project for project in projects if not all([allocation.accepted for allocation in project.allocations])]
+
+    response = admin_client.get("/api/admins/conflicting-projects")
     data = response.json()
     assert response.status_code == 200
-    assert data is True
+
+    assert len(data) == len(conflicting_projects)
+    assert set([project["id"] for project in data]) == set([project.id for project in conflicting_projects])
 
 
-def test_are_shortlists_shutdown(student_client: TestClient, session: Session):
-    config = session.get(Config, "shortlists_shutdown")
-    config.value = "true"
-    session.add(config)
+def test_read_unallocated_users(
+    student_user: User,
+    admin_client: TestClient,
+    session: Session,
+):
+    allocatees = UserFactory.build_batch(50, role="student") + [student_user]
+    non_allocatees = UserFactory.build_batch(10, role="student")
+    projects = ProjectFactory.build_batch(10, approved=True)
+    allocations = [
+        Allocation(
+            allocatee=allocatee,
+            allocated_project=random.choice(projects),
+            accepted=random.choice([True, False, None]),
+        )
+        for allocatee in allocatees
+    ]
+    session.add_all(allocatees)
+    session.add_all(non_allocatees)
+    session.add_all(projects)
+    session.add_all(allocations)
     session.commit()
 
-    response = student_client.get("/api/shortlists/shutdown")
+    response = admin_client.get("/api/admins/unallocated-users")
     data = response.json()
     assert response.status_code == 200
-    assert data is True
 
-
-def test_are_undos_shutdown(student_client: TestClient, session: Session):
-    config = session.get(Config, "undos_shutdown")
-    config.value = "true"
-    session.add(config)
-    session.commit()
-
-    response = student_client.get("/api/undos/shutdown")
-    data = response.json()
-    assert response.status_code == 200
-    assert data is True
-
-
-def test_set_proposals_shutdown(admin_client: TestClient, session: Session):
-    # Status for proposal shutdowns is False by default
-    response = admin_client.post("/api/proposals/shutdown")
-    data = response.json()
-    assert response.status_code == 200
-    assert data["ok"] is True
-
-    config = session.get(Config, "proposals_shutdown")
-    assert config.value == "true"
-
-
-def test_unset_proposals_shutdown(admin_client: TestClient, session: Session):
-    config = session.get(Config, "proposals_shutdown")
-    config.value = True
-    session.add(config)
-    session.commit()
-
-    response = admin_client.delete("/api/proposals/shutdown")
-    data = response.json()
-    assert response.status_code == 200
-    assert data["ok"] is True
-
-    config = session.get(Config, "proposals_shutdown")
-    assert config.value == "false"
-
-
-def test_set_shortlists_shutdown(admin_client: TestClient, session: Session):
-    response = admin_client.post("/api/shortlists/shutdown")
-    data = response.json()
-    assert response.status_code == 200
-    assert data["ok"] is True
-
-    config = session.get(Config, "shortlists_shutdown")
-    assert config.value == "true"
-
-
-def test_unset_shortlists_shutdown(admin_client: TestClient, session: Session):
-    # Shortlists are not shutdown by default.
-    config = session.get(Config, "shortlists_shutdown")
-    config.value = "true"
-    session.add(config)
-    session.commit()
-
-    response = admin_client.delete("/api/shortlists/shutdown")
-    data = response.json()
-    assert response.status_code == 200
-    assert data["ok"] is True
-
-    config = session.get(Config, "shortlists_shutdown")
-    assert config.value == "false"
-
-
-def test_set_undos_shutdown(admin_client: TestClient, session: Session):
-    # Status for undo shutdowns is False by default
-    response = admin_client.post("/api/projects/undos/shutdown")
-    data = response.json()
-    assert response.status_code == 200
-    assert data["ok"] is True
-
-    config = session.get(Config, "undos_shutdown")
-    assert config.value == "true"
-
-
-def test_unset_undos_shutdown(admin_client: TestClient, session: Session):
-    # Undos are not shutdown by default.
-    config = session.get(Config, "undos_shutdown")
-    config.value = "true"
-    session.add(config)
-    session.commit()
-
-    response = admin_client.delete("/api/projects/undos/shutdown")
-    data = response.json()
-    assert response.status_code == 200
-    assert data["ok"] is True
-
-    config = session.get(Config, "undos_shutdown")
-    assert config.value == "false"
+    assert len(data) == len(non_allocatees)
+    assert set([student["id"] for student in data]) == set([non_allocatee.id for non_allocatee in non_allocatees])
 
 
 def test_export_json_and_csv(admin_client: TestClient, session: Session):
@@ -158,7 +116,7 @@ def test_export_json_and_csv(admin_client: TestClient, session: Session):
     session.commit()
 
     # Test json export.
-    response = admin_client.get("/api/export/json")
+    response = admin_client.get("/api/admins/export/json")
     # Response is a stringified json so must be parsed.
     data = json.loads(response.json())
     assert response.status_code == 200
@@ -192,7 +150,7 @@ def test_export_json_and_csv(admin_client: TestClient, session: Session):
     assert sum(len(project["allocations"]) for project in data["projects"]) == len(allocations)
 
     # Test csv export.
-    response = admin_client.get("/api/export/csv")
+    response = admin_client.get("/api/admins/export/csv")
     data = response.json()
     assert response.status_code == 200
 
@@ -226,7 +184,7 @@ def test_import_json(admin_client: TestClient, session: Session):
         projects_data.append(project_data)
 
     response = admin_client.post(
-        "/api/import/json",
+        "/api/admins/import/json",
         json={"users": users_data, "projects": projects_data},
     )
     data = response.json()
@@ -268,7 +226,7 @@ def test_reset_database(admin_client: TestClient, session: Session):
     old_admins = session.exec(select(User).where(User.role == "admin")).all()
     old_configs = session.exec(select(Config)).all()
 
-    response = admin_client.post("/api/database/reset")
+    response = admin_client.post("/api/admins/database/reset")
     data = response.json()
     assert response.status_code == 200
     assert data["ok"] is True

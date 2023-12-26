@@ -63,7 +63,7 @@ def session_fixture(admin_user: User, staff_user: User, student_user: User):
         session.add(Config(key="max_shortlists", value="5"))
         session.add(Config(key="proposals_shutdown", value="false"))
         session.add(Config(key="shortlists_shutdown", value="false"))
-        session.add(Config(key="undos_shutdown", value="false"))
+        session.add(Config(key="resets_shutdown", value="false"))
 
         session.commit()
 

@@ -1,33 +1,30 @@
 from fastapi.testclient import TestClient
 from sqlmodel import Session
+import random
 
 from src.models import User, Project, Proposal
 from src.factories import ProjectFactory, ProjectDetailTemplateFactory
 
 
-def test_read_approved_projects(
-    staff_user: User,
-    student_client: TestClient,
+def test_read_project_detail_templates(
+    admin_client: TestClient,
     session: Session,
 ):
-    projects = ProjectFactory.build_batch(10)
-    proposals = [Proposal(proposer=staff_user, proposed_project=project) for project in projects]
-    session.add_all(projects)
-    session.add_all(proposals)
+    templates = ProjectDetailTemplateFactory.build_batch(10)
+    session.add_all(templates)
     session.commit()
 
-    response = student_client.get("/api/projects/approved")
+    response = admin_client.get("/api/projects/details/templates")
     data = response.json()
     assert response.status_code == 200
 
-    approved_projects = [project for project in projects if project.approved]
-    assert len(data) == len(approved_projects)
+    assert len(data) == len(templates)
     # fmt: off
-    assert set([project["title"] for project in data]) \
-        == set([approved_project.title for approved_project in approved_projects])
+    assert set([template["key"] for template in data]) \
+        == set([template.key for template in templates])
 
 
-def test_read_non_approved_projects(
+def test_read_projects(
     staff_user: User,
     admin_client: TestClient,
     session: Session,
@@ -38,7 +35,17 @@ def test_read_non_approved_projects(
     session.add_all(proposals)
     session.commit()
 
-    response = admin_client.get("/api/projects/non-approved")
+    response = admin_client.get("/api/projects")
+    data = response.json()
+    assert response.status_code == 200
+
+    approved_projects = [project for project in projects if project.approved]
+    assert len(data) == len(approved_projects)
+    # fmt: off
+    assert set([project["title"] for project in data]) \
+        == set([approved_project.title for approved_project in approved_projects])
+    
+    response = admin_client.get("/api/projects", params={"approved": False})
     data = response.json()
     assert response.status_code == 200
 
@@ -135,14 +142,14 @@ def test_update_project(
 
     assert data["title"] == new_project.title
     assert data["description"] == new_project.description
-    assert data["approved"] == None  # must be None
+    assert data["approved"] == project.approved  # must be unchanged
     assert len(data["details"]) == len(new_project.details)
 
     session.refresh(project)
 
     assert project.title == new_project.title
     assert project.description == new_project.description
-    assert project.approved == None  # must be None
+    assert project.approved == project.approved  # must be unchanged
     assert len(project.details) == len(new_project.details)
 
 
@@ -165,3 +172,44 @@ def test_delete_project(
     project = session.get(Project, project.id)
 
     assert project is None
+
+
+def test_set_project_status(
+    staff_user: User,
+    admin_client: TestClient,
+    session: Session,
+):
+    project = ProjectFactory.build(approved=None)
+    proposal = Proposal(proposer=staff_user, proposed_project=project)
+    session.add(project)
+    session.add(proposal)
+    session.commit()
+
+    approved = random.choice([True, False])
+    response = admin_client.post(f"/api/projects/{project.id}/status", json={"approved": approved})
+    data = response.json()
+    assert response.status_code == 200
+    assert data["ok"] is True
+
+    session.refresh(project)
+    assert project.approved is approved
+
+
+def test_reset_project_status(
+    staff_user: User,
+    admin_client: TestClient,
+    session: Session,
+):
+    project = ProjectFactory.build(approved=random.choice([True, False]))
+    proposal = Proposal(proposer=staff_user, proposed_project=project)
+    session.add(project)
+    session.add(proposal)
+    session.commit()
+
+    response = admin_client.delete(f"/api/projects/{project.id}/status")
+    data = response.json()
+    assert response.status_code == 200
+    assert data["ok"] is True
+
+    session.refresh(project)
+    assert project.approved is None

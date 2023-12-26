@@ -1,11 +1,11 @@
-from typing import Annotated
-from fastapi import APIRouter, HTTPException, Depends, Security
+from typing import Annotated, Optional
+from fastapi import APIRouter, HTTPException, Depends, Security, Body
 from sqlmodel import Session, select
 from operator import and_
 
 from .. import algorithms
 from ..dependencies import (
-    block_undos_if_shutdown,
+    block_on_resets_shutdown,
     check_admin,
     check_staff,
     check_student,
@@ -58,41 +58,38 @@ async def deallocate_projects(session: Annotated[Session, Depends(get_session)])
 
 
 @router.post(
-    "/users/me/allocated/accepted",
-    dependencies=[Security(check_student)],
+    "/users/me/allocated/status",
+    dependencies=[Security(check_student), Security(block_on_resets_shutdown)],
 )
-async def accept_allocation(
+async def set_allocation_status(
     user: Annotated[User, Depends(get_user)],
+    accepted: Annotated[bool, Body(embed=True)],  # embed=True for clarity of generated API client
     session: Annotated[Session, Depends(get_session)],
 ):
-    user.allocation.accepted = True
+    if not user.allocation:
+        raise HTTPException(status_code=404, detail="User not allocated to project")
+    if user.allocation.accepted is not None:
+        raise HTTPException(status_code=400, detail="User already accepted or rejected allocation")
+
+    user.allocation.accepted = accepted
     session.add(user)
     session.commit()
     return {"ok": True}
 
 
-@router.post(
-    "/users/me/allocated/declined",
-    dependencies=[Security(check_student)],
+@router.delete(
+    "/users/me/allocated/status",
+    dependencies=[Security(check_student), Security(block_on_resets_shutdown)],
 )
-async def decline_allocation(
+async def reset_allocation_status(
     user: Annotated[User, Depends(get_user)],
     session: Annotated[Session, Depends(get_session)],
 ):
-    user.allocation.accepted = False
-    session.add(user)
-    session.commit()
-    return {"ok": True}
+    if not user.allocation:
+        raise HTTPException(status_code=404, detail="User not allocated to project")
+    if user.allocation.accepted is None:
+        raise HTTPException(status_code=400, detail="User has not accepted or rejected allocation")
 
-
-@router.post(
-    "/users/me/allocated/undo",
-    dependencies=[Security(check_student), Security(block_undos_if_shutdown)],
-)
-async def undo_allocation(
-    user: Annotated[User, Depends(get_user)],
-    session: Annotated[Session, Depends(get_session)],
-):
     user.allocation.accepted = None
     session.add(user)
     session.commit()
@@ -120,15 +117,6 @@ async def read_allocatees(
         allocatee.accepted = allocation.accepted
         allocatees.append(allocatee)
     return allocatees
-
-
-@router.get(
-    "/users/me/allocated/accepted",
-    response_model=bool | None,
-    dependencies=[Security(check_student)],
-)
-async def is_accepted(user: User = Depends(get_user)):
-    return user.allocation.accepted
 
 
 @router.post(
@@ -179,7 +167,7 @@ async def remove_allocatee(
 
 @router.get(
     "/users/me/allocated",
-    response_model=ProjectRead | None,
+    response_model=ProjectRead,
     dependencies=[Security(check_student)],
 )
 async def read_allocated(user: Annotated[User, Depends(get_user)]):
@@ -187,6 +175,18 @@ async def read_allocated(user: Annotated[User, Depends(get_user)]):
         raise HTTPException(status_code=404, detail="User not allocated to project")
 
     return user.allocation.allocated_project
+
+
+@router.get(
+    "/users/me/allocated/accepted",
+    response_model=Optional[bool],
+    dependencies=[Security(check_student)],
+)
+async def is_accepted(user: User = Depends(get_user)):
+    if not user.allocation:
+        raise HTTPException(status_code=404, detail="User not allocated to project")
+
+    return user.allocation.accepted
 
 
 @router.get(
@@ -199,27 +199,3 @@ async def is_allocated(
     user: Annotated[User, Depends(get_user)],
 ):
     return user.allocation and user.allocation.allocated_project.id == project_id
-
-
-@router.get(
-    "/projects/conflicting",
-    response_model=list[ProjectRead],
-    dependencies=[Security(check_admin)],
-)
-async def read_conflicting_projects(session: Annotated[Session, Depends(get_session)]):
-    # Only show approved projects.
-    # 'Project.approved == True' does seem to be redundant
-    # but is required by SQLModel to construct a valid query.
-    query = select(Project).where(Project.approved == True)
-    projects = session.exec(query).all()
-    return [project for project in projects if not all([allocation.accepted for allocation in project.allocations])]
-
-
-@router.get(
-    "/users/unallocated",
-    response_model=list[UserRead],
-    dependencies=[Security(check_admin)],
-)
-async def read_unallocated_users(session: Annotated[Session, Depends(get_session)]):
-    query = select(User).where(and_(User.role == "student", User.allocation == None))
-    return session.exec(query).all()

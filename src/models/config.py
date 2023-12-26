@@ -9,6 +9,7 @@ class ConfigBase(SQLModel):
     value: Any  # any type to allow input to be parsed
 
 
+# No need to inherit ConfigBase as all the fields are overridden.
 class Config(TimestampMixin, SQLModel, table=True):
     __tablename__ = "config"
 
@@ -17,12 +18,4 @@ class Config(TimestampMixin, SQLModel, table=True):
 
 
 class ConfigRead(ConfigBase):
-    pass
-
-
-class ConfigCreate(ConfigBase):
-    pass
-
-
-class ConfigUpdate(ConfigBase):
     pass

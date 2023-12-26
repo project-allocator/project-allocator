@@ -11,7 +11,7 @@ from ..models import (
     Config,
 )
 from ..dependencies import (
-    block_shortlists_if_shutdown,
+    block_on_shortlists_shutdown,
     check_staff,
     check_student,
     get_session,
@@ -55,7 +55,7 @@ async def is_shortlisted(
 
 @router.post(
     "/users/me/shortlisted/{project_id}",
-    dependencies=[Security(check_student), Security(block_shortlists_if_shutdown)],
+    dependencies=[Security(check_student), Security(block_on_shortlists_shutdown)],
 )
 async def set_shortlisted(
     project_id: str,
@@ -84,7 +84,7 @@ async def set_shortlisted(
 
 @router.delete(
     "/users/me/shortlisted/{project_id}",
-    dependencies=[Security(check_student), Security(block_shortlists_if_shutdown)],
+    dependencies=[Security(check_student), Security(block_on_shortlists_shutdown)],
 )
 async def unset_shortlisted(
     project_id: str,
@@ -109,7 +109,7 @@ async def unset_shortlisted(
 
 @router.put(
     "/users/me/shortlisted",
-    dependencies=[Security(check_student), Security(block_shortlists_if_shutdown)],
+    dependencies=[Security(check_student), Security(block_on_shortlists_shutdown)],
 )
 async def reorder_shortlisted(
     project_ids: list[str],

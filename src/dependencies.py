@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import Depends, HTTPException, Header
 from fastapi_azure_auth.user import User as AzureUser
 from sqlmodel import Session, select
@@ -26,7 +27,7 @@ def get_user(user=Depends(get_user_or_none)):
     return user
 
 
-def get_token(x_graph_token: str | None = Header(default=None)):
+def get_token(x_graph_token: Optional[str] = Header(default=None)):
     if not x_graph_token:
         raise HTTPException(status_code=404, detail="Graph access token not found.")
     return x_graph_token
@@ -47,7 +48,7 @@ def check_student(user=Depends(get_user)):
         raise HTTPException(status_code=401, detail="User is not student.")
 
 
-def block_proposals_if_shutdown(session: Session = Depends(get_session)):
+def block_on_proposals_shutdown(session: Session = Depends(get_session)):
     config = session.get(Config, "proposals_shutdown")
     if config.value == "true":
         raise HTTPException(
@@ -56,7 +57,7 @@ def block_proposals_if_shutdown(session: Session = Depends(get_session)):
         )
 
 
-def block_shortlists_if_shutdown(session: Session = Depends(get_session)):
+def block_on_shortlists_shutdown(session: Session = Depends(get_session)):
     config = session.get(Config, "shortlists_shutdown")
     if config.value == "true":
         raise HTTPException(
@@ -65,10 +66,10 @@ def block_shortlists_if_shutdown(session: Session = Depends(get_session)):
         )
 
 
-def block_undos_if_shutdown(session: Session = Depends(get_session)):
-    config = session.get(Config, "undos_shutdown")
+def block_on_resets_shutdown(session: Session = Depends(get_session)):
+    config = session.get(Config, "resets_shutdown")
     if config.value == "true":
         raise HTTPException(
             status_code=403,
-            detail="Undos are currently shutdown.",
+            detail="Resets are currently shutdown.",
         )

@@ -68,7 +68,7 @@ def upgrade() -> None:
                 "updated_at": timestamp,
             },
             {
-                "key": "undos_shutdown",
+                "key": "resets_shutdown",
                 "value": "false",
                 "created_at": timestamp,
                 "updated_at": timestamp,
