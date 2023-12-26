@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, HTTPException, Depends, Security, Body
+from fastapi import APIRouter, HTTPException, Depends, Security
 from sqlmodel import Session, select
 from os.path import dirname, abspath
 from datetime import datetime
@@ -62,7 +62,7 @@ async def delete_notification(
     dependencies=[Security(check_admin)],
 )
 def send_notifications(
-    notification_data: Annotated[NotificationCreate, Body(alias="notification")],
+    notification_data: NotificationCreate,
     roles: list[str],
     token: Annotated[str, Depends(get_token)],
     session: Annotated[Session, Depends(get_session)],

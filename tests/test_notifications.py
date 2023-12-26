@@ -88,7 +88,7 @@ def test_send_notifications(
     response = admin_client.post(
         "/api/users/notifications",
         json={
-            "notification": notification.model_dump(include=["title", "description"]),
+            "notification_data": notification.model_dump(include=["title", "description"]),
             "roles": roles,
         },
     )
