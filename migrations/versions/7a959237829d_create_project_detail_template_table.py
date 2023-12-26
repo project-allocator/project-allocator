@@ -25,7 +25,7 @@ def upgrade() -> None:
         sa.Column("key", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("type", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("required", sa.Boolean(), nullable=False),
-        sa.Column("options", sa.JSON(), nullable=True),
+        sa.Column("options", sa.JSON(), nullable=False),
         sa.Column("title", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("description", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("message", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
