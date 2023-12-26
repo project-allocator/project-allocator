@@ -19,6 +19,8 @@ from ..models import (
     ProjectDetailTemplate,
     ProjectDetailTemplateRead,
     ProjectReadWithDetails,
+    ProjectDetailCreate,
+    ProjectDetailUpdate,
     ProjectCreateWithDetails,
     ProjectUpdateWithDetails,
     Proposal,
@@ -27,11 +29,8 @@ from ..models import (
 router = APIRouter(tags=["project"])
 
 
-def _serialize_project(
-    project: ProjectCreateWithDetails | ProjectUpdateWithDetails,
-) -> ProjectCreateWithDetails | ProjectUpdateWithDetails:
-    project = project.model_copy(deep=True)
-    for detail in project.details:
+def serialize_project_details(details: list[ProjectDetailCreate | ProjectDetailUpdate]):
+    for detail in details:
         match detail.type:
             case "number" | "slider":
                 detail.value = str(detail.value)
@@ -39,12 +38,10 @@ def _serialize_project(
                 detail.value = "true" if detail.value else "false"
             case "checkbox" | "categories":
                 detail.value = json.dumps(detail.value)
-    return project
 
 
-def _parse_project(project: Project) -> ProjectReadWithDetails:
-    project = ProjectReadWithDetails.model_validate(project)
-    for detail in project.details:
+def parse_project_details(details: list[ProjectDetail]):
+    for detail in details:
         match detail.type:
             case "number" | "slider":
                 detail.value = int(detail.value)
@@ -52,7 +49,6 @@ def _parse_project(project: Project) -> ProjectReadWithDetails:
                 detail.value = detail.value == "true"
             case "checkbox" | "categories":
                 detail.value = json.loads(detail.value)
-    return project
 
 
 @router.get(
@@ -67,7 +63,9 @@ async def read_approved_projects(session: Annotated[Session, Depends(get_session
     # Sort the projects so that the last updated project is returned first.
     projects.sort(key=lambda project: project.updated_at, reverse=True)
 
-    return [_parse_project(project) for project in projects]
+    for project in projects:
+        parse_project_details(project.details)
+    return projects
 
 
 @router.get(
@@ -79,7 +77,9 @@ async def read_non_approved_projects(session: Annotated[Session, Depends(get_ses
     query = select(Project).where(or_(Project.approved == False, Project.approved == None))
     projects = session.exec(query).all()
 
-    return [_parse_project(project) for project in projects]
+    for project in projects:
+        parse_project_details(project.details)
+    return projects
 
 
 @router.get(
@@ -94,7 +94,8 @@ async def read_project(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    return _parse_project(project)
+    parse_project_details(project.details)
+    return project
 
 
 @router.post(
@@ -107,37 +108,38 @@ async def create_project(
     user: Annotated[User, Depends(get_user)],
     session: Annotated[Session, Depends(get_session)],
 ):
-    project_data = _serialize_project(project_data)
-
     # Prevent staff from approving their own projects.
     project_data.approved = None
 
-    # Exclude details to prevent error while parsing project.
+    # Check if the key and type are consistent with the template before commit.
+    templates = session.exec(select(ProjectDetailTemplate)).all()
+    for detail in project_data.details:
+        template = next((template for template in templates if template.key == detail.key), None)
+        if not template:
+            raise HTTPException(status_code=400, detail="Invalid project detail key")
+        if template.type != detail.type:
+            raise HTTPException(status_code=400, detail="Invalid project detail type")
+
+    # Remove project details in order to validate the project.
     project_data_details = project_data.details
     del project_data.details
     project = Project.model_validate(project_data)
 
-    templates = session.exec(select(ProjectDetailTemplate)).all()
-    project_details = []
-    for project_data_detail in project_data_details:
-        # Check if the project detail key and type are consistent with the template.
-        template = next((template for template in templates if template.key == project_data_detail.key), None)
-        if not template:
-            raise HTTPException(status_code=400, detail="Invalid project detail key")
-        if template.type != project_data_detail.type:
-            raise HTTPException(status_code=400, detail="Invalid project detail type")
-
-        project_detail = ProjectDetail.model_validate(project_data_detail)
-        project_details.append(project_detail)
+    # Serialize and validate project details.
+    serialize_project_details(project_data_details)
+    project_details = [ProjectDetail.model_validate(detail) for detail in project_data_details]
     project.details = project_details
 
+    # Create corresponding project proposal.
     proposal = Proposal(proposer=user, proposed_project=project)
 
     session.add(project)
+    session.add_all(project_details)
     session.add(proposal)
     session.commit()
 
-    return _parse_project(project)
+    parse_project_details(project.details)
+    return project
 
 
 @router.put(
@@ -158,32 +160,36 @@ async def update_project(
         # Only project proposer can edit the project.
         raise HTTPException(status_code=401, detail="Project not proposed by user")
 
-    project_data = _serialize_project(project_data)
-
     # Prevent staff from approving their own projects.
     project_data.approved = None
 
-    # Update each property of the project.
+    # Check if the key and type are consistent with the template before commit.
+    templates = session.exec(select(ProjectDetailTemplate)).all()
+    for detail in project_data.details:
+        template = next((template for template in templates if template.key == detail.key), None)
+        if not template:
+            raise HTTPException(status_code=400, detail="Invalid project detail key")
+        if template.type != detail.type:
+            raise HTTPException(status_code=400, detail="Invalid project detail type")
+
+    # Exclude unset fields to perform partial update.
     for key, value in project_data.model_dump(exclude_unset=True, exclude=["details"]).items():
         setattr(project, key, value)
 
-    # Update each property of the project details.
+    # Serialize and update the values of corresponding project details.
+    serialize_project_details(project_data.details)
+    project_details = []
     for project_data_detail in project_data.details:
-        # Check if the project detail key and type are consistent with the existing project detail
-        # which is guaranteed to be consistent with the template on creation.
-        # fmt: off
-        project_detail = next((project_detail for project_detail in project.details if project_detail.key == project_data_detail.key), None)
-        if not project_detail:
-            raise HTTPException(status_code=400, detail="Invalid project detail key")
-        if project_detail.type != project_data_detail.type:
-            raise HTTPException(status_code=400, detail="Invalid project detail type")
-
+        project_detail = session.get(ProjectDetail, (project_data_detail.key, project_id))
         project_detail.value = project_data_detail.value
+        project_details.append(project_detail)
 
     session.add(project)
-    session.add_all(project.details)
+    session.add_all(project_details)
     session.commit()
-    return _parse_project(project)
+
+    parse_project_details(project.details)
+    return project
 
 
 @router.delete(
@@ -208,6 +214,9 @@ async def delete_project(
     return {"ok": True}
 
 
-@router.get("/projects/details/templates", response_model=list[ProjectDetailTemplateRead])
+@router.get(
+    "/projects/details/templates",
+    response_model=list[ProjectDetailTemplateRead],
+)
 async def read_project_detail_templates(session: Session = Depends(get_session)):
     return session.exec(select(ProjectDetailTemplate)).all()

@@ -70,6 +70,7 @@ def test_read_project(
     assert data["description"] == project.description
     assert data["approved"] == project.approved
     assert len(data["details"]) == len(project.details) == len(templates)
+    assert data["allocations"] == []
 
 
 def test_create_project(
@@ -83,12 +84,11 @@ def test_create_project(
 
     project = ProjectFactory.build(details__templates=templates)
 
-    # fmt: off
     response = staff_client.post(
         "/api/projects",
         json={
             **project.model_dump(include=["title", "description"]),
-            "details": [project_detail.model_dump(include=["key", "type", "value"]) for project_detail in project.details],
+            "details": [detail.model_dump(include=["key", "type", "value"]) for detail in project.details],
         },
     )
     data = response.json()
@@ -124,13 +124,11 @@ def test_update_project(
 
     new_project = ProjectFactory.build(details__templates=templates)
 
-    # fmt: off
     response = staff_client.put(
         f"/api/projects/{project.id}",
         json={
             **new_project.model_dump(include=["title", "description"]),
-            "approved": True,
-            "details": [project_detail.model_dump(include=["key", "type", "value"]) for project_detail in project.details],
+            "details": [detail.model_dump(include=["key", "type", "value"]) for detail in new_project.details],
         },
     )
     data = response.json()
