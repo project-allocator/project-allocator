@@ -66,7 +66,11 @@ class ProjectDetailTemplateFactory(factory.alchemy.SQLAlchemyModelFactory):
     class Meta:
         model = ProjectDetailTemplate
 
-    key = factory.Sequence(lambda n: f"detail-{n + 1}")
+    @factory.lazy_attribute
+    def key(self):
+        # Use lazy attribute to respect the unique constraint.
+        return _fake.unique.slug()
+
     type = factory.Faker(
         "random_element",
         elements=[
