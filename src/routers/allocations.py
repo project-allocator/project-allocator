@@ -112,7 +112,12 @@ async def read_allocatees(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    return [allocation.allocatee for allocation in project.allocations]
+    # TODO:
+    # This is a temporary hack which needs to be fixed.
+    allocatees = [allocation.allocatee for allocation in project.allocations]
+    for allocatee in allocatees:
+        allocatee.accepted = allocatee.allocation.accepted
+    return allocatees
 
 
 @router.get(
@@ -176,6 +181,9 @@ async def remove_allocatee(
     dependencies=[Security(check_student)],
 )
 async def read_allocated(user: Annotated[User, Depends(get_user)]):
+    if not user.allocation:
+        raise HTTPException(status_code=404, detail="User not allocated to project")
+
     return user.allocation.allocated_project
 
 

@@ -28,7 +28,7 @@ class User(TimestampMixin, UserBase, table=True):
 
     # Specify cascade options using 'sa_relationship_kwargs'
     # as these tables should be deleted when user gets deleted.
-    allocation: "Allocation" = Relationship(
+    allocation: Optional["Allocation"] = Relationship(
         back_populates="allocatee",
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
@@ -49,15 +49,15 @@ class User(TimestampMixin, UserBase, table=True):
 class UserRead(UserBase):
     id: str
 
+    # True if user has accepted allocation.
+    # None means user has not made any response.
+    # TODO:
+    # This field has been temporarily added to UserRead
+    # to support /projects/{project_id}/read_allocatees endpoint.
+    accepted: Optional[bool] = None
+
 
 # We can only update user role.
 # The field is left optional to preserve the semantics of partial updates.
 class UserUpdate(SQLModel):
     role: Optional[str] = None
-
-
-# Schema used for importing data from JSON.
-# Administrators can specify the allocated project using the existing project IDs.
-class UserImport(UserBase):
-    id: str
-    allocated_id: Optional[str]
