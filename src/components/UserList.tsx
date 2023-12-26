@@ -25,9 +25,7 @@ export default function UserList({ users }: UserListProps) {
         itemLayout="horizontal"
         pagination={users.length > 0 && { position: "bottom" }}
         dataSource={users.filter((user) =>
-          [user.name, user.email, user.role].some((text) =>
-            text.toLowerCase().includes(searchText.toLowerCase()),
-          ),
+          [user.name, user.email, user.role].some((text) => text.toLowerCase().includes(searchText.toLowerCase()))
         )}
         renderItem={(user) => (
           <List.Item>

@@ -1,5 +1,5 @@
-import { ProjectRead } from "@/api";
-import { useConfig } from "@/contexts/ConfigContext";
+import { ProjectReadWithDetails } from "@/api";
+import { useTemplates } from "@/contexts/TemplateContext";
 import { PlusOutlined } from "@ant-design/icons";
 import type { InputRef } from "antd";
 import {
@@ -20,12 +20,13 @@ import {
 import dayjs from "dayjs";
 import { useEffect, useRef, useState } from "react";
 import { useSubmit } from "react-router-dom";
+import * as _ from "underscore";
 
 const { TextArea } = Input;
 const { useForm, useFormInstance } = Form;
 
 interface ProjectFormProps {
-  initProject?: ProjectRead;
+  initProject?: ProjectReadWithDetails;
 }
 
 export function ProjectForm({ initProject }: ProjectFormProps) {
@@ -50,9 +51,7 @@ export function ProjectForm({ initProject }: ProjectFormProps) {
         <Form.Item
           label="Title"
           name="title"
-          rules={[
-            { required: true, message: "Please enter your project title!" },
-          ]}
+          rules={[{ required: true, message: "Please enter your project title!" }]}
           initialValue={initProject?.title}
         >
           <Input />
@@ -71,7 +70,6 @@ export function ProjectForm({ initProject }: ProjectFormProps) {
           <TextArea rows={5} maxLength={10000} showCount />
         </Form.Item>
         <ProjectDetailsForm initProject={initProject} />
-        <ProjectCategoriesForm initProject={initProject} />
         <Form.Item>
           <Button type="primary" htmlType="submit">
             Submit
@@ -83,27 +81,29 @@ export function ProjectForm({ initProject }: ProjectFormProps) {
 }
 
 interface ProjectDetailsFormProps {
-  initProject?: ProjectRead;
+  initProject?: ProjectReadWithDetails;
 }
 
 function ProjectDetailsForm({ initProject }: ProjectDetailsFormProps) {
-  const config = useConfig();
+  const templates = useTemplates();
+  const sortedTemplates = _.sortBy(templates, "key");
+  const sortedDetails = _.sortBy(initProject!.details!, "key");
+  const detailsWithTemplates = _.zip(sortedDetails, sortedTemplates);
 
-  return config.projects.details.map((detail) => (
+  return detailsWithTemplates.map(([detail, template]) => (
     <Form.Item
-      key={detail.name}
-      name={detail.name}
-      label={detail.title}
-      tooltip={detail.description}
-      rules={[{ required: detail.required, message: detail.message }]}
+      key={template.key}
+      name={template.key}
+      label={template.title}
+      tooltip={template.description}
+      rules={[{ required: template.required, message: template.message }]}
       initialValue={(() => {
-        const value = initProject?.[detail.name as keyof ProjectRead];
         switch (detail.type) {
           case "date":
           case "time":
-            return dayjs(value as string);
+            return dayjs(detail.value as string);
           default:
-            return value;
+            return detail.value;
         }
       })()}
       valuePropName={(() => {
@@ -116,11 +116,11 @@ function ProjectDetailsForm({ initProject }: ProjectDetailsFormProps) {
       })()}
     >
       {(() => {
-        const options = detail.options?.map((option) => ({
+        const options = template.options?.map((option) => ({
           value: option,
           label: option,
         }));
-        switch (detail.type) {
+        switch (template.type) {
           case "textfield":
             return <Input />;
           case "textarea":
@@ -141,6 +141,8 @@ function ProjectDetailsForm({ initProject }: ProjectDetailsFormProps) {
             return <Checkbox.Group options={options} />;
           case "radio":
             return <Radio.Group options={options} />;
+          case "categories":
+            return <ProjectCategoriesForm initCategories={detail.value as string[]} />;
         }
       })()}
     </Form.Item>
@@ -148,10 +150,10 @@ function ProjectDetailsForm({ initProject }: ProjectDetailsFormProps) {
 }
 
 interface ProjectCategoriesFormProps {
-  initProject?: ProjectRead;
+  initCategories?: string[];
 }
 
-function ProjectCategoriesForm({ initProject }: ProjectCategoriesFormProps) {
+function ProjectCategoriesForm({ initCategories }: ProjectCategoriesFormProps) {
   // Propagate change up to the parent form component
   const form = useFormInstance();
   function setCategoriesWithForm(categories: string[]) {
@@ -159,9 +161,7 @@ function ProjectCategoriesForm({ initProject }: ProjectCategoriesFormProps) {
     setCategories(categories);
   }
 
-  const [categories, setCategories] = useState<string[]>(
-    initProject?.categories || [],
-  );
+  const [categories, setCategories] = useState<string[]>(initCategories || []);
   const [addInputVisible, setAddInputVisible] = useState(false);
   const [addInputValue, setAddInputValue] = useState("");
   const [editInputIndex, setEditInputIndex] = useState(-1);
@@ -212,62 +212,57 @@ function ProjectCategoriesForm({ initProject }: ProjectCategoriesFormProps) {
   }
 
   return (
-    <Form.Item label="Categories" name="categories" initialValue={categories}>
+    <Space size="small" wrap>
+      {/* Edit the existing categories */}
       <Space size="small" wrap>
-        {/* Edit the existing categories */}
-        <Space size="small" wrap>
-          {categories.map((category, index) => (
-            <div key={category} className="w-32">
-              {editInputIndex === index ? (
-                <Input
-                  ref={editInputRef}
-                  size="small"
-                  value={editInputValue}
-                  onChange={handleEditInputChange}
-                  onBlur={handleEditInputConfirm}
-                  onPressEnter={handleEditInputConfirm}
-                  className="w-full"
-                />
-              ) : (
-                <Tag
-                  closable
-                  onDoubleClick={(event) => {
-                    setEditInputIndex(index);
-                    setEditInputValue(category);
-                    event.preventDefault();
-                  }}
-                  onClose={() => handleClose(category)}
-                  className="w-full flex justify-between items-center"
-                >
-                  {category}
-                </Tag>
-              )}
-            </div>
-          ))}
-        </Space>
-        {/* Add a new category */}
-        <div className="w-32">
-          {addInputVisible ? (
-            <Input
-              ref={addInputRef}
-              type="text"
-              size="small"
-              value={addInputValue}
-              onChange={handleAddInputChange}
-              onBlur={handleAddInputConfirm}
-              onPressEnter={handleAddInputConfirm}
-              className="w-full"
-            />
-          ) : (
-            <Tag
-              onClick={showAddInput}
-              className="w-full border-dashed text-center"
-            >
-              <PlusOutlined /> New Category
-            </Tag>
-          )}
-        </div>
+        {categories.map((category, index) => (
+          <div key={category} className="w-32">
+            {editInputIndex === index ? (
+              <Input
+                ref={editInputRef}
+                size="small"
+                value={editInputValue}
+                onChange={handleEditInputChange}
+                onBlur={handleEditInputConfirm}
+                onPressEnter={handleEditInputConfirm}
+                className="w-full"
+              />
+            ) : (
+              <Tag
+                closable
+                onDoubleClick={(event) => {
+                  setEditInputIndex(index);
+                  setEditInputValue(category);
+                  event.preventDefault();
+                }}
+                onClose={() => handleClose(category)}
+                className="w-full flex justify-between items-center"
+              >
+                {category}
+              </Tag>
+            )}
+          </div>
+        ))}
       </Space>
-    </Form.Item>
+      {/* Add a new category */}
+      <div className="w-32">
+        {addInputVisible ? (
+          <Input
+            ref={addInputRef}
+            type="text"
+            size="small"
+            value={addInputValue}
+            onChange={handleAddInputChange}
+            onBlur={handleAddInputConfirm}
+            onPressEnter={handleAddInputConfirm}
+            className="w-full"
+          />
+        ) : (
+          <Tag onClick={showAddInput} className="w-full border-dashed text-center">
+            <PlusOutlined /> New Category
+          </Tag>
+        )}
+      </div>
+    </Space>
   );
 }

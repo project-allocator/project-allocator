@@ -1,22 +1,16 @@
 import { UserRead, UserService } from "@/api";
 import { Button, Divider, Form, Input, Select, Typography } from "antd";
-import {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
-  redirect,
-  useLoaderData,
-  useSubmit,
-} from "react-router-dom";
+import { ActionFunctionArgs, LoaderFunctionArgs, redirect, useLoaderData, useSubmit } from "react-router-dom";
 
 const { Title } = Typography;
 
 export async function editUserLoader({ params }: LoaderFunctionArgs) {
-  return await UserService.readUser(parseInt(params.id!));
+  return await UserService.readUser(params.id!);
 }
 
 export async function editUserAction({ request, params }: ActionFunctionArgs) {
   const data = await request.json();
-  await UserService.updateUser(parseInt(params.id!), data);
+  await UserService.updateUser(params.id!, data);
   return redirect(`/users/${params.id}`);
 }
 

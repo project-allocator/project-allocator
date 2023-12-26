@@ -1,58 +1,56 @@
-import { ProjectRead } from "@/api";
-import { useConfig } from "@/contexts/ConfigContext";
+import { ProjectReadWithDetails } from "@/api";
+import { useTemplates } from "@/contexts/TemplateContext";
 import { Divider, Space, Tag, Typography } from "antd";
 import dayjs from "dayjs";
+import * as _ from "underscore";
 
 const { Title, Paragraph } = Typography;
 
 interface ProjectContentProps {
-  project: ProjectRead;
+  project: ProjectReadWithDetails;
 }
 
 export function ProjectContent({ project }: ProjectContentProps) {
-  const config = useConfig();
+  const templates = useTemplates();
+  const sortedTemplates = _.sortBy(templates, "key");
+  const sortedDetails = _.sortBy(project!.details!, "key");
+  const detailsWithTemplates = _.zip(sortedDetails, sortedTemplates);
 
   return (
     <>
       <Title level={4}>{project.title}</Title>
       <Paragraph>{project.description}</Paragraph>
       <Divider />
-      {config.projects.details.map((detail) => (
-        <div key={detail.name}>
-          <Title level={4}>{detail.title}</Title>
-          <Paragraph className="text-slate-500">{detail.description}</Paragraph>
+      {detailsWithTemplates.map(([detail, template]) => (
+        <div key={template.key}>
+          <Title level={4}>{template.title}</Title>
+          <Paragraph className="text-slate-500">{template.description}</Paragraph>
           <Paragraph>
             {(() => {
-              const value = project[detail.name as keyof ProjectRead];
               switch (detail.type) {
                 case "date":
-                  return dayjs(value as string).format("DD/MM/YYYY");
+                  return dayjs(detail.value as string).format("DD/MM/YYYY");
                 case "time":
-                  return dayjs(value as string).format("hh:mm:ss");
+                  return dayjs(detail.value as string).format("hh:mm:ss");
                 case "switch":
-                  return value ? "Yes" : "No";
+                  return detail.value ? "Yes" : "No";
                 case "checkbox":
-                  return Array(value).length > 0
-                    ? Array(value).join(", ")
-                    : "Not specified";
+                  return detail.value.length > 0 ? Array(detail.value).join(", ") : "Not specified";
+                case "categories":
+                  return (
+                    <Space className="flex-wrap min-w-xl mt-2">
+                      {detail.value.length > 0
+                        ? detail.value.map((category: string) => <Tag key={category}>{category}</Tag>)
+                        : "Not specified"}
+                    </Space>
+                  );
                 default:
-                  return value;
+                  return detail.value;
               }
             })()}
           </Paragraph>
         </div>
       ))}
-      <Title level={4}>Categories</Title>
-      <Paragraph className="text-slate-500">
-        List of categories set by the proposer will be shown here.
-      </Paragraph>
-      <Space className="flex-wrap min-w-xl mt-2">
-        {project.categories.length > 0
-          ? project.categories.map((category: string) => (
-              <Tag key={category}>{category}</Tag>
-            ))
-          : "Not specified"}
-      </Space>
     </>
   );
 }

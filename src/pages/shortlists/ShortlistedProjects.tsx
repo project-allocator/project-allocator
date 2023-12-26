@@ -16,7 +16,7 @@ export default function ShortlistedProjects() {
 
   // Framer Motion's Reorder component only works with primitive values
   // so we use project ids as state.
-  const [projectIds, setProjectIds] = useState<number[]>([]);
+  const [projectIds, setProjectIds] = useState<string[]>([]);
 
   useEffect(() => {
     setProjectIds(projects.map((project: ProjectRead) => project.id) || []);
@@ -40,20 +40,16 @@ export default function ShortlistedProjects() {
           footer={<Text strong>Lowest Preference</Text>}
           bordered
           dataSource={projectIds}
-          rowKey={(projectId: number) => projectId}
-          renderItem={(projectId: number) => {
-            const project = projects?.find(
-              (project: ProjectRead) => project.id === projectId,
-            );
+          rowKey={(projectId: string) => projectId}
+          renderItem={(projectId: string) => {
+            const project = projects?.find((project: ProjectRead) => project.id === projectId);
             if (project) {
               return (
                 <ProjectItem
                   project={project as ProjectRead}
                   onDelete={() => {
                     ShortlistService.unsetShortlisted(projectId);
-                    setProjectIds(
-                      projectIds.filter((item) => item !== projectId),
-                    );
+                    setProjectIds(projectIds.filter((item) => item !== projectId));
                   }}
                 />
               );
@@ -75,13 +71,7 @@ function ProjectItem({ project, onDelete }: ProjectItemProps) {
   const controls = useDragControls();
 
   return (
-    <Reorder.Item
-      as="div"
-      key={project.id}
-      value={project.id}
-      dragListener={false}
-      dragControls={controls}
-    >
+    <Reorder.Item as="div" key={project.id} value={project.id} dragListener={false} dragControls={controls}>
       <List.Item className="flex justify-between w-full">
         <Link to={`/projects/${project.id}`} className="select-none">
           {project.title}
@@ -89,11 +79,7 @@ function ProjectItem({ project, onDelete }: ProjectItemProps) {
         <Space>
           <HolderOutlined onPointerDown={(event) => controls.start(event)} />
           <Tooltip title="Delete">
-            <Button
-              className="border-none"
-              icon={<DeleteOutlined />}
-              onClick={onDelete}
-            />
+            <Button className="border-none" icon={<DeleteOutlined />} onClick={onDelete} />
           </Tooltip>
         </Space>
       </List.Item>

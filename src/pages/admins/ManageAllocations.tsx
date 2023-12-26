@@ -8,19 +8,20 @@ import { useLoaderData } from "react-router-dom";
 const { Title, Paragraph } = Typography;
 
 export async function manageAllocationsLoader() {
-  const areProposalsShutdown = await AdminService.areProposalsShutdown();
-  const areShortlistsShutdown = await AdminService.areShortlistsShutdown();
-  const areUndosShutdown = await AdminService.areUndosShutdown();
-  return [areProposalsShutdown, areShortlistsShutdown, areUndosShutdown];
+  const areProposalsShutdown = AdminService.areProposalsShutdown();
+  const areShortlistsShutdown = AdminService.areShortlistsShutdown();
+  const areUndosShutdown = AdminService.areUndosShutdown();
+  return Promise.all([areProposalsShutdown, areShortlistsShutdown, areUndosShutdown]);
 }
 
 export default function ManageAllocations() {
-  const [areProposalsShutdown, areShortlistsShutdown, areUndosShutdown] =
-    useLoaderData() as [boolean, boolean, boolean];
-  const [allocateProjectsLoading, setAllocateProjectsLoading] =
-    useState<boolean>(false);
-  const [deallocateProjectsLoading, setDeallocateProjectsLoading] =
-    useState<boolean>(false);
+  const [areProposalsShutdown, areShortlistsShutdown, areUndosShutdown] = useLoaderData() as [
+    boolean,
+    boolean,
+    boolean,
+  ];
+  const [allocateProjectsLoading, setAllocateProjectsLoading] = useState<boolean>(false);
+  const [deallocateProjectsLoading, setDeallocateProjectsLoading] = useState<boolean>(false);
   const { messageSuccess, messageError } = useMessage();
 
   return (
@@ -28,9 +29,7 @@ export default function ManageAllocations() {
       <Title level={3}>Manage Allocations</Title>
       <Divider />
       <Title level={4}>Shutdown Proposals</Title>
-      <Paragraph className="text-slate-500">
-        Turn this on to block any new project proposasl from staff.
-      </Paragraph>
+      <Paragraph className="text-slate-500">Turn this on to block any new project proposasl from staff.</Paragraph>
       <Switch
         defaultChecked={areProposalsShutdown}
         onChange={() =>
@@ -44,9 +43,7 @@ export default function ManageAllocations() {
         }
       />
       <Title level={4}>Shutdown Shortlists</Title>
-      <Paragraph className="text-slate-500">
-        Turn this on to block any new project shortlists from students.
-      </Paragraph>
+      <Paragraph className="text-slate-500">Turn this on to block any new project shortlists from students.</Paragraph>
       <Switch
         defaultChecked={areShortlistsShutdown}
         onChange={() =>
@@ -61,8 +58,7 @@ export default function ManageAllocations() {
       />
       <Title level={4}>Shutdown Undos</Title>
       <Paragraph className="text-slate-500">
-        Turn this on to block students from undo-ing "Accept" or "Decline" to
-        their project allocation.
+        Turn this on to block students from undo-ing "Accept" or "Decline" to their project allocation.
       </Paragraph>
       <Switch
         defaultChecked={areUndosShutdown}
@@ -78,9 +74,7 @@ export default function ManageAllocations() {
       />
       <Divider />
       <Title level={4}>Allocate Projects</Title>
-      <Paragraph className="text-slate-500">
-        Click this to allocate projects to shortlisted students.
-      </Paragraph>
+      <Paragraph className="text-slate-500">Click this to allocate projects to shortlisted students.</Paragraph>
       <Button
         icon={<CheckOutlined />}
         loading={allocateProjectsLoading}
@@ -95,9 +89,7 @@ export default function ManageAllocations() {
         Allocate
       </Button>
       <Title level={4}>Deallocate Projects</Title>
-      <Paragraph className="text-slate-500">
-        Click this to deallocate projects from allocated students.
-      </Paragraph>
+      <Paragraph className="text-slate-500">Click this to deallocate projects from allocated students.</Paragraph>
       <Button
         icon={<CloseOutlined />}
         loading={deallocateProjectsLoading}

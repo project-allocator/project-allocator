@@ -1,6 +1,6 @@
 import {
   AllocationService,
-  ProjectRead,
+  ProjectReadWithDetails,
   ProjectService,
   ShortlistService,
   UserRead,
@@ -11,37 +11,30 @@ import ProjectHeader from "@/components/ProjectHeader";
 import StaffRoute from "@/routes/StaffRoute";
 import { getInitialLetters } from "@/utils";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
-import {
-  Avatar,
-  Button,
-  Divider,
-  List,
-  Select,
-  Tooltip,
-  Typography,
-} from "antd";
+import { Avatar, Button, Divider, List, Select, Tooltip, Typography } from "antd";
 import { useEffect, useState } from "react";
 import { Link, useLoaderData, type LoaderFunctionArgs } from "react-router-dom";
 
 const { Title, Paragraph, Text } = Typography;
 
 export async function projectLoader({ params }: LoaderFunctionArgs) {
-  const id = parseInt(params.id!);
-  const project = await ProjectService.readProject(id);
-  const students = await UserService.readUsers("student");
-  const shortlisters = await ShortlistService.readShortlisters(id);
-  const allocatees = await AllocationService.readAllocatees(id);
-  return [project, students, shortlisters, allocatees];
+  const project = ProjectService.readProject(params.id!);
+  const students = UserService.readUsers("student");
+  const shortlisters = ShortlistService.readShortlisters(params.id!);
+  const allocatees = AllocationService.readAllocatees(params.id!);
+  return Promise.all([project, students, shortlisters, allocatees]);
 }
 
 export default function Project() {
-  const [project, students, shortlisters, initialAllocatees] =
-    useLoaderData() as [ProjectRead, UserRead[], UserRead[], UserRead[]];
+  const [project, students, shortlisters, initialAllocatees] = useLoaderData() as [
+    ProjectReadWithDetails,
+    UserRead[],
+    UserRead[],
+    UserRead[],
+  ];
 
   const [allocatees, setAllocatees] = useState<UserRead[]>(initialAllocatees);
-  const [extraAllocateeIndices, setExtraAllocateeIndices] = useState<number[]>(
-    [],
-  );
+  const [extraAllocateeIndices, setExtraAllocateeIndices] = useState<number[]>([]);
 
   const [hasConflict, setHasConflict] = useState<boolean | null>(null);
   const updateHasConflict = (allocatees: UserRead[]) =>
@@ -51,7 +44,7 @@ export default function Project() {
   return (
     <>
       <ProjectHeader
-        title={`Project #${project.id}`}
+        title="Project"
         project={project}
         hasConflict={hasConflict}
         hasAllocatees={allocatees?.length > 0}
@@ -79,9 +72,7 @@ export default function Project() {
               if (!option) return false;
               const target = inputValue.toLowerCase();
               const student = students[option!.value];
-              return [student.email, student.name].some((item) =>
-                item.toLowerCase().includes(target),
-              );
+              return [student.email, student.name].some((item) => item.toLowerCase().includes(target));
             }}
             onChange={(indices: number[]) => setExtraAllocateeIndices(indices)}
           />
@@ -90,9 +81,7 @@ export default function Project() {
             className="flex-none"
             icon={<PlusOutlined />}
             onClick={() => {
-              const extraAllocatees = extraAllocateeIndices.map(
-                (index) => students[index],
-              );
+              const extraAllocatees = extraAllocateeIndices.map((index) => students[index]);
               AllocationService.addAllocatees(project.id, extraAllocatees);
               const newAllocatees = [...extraAllocatees, ...allocatees];
               setAllocatees(newAllocatees);
@@ -113,10 +102,8 @@ export default function Project() {
                     className="border-none"
                     icon={<DeleteOutlined />}
                     onClick={() => {
-                      AllocationService.removeAllocatee(allocatee.id);
-                      const newAllocatees = allocatees.filter(
-                        (item) => item.id !== allocatee.id,
-                      );
+                      AllocationService.removeAllocatee(project.id, allocatee.id);
+                      const newAllocatees = allocatees.filter((item) => item.id !== allocatee.id);
                       setAllocatees(newAllocatees);
                       updateHasConflict(newAllocatees);
                     }}
@@ -126,26 +113,17 @@ export default function Project() {
             >
               <List.Item.Meta
                 avatar={<Avatar>{getInitialLetters(allocatee.name)}</Avatar>}
-                title={
-                  <Link to={`/users/${allocatee.id}`}>{allocatee.name}</Link>
-                }
+                title={<Link to={`/users/${allocatee.id}`}>{allocatee.name}</Link>}
                 description={allocatee.email}
               />
-              <Text>
-                {allocatee.accepted === null
-                  ? "No response"
-                  : allocatee.accepted
-                  ? "Accepted"
-                  : "Declined"}
-              </Text>
+              <Text>{allocatee.accepted === null ? "No response" : allocatee.accepted ? "Accepted" : "Declined"}</Text>
             </List.Item>
           )}
         />
         <Divider />
         <Title level={4}>Shortlisted Students</Title>
         <Paragraph className="text-slate-500">
-          List of students who shortlisted this projected will be shown in here,
-          in the order of their preference.
+          List of students who shortlisted this projected will be shown in here, in the order of their preference.
         </Paragraph>
         <List
           className="mt-4"
@@ -155,11 +133,7 @@ export default function Project() {
             <List.Item>
               <List.Item.Meta
                 avatar={<Avatar>{getInitialLetters(shortlister.name)}</Avatar>}
-                title={
-                  <Link to={`/users/${shortlister.id}`}>
-                    {shortlister.name}
-                  </Link>
-                }
+                title={<Link to={`/users/${shortlister.id}`}>{shortlister.name}</Link>}
                 description={shortlister.email}
               />
             </List.Item>

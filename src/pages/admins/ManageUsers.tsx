@@ -1,15 +1,7 @@
 import { AllocationService, UserRead, UserService } from "@/api";
 import UserList from "@/components/UserList";
 import { CheckOutlined, UploadOutlined } from "@ant-design/icons";
-import {
-  Button,
-  Divider,
-  Modal,
-  Space,
-  Typography,
-  Upload,
-  UploadFile,
-} from "antd";
+import { Button, Divider, Modal, Space, Typography, Upload, UploadFile } from "antd";
 import { RcFile } from "antd/es/upload";
 import { useState } from "react";
 import { useLoaderData } from "react-router-dom";
@@ -17,21 +9,15 @@ import { useLoaderData } from "react-router-dom";
 const { Title, Paragraph } = Typography;
 
 export async function manageUsersLoader() {
-  const allUsers = await UserService.readUsers();
-  const unallocatedUsers = await AllocationService.readUnallocatedUsers();
-  return [allUsers, unallocatedUsers];
+  const allUsers = UserService.readUsers();
+  const unallocatedUsers = AllocationService.readUnallocatedUsers();
+  return Promise.all([allUsers, unallocatedUsers]);
 }
 
 export default function ManageUsers() {
-  const [allUsers, unallocatedUsers] = useLoaderData() as [
-    UserRead[],
-    UserRead[],
-  ];
-  const [checkMissingUsersFiles, setCheckMissingUsersFiles] = useState<
-    UploadFile[]
-  >([]);
-  const [checkMissingUsersLoading, setCheckMissingUsersLoading] =
-    useState<boolean>(false);
+  const [allUsers, unallocatedUsers] = useLoaderData() as [UserRead[], UserRead[]];
+  const [checkMissingUsersFiles, setCheckMissingUsersFiles] = useState<UploadFile[]>([]);
+  const [checkMissingUsersLoading, setCheckMissingUsersLoading] = useState<boolean>(false);
   const [missingEmails, setMissingEmails] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
@@ -40,12 +26,9 @@ export default function ManageUsers() {
       <Title level={3}>Manage Users</Title>
       <Divider />
       <Title level={4}>Check Missing Users</Title>
+      <Paragraph className="text-slate-500">Check if all users have signed up with this project allocator.</Paragraph>
       <Paragraph className="text-slate-500">
-        Check if all users have signed up with this project allocator.
-      </Paragraph>
-      <Paragraph className="text-slate-500">
-        You can upload a CSV file with the list of all users' emails within your
-        department.
+        You can upload a CSV file with the list of all users' emails within your department.
       </Paragraph>
       <Space direction="vertical">
         <Upload
@@ -72,8 +55,7 @@ export default function ManageUsers() {
             reader.onload = async (event) => {
               const content = event.target?.result as string;
               const allEmails = content.split(",").map((email) => email.trim());
-              const missingEmails =
-                await UserService.checkMissingUsers(allEmails);
+              const missingEmails = await UserService.checkMissingUsers(allEmails);
               setMissingEmails(missingEmails);
               setIsModalOpen(true);
               setCheckMissingUsersLoading(false);
@@ -85,11 +67,7 @@ export default function ManageUsers() {
         </Button>
       </Space>
       <Modal
-        title={
-          missingEmails.length > 0
-            ? "The following users are missing."
-            : "No users are missing!"
-        }
+        title={missingEmails.length > 0 ? "The following users are missing." : "No users are missing!"}
         open={isModalOpen}
         footer={
           <Button type="primary" onClick={() => setIsModalOpen(false)}>
@@ -99,9 +77,7 @@ export default function ManageUsers() {
         onCancel={() => setIsModalOpen(false)}
       >
         {missingEmails.length > 0 ? (
-          <ul className="pl-4 mb-0">
-            {missingEmails?.map((email) => <li>{email}</li>)}
-          </ul>
+          <ul className="pl-4 mb-0">{missingEmails?.map((email) => <li>{email}</li>)}</ul>
         ) : (
           "You can close this window now."
         )}

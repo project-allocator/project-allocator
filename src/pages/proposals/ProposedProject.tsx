@@ -8,16 +8,13 @@ import { Link, useLoaderData } from "react-router-dom";
 const { Title } = Typography;
 
 export async function proposedProjectLoader() {
-  const projects = await ProposalService.readProposed();
-  const areProposalsShutdown = await AdminService.areProposalsShutdown();
-  return [projects, areProposalsShutdown];
+  const projects = ProposalService.readProposed();
+  const areProposalsShutdown = AdminService.areProposalsShutdown();
+  return Promise.all([projects, areProposalsShutdown]);
 }
 
 export default function ProposedProject() {
-  const [projects, areProposalsShutdown] = useLoaderData() as [
-    ProjectRead[],
-    boolean,
-  ];
+  const [projects, areProposalsShutdown] = useLoaderData() as [ProjectRead[], boolean];
 
   return (
     <>
