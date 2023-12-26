@@ -1,4 +1,4 @@
-from typing import Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 from sqlalchemy import UniqueConstraint
 from sqlmodel import Field, Relationship, SQLModel
 
@@ -17,7 +17,7 @@ class Shortlist(TimestampMixin, SQLModel, table=True):
 
     # Student's preference for the shortlisted project
     # where preference of 0 has the highest preference.
-    preference: int = Field(default=0)
+    preference: int
 
     shortlister_id: str = Field(
         primary_key=True,
