@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { Body_set_project_status } from '../models/Body_set_project_status';
 import type { ProjectCreateWithDetails } from '../models/ProjectCreateWithDetails';
 import type { ProjectDetailTemplateRead } from '../models/ProjectDetailTemplateRead';
 import type { ProjectReadWithDetails } from '../models/ProjectReadWithDetails';
@@ -14,26 +15,55 @@ import { request as __request } from '../core/request';
 export class ProjectService {
 
     /**
-     * Read Approved Projects
-     * @returns ProjectReadWithDetails Successful Response
+     * Read Project Detail Templates
+     * @returns ProjectDetailTemplateRead Successful Response
      * @throws ApiError
      */
-    public static readApprovedProjects(): CancelablePromise<Array<ProjectReadWithDetails>> {
+    public static readProjectDetailTemplates(): CancelablePromise<Array<ProjectDetailTemplateRead>> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/projects/approved',
+            url: '/api/projects/details/templates',
         });
     }
 
     /**
-     * Read Non Approved Projects
+     * Read Projects
+     * @param approved
      * @returns ProjectReadWithDetails Successful Response
      * @throws ApiError
      */
-    public static readNonApprovedProjects(): CancelablePromise<Array<ProjectReadWithDetails>> {
+    public static readProjects(
+        approved: boolean = true,
+    ): CancelablePromise<Array<ProjectReadWithDetails>> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/projects/non-approved',
+            url: '/api/projects',
+            query: {
+                'approved': approved,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Create Project
+     * @param requestBody
+     * @returns ProjectReadWithDetails Successful Response
+     * @throws ApiError
+     */
+    public static createProject(
+        requestBody: ProjectCreateWithDetails,
+    ): CancelablePromise<ProjectReadWithDetails> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/projects',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
         });
     }
 
@@ -105,17 +135,22 @@ export class ProjectService {
     }
 
     /**
-     * Create Project
+     * Set Project Status
+     * @param projectId
      * @param requestBody
-     * @returns ProjectReadWithDetails Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
-    public static createProject(
-        requestBody: ProjectCreateWithDetails,
-    ): CancelablePromise<ProjectReadWithDetails> {
+    public static setProjectStatus(
+        projectId: string,
+        requestBody: Body_set_project_status,
+    ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/projects',
+            url: '/api/projects/{project_id}/status',
+            path: {
+                'project_id': projectId,
+            },
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -125,14 +160,23 @@ export class ProjectService {
     }
 
     /**
-     * Read Project Detail Templates
-     * @returns ProjectDetailTemplateRead Successful Response
+     * Reset Project Status
+     * @param projectId
+     * @returns any Successful Response
      * @throws ApiError
      */
-    public static readProjectDetailTemplates(): CancelablePromise<Array<ProjectDetailTemplateRead>> {
+    public static resetProjectStatus(
+        projectId: string,
+    ): CancelablePromise<any> {
         return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/projects/details/templates',
+            method: 'DELETE',
+            url: '/api/projects/{project_id}/status',
+            path: {
+                'project_id': projectId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
         });
     }
 

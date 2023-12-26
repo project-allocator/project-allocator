@@ -3,6 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { Body_import_json } from '../models/Body_import_json';
+import type { ProjectRead } from '../models/ProjectRead';
+import type { UserRead } from '../models/UserRead';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -11,110 +13,46 @@ import { request as __request } from '../core/request';
 export class AdminService {
 
     /**
-     * Are Proposals Shutdown
-     * @returns boolean Successful Response
+     * Check Missing Users
+     * @param requestBody
+     * @returns string Successful Response
      * @throws ApiError
      */
-    public static areProposalsShutdown(): CancelablePromise<boolean> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/proposals/shutdown',
-        });
-    }
-
-    /**
-     * Set Proposals Shutdown
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public static setProposalsShutdown(): CancelablePromise<any> {
+    public static checkMissingUsers(
+        requestBody: Array<string>,
+    ): CancelablePromise<Array<string>> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/proposals/shutdown',
+            url: '/api/admins/missing-users',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
         });
     }
 
     /**
-     * Unset Proposals Shutdown
-     * @returns any Successful Response
+     * Read Conflicting Projects
+     * @returns ProjectRead Successful Response
      * @throws ApiError
      */
-    public static unsetProposalsShutdown(): CancelablePromise<any> {
-        return __request(OpenAPI, {
-            method: 'DELETE',
-            url: '/api/proposals/shutdown',
-        });
-    }
-
-    /**
-     * Are Shortlists Shutdown
-     * @returns boolean Successful Response
-     * @throws ApiError
-     */
-    public static areShortlistsShutdown(): CancelablePromise<boolean> {
+    public static readConflictingProjects(): CancelablePromise<Array<ProjectRead>> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/shortlists/shutdown',
+            url: '/api/admins/conflicting-projects',
         });
     }
 
     /**
-     * Set Shortlists Shutdown
-     * @returns any Successful Response
+     * Read Unallocated Users
+     * @returns UserRead Successful Response
      * @throws ApiError
      */
-    public static setShortlistsShutdown(): CancelablePromise<any> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/shortlists/shutdown',
-        });
-    }
-
-    /**
-     * Unset Shortlists Shutdown
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public static unsetShortlistsShutdown(): CancelablePromise<any> {
-        return __request(OpenAPI, {
-            method: 'DELETE',
-            url: '/api/shortlists/shutdown',
-        });
-    }
-
-    /**
-     * Are Undos Shutdown
-     * @returns boolean Successful Response
-     * @throws ApiError
-     */
-    public static areUndosShutdown(): CancelablePromise<boolean> {
+    public static readUnallocatedUsers(): CancelablePromise<Array<UserRead>> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/undos/shutdown',
-        });
-    }
-
-    /**
-     * Set Undos Shutdown
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public static setUndosShutdown(): CancelablePromise<any> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/projects/undos/shutdown',
-        });
-    }
-
-    /**
-     * Unset Undos Shutdown
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public static unsetUndosShutdown(): CancelablePromise<any> {
-        return __request(OpenAPI, {
-            method: 'DELETE',
-            url: '/api/projects/undos/shutdown',
+            url: '/api/admins/unallocated-users',
         });
     }
 
@@ -126,7 +64,7 @@ export class AdminService {
     public static exportJson(): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/export/json',
+            url: '/api/admins/export/json',
         });
     }
 
@@ -138,7 +76,7 @@ export class AdminService {
     public static exportCsv(): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/export/csv',
+            url: '/api/admins/export/csv',
         });
     }
 
@@ -153,7 +91,7 @@ export class AdminService {
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/import/json',
+            url: '/api/admins/import/json',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -170,7 +108,7 @@ export class AdminService {
     public static resetDatabase(): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/database/reset',
+            url: '/api/admins/database/reset',
         });
     }
 

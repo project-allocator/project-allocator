@@ -2,6 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { Body_set_allocation_status } from '../models/Body_set_allocation_status';
 import type { ProjectRead } from '../models/ProjectRead';
 import type { UserRead } from '../models/UserRead';
 
@@ -36,50 +37,34 @@ export class AllocationService {
     }
 
     /**
-     * Is Accepted
+     * Set Allocation Status
+     * @param requestBody
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static isAccepted(): CancelablePromise<(boolean | null)> {
+    public static setAllocationStatus(
+        requestBody: Body_set_allocation_status,
+    ): CancelablePromise<any> {
         return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/users/me/allocated/accepted',
+            method: 'POST',
+            url: '/api/users/me/allocated/status',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
         });
     }
 
     /**
-     * Accept Allocation
+     * Reset Allocation Status
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static acceptAllocation(): CancelablePromise<any> {
+    public static resetAllocationStatus(): CancelablePromise<any> {
         return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/users/me/allocated/accepted',
-        });
-    }
-
-    /**
-     * Decline Allocation
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public static declineAllocation(): CancelablePromise<any> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/users/me/allocated/declined',
-        });
-    }
-
-    /**
-     * Undo Allocation
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public static undoAllocation(): CancelablePromise<any> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/users/me/allocated/undo',
+            method: 'DELETE',
+            url: '/api/users/me/allocated/status',
         });
     }
 
@@ -155,13 +140,25 @@ export class AllocationService {
 
     /**
      * Read Allocated
-     * @returns any Successful Response
+     * @returns ProjectRead Successful Response
      * @throws ApiError
      */
-    public static readAllocated(): CancelablePromise<(ProjectRead | null)> {
+    public static readAllocated(): CancelablePromise<ProjectRead> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/users/me/allocated',
+        });
+    }
+
+    /**
+     * Is Accepted
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static isAccepted(): CancelablePromise<(boolean | null)> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/users/me/allocated/accepted',
         });
     }
 
@@ -183,30 +180,6 @@ export class AllocationService {
             errors: {
                 422: `Validation Error`,
             },
-        });
-    }
-
-    /**
-     * Read Conflicting Projects
-     * @returns ProjectRead Successful Response
-     * @throws ApiError
-     */
-    public static readConflictingProjects(): CancelablePromise<Array<ProjectRead>> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/projects/conflicting',
-        });
-    }
-
-    /**
-     * Read Unallocated Users
-     * @returns UserRead Successful Response
-     * @throws ApiError
-     */
-    public static readUnallocatedUsers(): CancelablePromise<Array<UserRead>> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/users/unallocated',
         });
     }
 

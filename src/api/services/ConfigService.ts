@@ -22,4 +22,30 @@ export class ConfigService {
         });
     }
 
+    /**
+     * Update Config
+     * @param key
+     * @param value
+     * @returns ConfigRead Successful Response
+     * @throws ApiError
+     */
+    public static updateConfig(
+        key: string,
+        value: any,
+    ): CancelablePromise<ConfigRead> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/configs/{key}',
+            path: {
+                'key': key,
+            },
+            query: {
+                'value': value,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
 }
