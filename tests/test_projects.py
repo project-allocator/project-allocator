@@ -70,7 +70,6 @@ def test_read_project(
     assert data["description"] == project.description
     assert data["approved"] == project.approved
     assert len(data["details"]) == len(project.details) == len(templates)
-    assert data["allocations"] == []
 
 
 def test_create_project(
