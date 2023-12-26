@@ -70,18 +70,17 @@ class ProjectUpdate(SQLModel):
 class ProjectDetailBase(SQLModel):
     key: str
     type: str
-    # Use Any type to allow input to be parsed.
-    # e.g. Project detail of type 'checkbox' is parsed as a list of strings.
-    value: Any
+    value: Any  # any type to allow input to be parsed
 
 
-class ProjectDetail(TimestampMixin, ProjectDetailBase, table=True):
+class ProjectDetail(TimestampMixin, SQLModel, table=True):
     __tablename__ = "project_detail"
 
-    key: str = Field(primary_key=True)  # override as primary key
-    value: str  # must be stored as string in database
+    key: str = Field(primary_key=True)
+    type: str
+    value: str  # must be stringified in database
 
-    project_id: Optional[str] = Field(
+    project_id: str = Field(
         primary_key=True,
         foreign_key="project.id",
         max_length=26,
@@ -99,9 +98,7 @@ class ProjectDetailCreate(ProjectDetailBase):
 
 
 class ProjectDetailUpdate(ProjectDetailBase):
-    key: Optional[str] = None
-    type: Optional[str] = None
-    value: Optional[Any] = None
+    pass
 
 
 class ProjectReadWithDetails(ProjectRead):
@@ -120,7 +117,7 @@ class ProjectDetailTemplateBase(SQLModel):
     key: str
     type: str
     required: bool
-    options: Optional[list[str]]
+    options: list[str] = []
 
     # Used by the frontend to describe the detail.
     title: str
@@ -132,7 +129,7 @@ class ProjectDetailTemplate(TimestampMixin, ProjectDetailTemplateBase, table=Tru
     __tablename__ = "project_detail_template"
 
     key: str = Field(primary_key=True)
-    options: Optional[list[str]] = Field(sa_column=Column(JSON), default=None)
+    options: list[str] = Field(sa_column=Column(JSON), default=[])
 
 
 class ProjectDetailTemplateRead(ProjectDetailTemplateBase):

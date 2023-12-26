@@ -87,13 +87,11 @@ class ProjectDetailTemplateFactory(factory.alchemy.SQLAlchemyModelFactory):
 
     @factory.lazy_attribute
     def options(self):
-        if self.type in ["select", "checkbox", "radio", "categories"]:
-            return _fake.words(nb=5, unique=True)
+        if self.type not in ["select", "checkbox", "radio", "categories"]:
+            return []
 
-    @factory.lazy_attribute
-    def title(self):
-        # Cannot use 'sentence' because of the period at the end.
-        return " ".join(_fake.words(nb=5))
+        return _fake.words(nb=5, unique=True)
 
+    title = factory.Faker("sentence")
     description = factory.Faker("paragraph")
     message = factory.Faker("sentence")
