@@ -114,9 +114,11 @@ async def read_allocatees(
 
     # TODO:
     # This is a temporary hack which needs to be fixed.
-    allocatees = [allocation.allocatee for allocation in project.allocations]
-    for allocatee in allocatees:
-        allocatee.accepted = allocatee.allocation.accepted
+    allocatees = []
+    for allocation in project.allocations:
+        allocatee = UserRead.model_validate(allocation.allocatee)
+        allocatee.accepted = allocation.accepted
+        allocatees.append(allocatee)
     return allocatees
 
 
