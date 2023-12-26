@@ -7,7 +7,7 @@ export type UserRead = {
     email: string;
     name: string;
     role: string;
-    accepted?: boolean;
-    id: number;
+    id: string;
+    accepted?: (boolean | null);
 };
 

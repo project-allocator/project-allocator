@@ -2,8 +2,8 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { Body_send_notifications } from '../models/Body_send_notifications';
 import type { NotificationRead } from '../models/NotificationRead';
-import type { NotificationUpdate } from '../models/NotificationUpdate';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -30,7 +30,7 @@ export class NotificationService {
      * @throws ApiError
      */
     public static markNotifications(
-        requestBody: Array<NotificationUpdate>,
+        requestBody: Array<string>,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'PUT',
@@ -50,7 +50,7 @@ export class NotificationService {
      * @throws ApiError
      */
     public static deleteNotification(
-        notificationId: number,
+        notificationId: string,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'DELETE',
@@ -66,28 +66,20 @@ export class NotificationService {
 
     /**
      * Send Notifications
-     * @param title
-     * @param description
      * @param requestBody
      * @param xGraphToken
      * @returns any Successful Response
      * @throws ApiError
      */
     public static sendNotifications(
-        title: string,
-        description: string,
-        requestBody: Array<string>,
-        xGraphToken?: string,
+        requestBody: Body_send_notifications,
+        xGraphToken?: (string | null),
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/users/notifications',
             headers: {
                 'x-graph-token': xGraphToken,
-            },
-            query: {
-                'title': title,
-                'description': description,
             },
             body: requestBody,
             mediaType: 'application/json',

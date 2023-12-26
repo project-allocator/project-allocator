@@ -3,10 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type ProjectRead = {
-    title: string;
-    description: string;
-    approved?: (boolean | null);
-    id: string;
+export type ProjectDetailRead = {
+    key: string;
+    type: string;
+    value: any;
 };
 

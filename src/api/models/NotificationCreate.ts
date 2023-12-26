@@ -3,10 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type ProjectRead = {
+export type NotificationCreate = {
     title: string;
     description: string;
-    approved?: (boolean | null);
-    id: string;
+    read_at?: (string | null);
 };
 

@@ -2,21 +2,23 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
+import type { ConfigRead } from '../models/ConfigRead';
+
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 
-export class DefaultService {
+export class ConfigService {
 
     /**
-     * Test Alive
-     * @returns any Successful Response
+     * Read Configs
+     * @returns ConfigRead Successful Response
      * @throws ApiError
      */
-    public static testAlive(): CancelablePromise<any> {
+    public static readConfigs(): CancelablePromise<Array<ConfigRead>> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/test/alive',
+            url: '/api/configs',
         });
     }
 

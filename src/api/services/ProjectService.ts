@@ -2,9 +2,10 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ProjectCreate } from '../models/ProjectCreate';
-import type { ProjectRead } from '../models/ProjectRead';
-import type { ProjectUpdate } from '../models/ProjectUpdate';
+import type { ProjectCreateWithDetails } from '../models/ProjectCreateWithDetails';
+import type { ProjectDetailTemplateRead } from '../models/ProjectDetailTemplateRead';
+import type { ProjectReadWithDetails } from '../models/ProjectReadWithDetails';
+import type { ProjectUpdateWithDetails } from '../models/ProjectUpdateWithDetails';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -14,10 +15,10 @@ export class ProjectService {
 
     /**
      * Read Approved Projects
-     * @returns ProjectRead Successful Response
+     * @returns ProjectReadWithDetails Successful Response
      * @throws ApiError
      */
-    public static readApprovedProjects(): CancelablePromise<Array<ProjectRead>> {
+    public static readApprovedProjects(): CancelablePromise<Array<ProjectReadWithDetails>> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/projects/approved',
@@ -26,10 +27,10 @@ export class ProjectService {
 
     /**
      * Read Non Approved Projects
-     * @returns ProjectRead Successful Response
+     * @returns ProjectReadWithDetails Successful Response
      * @throws ApiError
      */
-    public static readNonApprovedProjects(): CancelablePromise<Array<ProjectRead>> {
+    public static readNonApprovedProjects(): CancelablePromise<Array<ProjectReadWithDetails>> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/projects/non-approved',
@@ -39,12 +40,12 @@ export class ProjectService {
     /**
      * Read Project
      * @param projectId
-     * @returns ProjectRead Successful Response
+     * @returns ProjectReadWithDetails Successful Response
      * @throws ApiError
      */
     public static readProject(
-        projectId: number,
-    ): CancelablePromise<ProjectRead> {
+        projectId: string,
+    ): CancelablePromise<ProjectReadWithDetails> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/projects/{project_id}',
@@ -61,13 +62,13 @@ export class ProjectService {
      * Update Project
      * @param projectId
      * @param requestBody
-     * @returns ProjectRead Successful Response
+     * @returns ProjectReadWithDetails Successful Response
      * @throws ApiError
      */
     public static updateProject(
-        projectId: number,
-        requestBody: ProjectUpdate,
-    ): CancelablePromise<ProjectRead> {
+        projectId: string,
+        requestBody: ProjectUpdateWithDetails,
+    ): CancelablePromise<ProjectReadWithDetails> {
         return __request(OpenAPI, {
             method: 'PUT',
             url: '/api/projects/{project_id}',
@@ -89,7 +90,7 @@ export class ProjectService {
      * @throws ApiError
      */
     public static deleteProject(
-        projectId: number,
+        projectId: string,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'DELETE',
@@ -106,12 +107,12 @@ export class ProjectService {
     /**
      * Create Project
      * @param requestBody
-     * @returns ProjectRead Successful Response
+     * @returns ProjectReadWithDetails Successful Response
      * @throws ApiError
      */
     public static createProject(
-        requestBody: ProjectCreate,
-    ): CancelablePromise<ProjectRead> {
+        requestBody: ProjectCreateWithDetails,
+    ): CancelablePromise<ProjectReadWithDetails> {
         return __request(OpenAPI, {
             method: 'POST',
             url: '/api/projects',
@@ -120,6 +121,18 @@ export class ProjectService {
             errors: {
                 422: `Validation Error`,
             },
+        });
+    }
+
+    /**
+     * Read Project Detail Templates
+     * @returns ProjectDetailTemplateRead Successful Response
+     * @throws ApiError
+     */
+    public static readProjectDetailTemplates(): CancelablePromise<Array<ProjectDetailTemplateRead>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/projects/details/templates',
         });
     }
 

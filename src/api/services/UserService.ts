@@ -38,7 +38,7 @@ export class UserService {
      * @throws ApiError
      */
     public static readUsers(
-        role?: string,
+        role?: (string | null),
     ): CancelablePromise<Array<UserRead>> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -59,7 +59,7 @@ export class UserService {
      * @throws ApiError
      */
     public static createUser(
-        xGraphToken?: string,
+        xGraphToken?: (string | null),
     ): CancelablePromise<UserRead> {
         return __request(OpenAPI, {
             method: 'POST',
@@ -92,7 +92,7 @@ export class UserService {
      * @throws ApiError
      */
     public static readUser(
-        userId: number,
+        userId: string,
     ): CancelablePromise<UserRead> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -114,7 +114,7 @@ export class UserService {
      * @throws ApiError
      */
     public static updateUser(
-        userId: number,
+        userId: string,
         requestBody: UserUpdate,
     ): CancelablePromise<UserRead> {
         return __request(OpenAPI, {
@@ -138,7 +138,7 @@ export class UserService {
      * @throws ApiError
      */
     public static deleteUser(
-        userId: number,
+        userId: string,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'DELETE',

@@ -3,8 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type NotificationUpdate = {
-    id: number;
-    seen?: boolean;
+export type ProjectDetailUpdate = {
+    key: string;
+    type: string;
+    value: any;
 };
 

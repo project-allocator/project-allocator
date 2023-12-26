@@ -37,10 +37,10 @@ export class AllocationService {
 
     /**
      * Is Accepted
-     * @returns boolean Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
-    public static isAccepted(): CancelablePromise<boolean> {
+    public static isAccepted(): CancelablePromise<(boolean | null)> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/users/me/allocated/accepted',
@@ -90,7 +90,7 @@ export class AllocationService {
      * @throws ApiError
      */
     public static readAllocatees(
-        projectId: number,
+        projectId: string,
     ): CancelablePromise<Array<UserRead>> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -112,7 +112,7 @@ export class AllocationService {
      * @throws ApiError
      */
     public static addAllocatees(
-        projectId: number,
+        projectId: string,
         requestBody: Array<UserRead>,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
@@ -131,17 +131,20 @@ export class AllocationService {
 
     /**
      * Remove Allocatee
+     * @param projectId
      * @param userId
      * @returns any Successful Response
      * @throws ApiError
      */
     public static removeAllocatee(
-        userId: number,
+        projectId: string,
+        userId: string,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/users/{user_id}/allocated',
+            url: '/api/projects/{project_id}/allocatees/{user_id}',
             path: {
+                'project_id': projectId,
                 'user_id': userId,
             },
             errors: {
@@ -152,10 +155,10 @@ export class AllocationService {
 
     /**
      * Read Allocated
-     * @returns ProjectRead Successful Response
+     * @returns any Successful Response
      * @throws ApiError
      */
-    public static readAllocated(): CancelablePromise<ProjectRead> {
+    public static readAllocated(): CancelablePromise<(ProjectRead | null)> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/users/me/allocated',
@@ -169,7 +172,7 @@ export class AllocationService {
      * @throws ApiError
      */
     public static isAllocated(
-        projectId: number,
+        projectId: string,
     ): CancelablePromise<boolean> {
         return __request(OpenAPI, {
             method: 'GET',

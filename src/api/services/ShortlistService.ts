@@ -30,7 +30,7 @@ export class ShortlistService {
      * @throws ApiError
      */
     public static reorderShortlisted(
-        requestBody: Array<number>,
+        requestBody: Array<string>,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'PUT',
@@ -50,7 +50,7 @@ export class ShortlistService {
      * @throws ApiError
      */
     public static isShortlisted(
-        projectId: number,
+        projectId: string,
     ): CancelablePromise<boolean> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -71,7 +71,7 @@ export class ShortlistService {
      * @throws ApiError
      */
     public static setShortlisted(
-        projectId: number,
+        projectId: string,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
@@ -92,7 +92,7 @@ export class ShortlistService {
      * @throws ApiError
      */
     public static unsetShortlisted(
-        projectId: number,
+        projectId: string,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'DELETE',
@@ -113,7 +113,7 @@ export class ShortlistService {
      * @throws ApiError
      */
     public static readShortlisters(
-        projectId: number,
+        projectId: string,
     ): CancelablePromise<Array<UserRead>> {
         return __request(OpenAPI, {
             method: 'GET',

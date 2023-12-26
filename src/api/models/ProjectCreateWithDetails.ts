@@ -3,10 +3,12 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type ProjectRead = {
+import type { ProjectDetailCreate } from './ProjectDetailCreate';
+
+export type ProjectCreateWithDetails = {
     title: string;
     description: string;
     approved?: (boolean | null);
-    id: string;
+    details?: Array<ProjectDetailCreate>;
 };
 

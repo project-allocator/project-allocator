@@ -4,6 +4,6 @@
 /* eslint-disable */
 
 export type UserUpdate = {
-    role?: string;
+    role?: (string | null);
 };
 

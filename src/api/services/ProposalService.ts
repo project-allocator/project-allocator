@@ -29,7 +29,7 @@ export class ProposalService {
      * @throws ApiError
      */
     public static isProposed(
-        projectId: number,
+        projectId: string,
     ): CancelablePromise<boolean> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -50,7 +50,7 @@ export class ProposalService {
      * @throws ApiError
      */
     public static approveProposal(
-        projectId: number,
+        projectId: string,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
@@ -71,7 +71,7 @@ export class ProposalService {
      * @throws ApiError
      */
     public static rejectProposal(
-        projectId: number,
+        projectId: string,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
@@ -92,7 +92,7 @@ export class ProposalService {
      * @throws ApiError
      */
     public static undoProposal(
-        projectId: number,
+        projectId: string,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
