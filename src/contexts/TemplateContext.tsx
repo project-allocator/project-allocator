@@ -5,7 +5,7 @@ interface Template {
   key: string;
   type: string;
   required: boolean;
-  options: string[] | null;
+  options: string[];
   title: string;
   description: string;
   message: string;

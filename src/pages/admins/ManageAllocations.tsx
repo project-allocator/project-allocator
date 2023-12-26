@@ -1,28 +1,20 @@
-import { AdminService, AllocationService } from "@/api";
+import { AllocationService, ConfigService } from "@/api";
+import { useConfig } from "@/contexts/ConfigContext";
 import { useMessage } from "@/contexts/MessageContext";
 import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
 import { Button, Divider, Switch, Typography } from "antd";
 import { useState } from "react";
-import { useLoaderData } from "react-router-dom";
 
 const { Title, Paragraph } = Typography;
 
-export async function manageAllocationsLoader() {
-  const areProposalsShutdown = AdminService.areProposalsShutdown();
-  const areShortlistsShutdown = AdminService.areShortlistsShutdown();
-  const areUndosShutdown = AdminService.areUndosShutdown();
-  return Promise.all([areProposalsShutdown, areShortlistsShutdown, areUndosShutdown]);
-}
-
 export default function ManageAllocations() {
-  const [areProposalsShutdown, areShortlistsShutdown, areUndosShutdown] = useLoaderData() as [
-    boolean,
-    boolean,
-    boolean,
-  ];
   const [allocateProjectsLoading, setAllocateProjectsLoading] = useState<boolean>(false);
   const [deallocateProjectsLoading, setDeallocateProjectsLoading] = useState<boolean>(false);
   const { messageSuccess, messageError } = useMessage();
+
+  const proposalsShutdown = useConfig("proposals_shutdown");
+  const shortlistsShutdown = useConfig("shortlists_shutdown");
+  const resetsShutdown = useConfig("resets_shutdown");
 
   return (
     <>
@@ -31,13 +23,13 @@ export default function ManageAllocations() {
       <Title level={4}>Shutdown Proposals</Title>
       <Paragraph className="text-slate-500">Turn this on to block any new project proposasl from staff.</Paragraph>
       <Switch
-        defaultChecked={areProposalsShutdown}
+        defaultChecked={proposalsShutdown}
         onChange={() =>
-          areProposalsShutdown
-            ? AdminService.unsetProposalsShutdown()
+          proposalsShutdown
+            ? ConfigService.updateConfig("proposals_shutdown", false) // TODO: Update state/cache after migrating to React Query
                 .then(() => messageSuccess("Successfully reopened proposals."))
                 .catch(messageError)
-            : AdminService.setProposalsShutdown()
+            : ConfigService.updateConfig("proposals_shutdown", true)
                 .then(() => messageSuccess("Successfully shutdown proposals."))
                 .catch(messageError)
         }
@@ -45,30 +37,30 @@ export default function ManageAllocations() {
       <Title level={4}>Shutdown Shortlists</Title>
       <Paragraph className="text-slate-500">Turn this on to block any new project shortlists from students.</Paragraph>
       <Switch
-        defaultChecked={areShortlistsShutdown}
+        defaultChecked={shortlistsShutdown}
         onChange={() =>
-          areShortlistsShutdown
-            ? AdminService.unsetShortlistsShutdown()
+          shortlistsShutdown
+            ? ConfigService.updateConfig("shortlists_shutdown", false)
                 .then(() => messageSuccess("Successfully reopened shortlists."))
                 .catch(messageError)
-            : AdminService.setShortlistsShutdown()
+            : ConfigService.updateConfig("shortlists_shutdown", true)
                 .then(() => messageSuccess("Successfully shutdown shortlists."))
                 .catch(messageError)
         }
       />
-      <Title level={4}>Shutdown Undos</Title>
+      <Title level={4}>Shutdown Resets</Title>
       <Paragraph className="text-slate-500">
-        Turn this on to block students from undo-ing "Accept" or "Decline" to their project allocation.
+        Turn this on to block students from resetting "Accept" or "Decline" to their project allocation.
       </Paragraph>
       <Switch
-        defaultChecked={areUndosShutdown}
+        defaultChecked={resetsShutdown}
         onChange={() =>
-          areUndosShutdown
-            ? AdminService.unsetUndosShutdown()
-                .then(() => messageSuccess("Successfully reopened undos."))
+          resetsShutdown
+            ? ConfigService.updateConfig("resets_shutdown", false)
+                .then(() => messageSuccess("Successfully reopened resets."))
                 .catch(messageError)
-            : AdminService.setUndosShutdown()
-                .then(() => messageSuccess("Successfully shutdown undos."))
+            : ConfigService.updateConfig("resets_shutdown", true)
+                .then(() => messageSuccess("Successfully shutdown resets."))
                 .catch(messageError)
         }
       />

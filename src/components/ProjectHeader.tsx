@@ -1,11 +1,5 @@
-import {
-  AdminService,
-  AllocationService,
-  ProjectRead,
-  ProjectService,
-  ProposalService,
-  ShortlistService,
-} from "@/api";
+import { AllocationService, ProjectRead, ProjectService, ProposalService, ShortlistService } from "@/api";
+import { useConfig } from "@/contexts/ConfigContext";
 import { useMessage } from "@/contexts/MessageContext";
 import AdminRoute from "@/routes/AdminRoute";
 import StaffRoute from "@/routes/StaffRoute";
@@ -24,23 +18,15 @@ interface ProjectHeaderProps {
   hasAllocatees?: boolean;
 }
 
-export default function ProjectHeader({
-  title,
-  project,
-  hasConflict,
-  hasAllocatees,
-}: ProjectHeaderProps) {
+export default function ProjectHeader({ title, project, hasConflict, hasAllocatees }: ProjectHeaderProps) {
   // Set values in state to show the change immediagely in the UI.
   const [isProposed, setIsProposed] = useState(false);
   const [isAllocated, setIsAllocated] = useState<boolean>(false);
   const [isAccepted, setIsAccepted] = useState<boolean | null>(null);
-  const [isApproved, setIsApproved] = useState<boolean | null>(
-    project?.approved || null,
-  );
+  const [isApproved, setIsApproved] = useState<boolean | null>(project?.approved || null);
   const [isShortlisted, setIsShortlisted] = useState<boolean>(false);
-  const [areProposalsShutdown, setAreProposalsShutdown] =
-    useState<boolean>(false);
-  const [areUndosShutdown, setAreUndosShutdown] = useState<boolean>(false);
+  const proposalsShutdown = useConfig("proposals_shutdown");
+  const resetsShutdown = useConfig("resets_shutdown");
 
   // Avoid using React Router's data loader
   // to speed up UI by showing project details first.
@@ -50,8 +36,6 @@ export default function ProjectHeader({
     ShortlistService.isShortlisted(project.id).then(setIsShortlisted);
     AllocationService.isAllocated(project.id).then(setIsAllocated);
     AllocationService.isAccepted().then(setIsAccepted);
-    AdminService.areProposalsShutdown().then(setAreProposalsShutdown);
-    AdminService.areUndosShutdown().then(setAreUndosShutdown);
   }, []);
 
   const navigate = useNavigate();
@@ -74,7 +58,7 @@ export default function ProjectHeader({
                   type="primary"
                   className="w-20"
                   onClick={() => {
-                    ProposalService.approveProposal(project!.id);
+                    ProjectService.setProjectStatus(project!.id, { approved: true });
                     setIsApproved(true);
                   }}
                 >
@@ -84,7 +68,7 @@ export default function ProjectHeader({
                   size="small"
                   className="w-20"
                   onClick={() => {
-                    ProposalService.rejectProposal(project!.id);
+                    ProjectService.setProjectStatus(project!.id, { approved: false });
                     setIsApproved(false);
                   }}
                 >
@@ -98,9 +82,7 @@ export default function ProjectHeader({
             type="info"
             showIcon
             message={
-              isApproved
-                ? "You have approved this project proposal."
-                : "You have rejected this project proposal."
+              isApproved ? "You have approved this project proposal." : "You have rejected this project proposal."
             }
             description="Staff member who proposed this project will be notified shortly."
             action={
@@ -109,11 +91,11 @@ export default function ProjectHeader({
                 type="primary"
                 className="w-20"
                 onClick={() => {
-                  ProposalService.undoProposal(project!.id);
+                  ProjectService.resetProjectStatus(project!.id);
                   setIsApproved(null);
                 }}
               >
-                Undo
+                Reset
               </Button>
             }
           />
@@ -153,7 +135,7 @@ export default function ProjectHeader({
                     type="primary"
                     className="w-20"
                     onClick={() => {
-                      AllocationService.acceptAllocation();
+                      AllocationService.setAllocationStatus({ accepted: true });
                       setIsAccepted(true);
                     }}
                   >
@@ -163,7 +145,7 @@ export default function ProjectHeader({
                     size="small"
                     className="w-20"
                     onClick={() => {
-                      AllocationService.declineAllocation();
+                      AllocationService.setAllocationStatus({ accepted: false });
                       setIsAccepted(false);
                     }}
                   >
@@ -177,23 +159,21 @@ export default function ProjectHeader({
               type="info"
               showIcon
               message={
-                isAccepted
-                  ? "You have accepted this project allocation."
-                  : "You have declined this project allocation."
+                isAccepted ? "You have accepted this project allocation." : "You have declined this project allocation."
               }
               description="Contact your administrators for further information."
               action={
-                !areUndosShutdown && (
+                !resetsShutdown && (
                   <Button
                     size="small"
                     type="primary"
                     className="w-20"
                     onClick={() => {
-                      AllocationService.undoAllocation();
+                      AllocationService.resetAllocationStatus();
                       setIsAccepted(null);
                     }}
                   >
-                    Undo
+                    Reset
                   </Button>
                 )
               }
@@ -221,8 +201,8 @@ export default function ProjectHeader({
                     messageSuccess(
                       isShortlisted
                         ? `Successfully unshortlisted project #${project.id}.`
-                        : `Successfully shortlisted project #${project.id}.`,
-                    ),
+                        : `Successfully shortlisted project #${project.id}.`
+                    )
                   )
                   .catch(messageError);
                 setIsShortlisted(!isShortlisted);
@@ -231,7 +211,7 @@ export default function ProjectHeader({
           </Tooltip>
         </StudentRoute>
         <StaffRoute>
-          {isProposed && !areProposalsShutdown && (
+          {isProposed && !proposalsShutdown && (
             <Space>
               <Tooltip title="Edit">
                 <Link to="./edit">
@@ -246,17 +226,11 @@ export default function ProjectHeader({
                     // TODO: This check may be unnecessary.
                     if (!project) return;
                     ProjectService.deleteProject(project.id)
-                      .then(() =>
-                        messageSuccess(
-                          `Successfully deleted project #${project.id}.`,
-                        ),
-                      )
+                      .then(() => messageSuccess(`Successfully deleted project #${project.id}.`))
                       .catch(messageError);
                     // Navigate back to either '/projects' or '/proposed'
                     // or to '/projects' if the history stack is empty.
-                    location.key === "default"
-                      ? navigate("/projects")
-                      : navigate(-1);
+                    location.key === "default" ? navigate("/projects") : navigate(-1);
                   }}
                 />
               </Tooltip>

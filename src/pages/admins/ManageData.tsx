@@ -7,18 +7,7 @@ import {
   InfoCircleOutlined,
   UploadOutlined,
 } from "@ant-design/icons";
-import {
-  Button,
-  Divider,
-  Input,
-  Modal,
-  Popover,
-  Select,
-  Space,
-  Typography,
-  Upload,
-  UploadFile,
-} from "antd";
+import { Button, Divider, Input, Modal, Popover, Select, Space, Typography, Upload, UploadFile } from "antd";
 import { RcFile } from "antd/es/upload";
 import { useState } from "react";
 
@@ -41,13 +30,7 @@ const exampleContent = {
       title: "Dolorum excepturi nostrum ut perspiciatis accusantium.",
       description:
         "Laboriosam reiciendis quas rerum voluptate ducimus corporis. Accusamus excepturi dignissimos molestias dolore modi nisi corporis. Vero ratione atque aliquid odit qui recusandae.",
-      categories: [
-        "necessitatibus",
-        "accusamus",
-        "similique",
-        "dicta",
-        "dignissimos",
-      ],
+      categories: ["necessitatibus", "accusamus", "similique", "dicta", "dignissimos"],
       approved: true,
       proposer_id: 1,
     },
@@ -59,8 +42,7 @@ export default function ManageData() {
   const [exportLoading, setExportLoading] = useState<boolean>(false);
   const [importFiles, setImportFiles] = useState<UploadFile[]>([]);
   const [importLoading, setImportLoading] = useState<boolean>(false);
-  const [resetDatabaseConfirmString, setResetDatabaseConfirmString] =
-    useState<string>("");
+  const [resetDatabaseConfirmString, setResetDatabaseConfirmString] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const { messageSuccess, messageError } = useMessage();
 
@@ -69,12 +51,9 @@ export default function ManageData() {
       <Title level={3}>Manage Data</Title>
       <Divider />
       <Title level={4}>Import Data</Title>
+      <Paragraph className="text-slate-500">Import data from the JSON format.</Paragraph>
       <Paragraph className="text-slate-500">
-        Import data from the JSON format.
-      </Paragraph>
-      <Paragraph className="text-slate-500">
-        The format of the JSON file should be exactly identical to the file
-        exported by the section below. &nbsp;
+        The format of the JSON file should be exactly identical to the file exported by the section below. &nbsp;
         <Popover
           trigger="hover"
           title="Example of JSON Content"
@@ -125,15 +104,12 @@ export default function ManageData() {
       </Space>
       <Divider />
       <Title level={4}>Export Data</Title>
+      <Paragraph className="text-slate-500">Export data in the JSON or CSV format.</Paragraph>
       <Paragraph className="text-slate-500">
-        Export data in the JSON or CSV format.
-      </Paragraph>
-      <Paragraph className="text-slate-500">
-        The JSON format exports all information and is suitable for further
-        processing data with Python etc.
+        The JSON format exports all information and is suitable for further processing data with Python etc.
         <br />
-        The CSV format exports minimal information about the project and
-        allocation and is ready to be shared with staff and students.
+        The CSV format exports minimal information about the project and allocation and is ready to be shared with staff
+        and students.
       </Paragraph>
       <Space direction="vertical">
         <Select
@@ -150,10 +126,7 @@ export default function ManageData() {
           loading={exportLoading}
           onClick={() => {
             setExportLoading(true);
-            (exportType === "json"
-              ? AdminService.exportJson()
-              : AdminService.exportCsv()
-            )
+            (exportType === "json" ? AdminService.exportJson() : AdminService.exportCsv())
               .then((response) => {
                 // Create blob link to download
                 // https://stackoverflow.com/questions/50694881/how-to-download-file-in-react-js
@@ -177,15 +150,12 @@ export default function ManageData() {
       <Paragraph className="text-slate-500">
         Reset the database of this Project Allocator instance.
         <br />
-        This will delete all users and projects registered in the application,
-        except your admin account information, which will be preserved.
+        This will delete all users and projects registered in the application, except your admin account information,
+        which will be preserved.
         <br />
         <b>This operation cannot be undone</b>.
       </Paragraph>
-      <Button
-        icon={<ExclamationCircleOutlined />}
-        onClick={() => setIsModalOpen(true)}
-      >
+      <Button icon={<ExclamationCircleOutlined />} onClick={() => setIsModalOpen(true)}>
         Reset Database
       </Button>
       <Modal
@@ -211,14 +181,11 @@ export default function ManageData() {
         onCancel={() => setIsModalOpen(false)}
       >
         <Paragraph>
-          If you are sure you want to continue, please type{" "}
-          <b>RESET DATABASE</b> in the box below.
+          If you are sure you want to continue, please type <b>RESET DATABASE</b> in the box below.
         </Paragraph>
         <Input
           value={resetDatabaseConfirmString}
-          onChange={(event) =>
-            setResetDatabaseConfirmString(event.target.value)
-          }
+          onChange={(event) => setResetDatabaseConfirmString(event.target.value)}
         />
       </Modal>
     </>

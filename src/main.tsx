@@ -14,7 +14,7 @@ import { TemplateContextProvider } from "./contexts/TemplateContext";
 import { UserContextProvider } from "./contexts/UserContext";
 import Error from "./pages/Error";
 import SignIn from "./pages/SignIn";
-import ManageAllocations, { manageAllocationsLoader } from "./pages/admins/ManageAllocations";
+import ManageAllocations from "./pages/admins/ManageAllocations";
 import ManageData from "./pages/admins/ManageData";
 import ManageNotifications from "./pages/admins/ManageNotifications";
 import ManageProjects, { manageProjectsLoader } from "./pages/admins/ManageProjects";
@@ -147,7 +147,6 @@ const router = createBrowserRouter([
           {
             path: "allocations",
             element: <ManageAllocations />,
-            loader: manageAllocationsLoader,
           },
           {
             path: "notifications",

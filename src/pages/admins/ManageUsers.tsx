@@ -1,4 +1,4 @@
-import { AllocationService, UserRead, UserService } from "@/api";
+import { AdminService, UserRead, UserService } from "@/api";
 import UserList from "@/components/UserList";
 import { CheckOutlined, UploadOutlined } from "@ant-design/icons";
 import { Button, Divider, Modal, Space, Typography, Upload, UploadFile } from "antd";
@@ -10,7 +10,7 @@ const { Title, Paragraph } = Typography;
 
 export async function manageUsersLoader() {
   const allUsers = UserService.readUsers();
-  const unallocatedUsers = AllocationService.readUnallocatedUsers();
+  const unallocatedUsers = AdminService.readUnallocatedUsers();
   return Promise.all([allUsers, unallocatedUsers]);
 }
 
@@ -55,7 +55,7 @@ export default function ManageUsers() {
             reader.onload = async (event) => {
               const content = event.target?.result as string;
               const allEmails = content.split(",").map((email) => email.trim());
-              const missingEmails = await UserService.checkMissingUsers(allEmails);
+              const missingEmails = await AdminService.checkMissingUsers(allEmails);
               setMissingEmails(missingEmails);
               setIsModalOpen(true);
               setCheckMissingUsersLoading(false);
