@@ -1,7 +1,7 @@
+from operator import or_
 from typing import Annotated
 from fastapi import APIRouter, Body, Depends, HTTPException, Security
 from sqlmodel import Session, select
-from operator import or_
 import json
 
 
@@ -9,6 +9,7 @@ from ..dependencies import (
     block_on_proposals_shutdown,
     check_admin,
     check_staff,
+    check_student,
     get_session,
     get_user,
 )
@@ -29,8 +30,8 @@ from ..models import (
 router = APIRouter(tags=["project"])
 
 
-def serialize_project_detail(detail: ProjectDetailCreate | ProjectDetailUpdate):
-    match detail.type:
+def serialize_project_detail(type: str, detail: ProjectDetailCreate | ProjectDetailUpdate):
+    match type:
         case "number" | "slider":
             detail.value = str(detail.value)
         case "switch":
@@ -40,7 +41,7 @@ def serialize_project_detail(detail: ProjectDetailCreate | ProjectDetailUpdate):
 
 
 def parse_project_detail(detail: ProjectDetail):
-    match detail.type:
+    match detail.template.type:
         case "number" | "slider":
             detail.value = int(detail.value)
         case "switch":
@@ -54,7 +55,11 @@ def parse_project_detail(detail: ProjectDetail):
     response_model=list[ProjectDetailTemplateRead],
 )
 async def read_project_detail_templates(session: Session = Depends(get_session)):
-    return session.exec(select(ProjectDetailTemplate)).all()
+    # Sort the templates so that the details are displayed in order of creation.
+    templates = session.exec(select(ProjectDetailTemplate)).all()
+    templates.sort(key=lambda template: template.created_at)
+
+    return templates
 
 
 @router.get(
@@ -73,9 +78,8 @@ async def read_projects(
         # Only show projects disapproved or not approved by admins.
         query = select(Project).where(or_(Project.approved == False, Project.approved == None))
 
-    projects = session.exec(query).all()
-
     # Sort the projects so that the last updated project is returned first.
+    projects = session.exec(query).all()
     projects.sort(key=lambda project: project.updated_at, reverse=True)
 
     for project in projects:
@@ -96,6 +100,7 @@ async def read_project(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
+    # TODO: Model validate before return?
     for detail in project.details:
         parse_project_detail(detail)
     return project
@@ -114,15 +119,6 @@ async def create_project(
     # Prevent staff from approving their own projects.
     project_data.approved = None
 
-    # Check if the key and type are consistent with the template before commit.
-    templates = session.exec(select(ProjectDetailTemplate)).all()
-    for detail in project_data.details:
-        template = next((template for template in templates if template.key == detail.key), None)
-        if not template:
-            raise HTTPException(status_code=400, detail="Invalid project detail key")
-        if template.type != detail.type:
-            raise HTTPException(status_code=400, detail="Invalid project detail type")
-
     # Remove project details in order to validate the project.
     project_data_details = project_data.details
     del project_data.details
@@ -131,7 +127,20 @@ async def create_project(
     # Serialize and validate project details.
     project_details = []
     for detail in project_data_details:
-        serialize_project_detail(detail)
+        # Check if the key and type are consistent with the template before commit.
+        template = session.get(ProjectDetailTemplate, detail.key)
+        if not template:
+            raise HTTPException(status_code=400, detail="Invalid project detail key")
+
+        match template.type:
+            case "select" | "radio":
+                if detail.value not in template.options:
+                    raise HTTPException(status_code=400, detail="Invalid project detail value")
+            case "checkbox" | "categories":
+                if not all(option in template.options for option in json.loads(detail.value)):
+                    raise HTTPException(status_code=400, detail="Invalid project detail value")
+
+        serialize_project_detail(template.type, detail)
         project_detail = ProjectDetail.model_validate(detail)
         project_details.append(project_detail)
     project.details = project_details
@@ -163,21 +172,12 @@ async def update_project(
     project = session.get(Project, project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
-    if not project.proposal or project.proposal.proposer != user:
+    if not project.proposal or project.proposal.proposer.id != user.id:
         # Only project proposer can edit the project.
         raise HTTPException(status_code=401, detail="Project not proposed by user")
 
     # Prevent staff from approving their own projects.
     project_data.approved = project.approved
-
-    # Check if the key and type are consistent with the template before commit.
-    templates = session.exec(select(ProjectDetailTemplate)).all()
-    for detail in project_data.details:
-        template = next((template for template in templates if template.key == detail.key), None)
-        if not template:
-            raise HTTPException(status_code=400, detail="Invalid project detail key")
-        if template.type != detail.type:
-            raise HTTPException(status_code=400, detail="Invalid project detail type")
 
     # Exclude unset fields to perform partial update.
     for key, value in project_data.model_dump(exclude_unset=True, exclude=["details"]).items():
@@ -186,7 +186,20 @@ async def update_project(
     # Serialize and update the values of corresponding project details.
     project_details = []
     for detail in project_data.details:
-        serialize_project_detail(detail)
+        # Check if the key and type are consistent with the template before commit.
+        template = session.get(ProjectDetailTemplate, detail.key)
+        if not template:
+            raise HTTPException(status_code=400, detail="Invalid project detail key")
+
+        match template.type:
+            case "select" | "radio":
+                if detail.value not in template.options:
+                    raise HTTPException(status_code=400, detail="Invalid project detail value")
+            case "checkbox" | "categories":
+                if not all(option in template.options for option in json.loads(detail.value)):
+                    raise HTTPException(status_code=400, detail="Invalid project detail value")
+
+        serialize_project_detail(template.type, detail)
         project_detail = session.get(ProjectDetail, (detail.key, project_id))
         project_detail.value = detail.value
         project_details.append(project_detail)
