@@ -1,15 +1,11 @@
-import { UserService } from "@/api";
-import { authRequest } from "@/auth";
-import { useUser } from "@/contexts/UserContext";
+import { useLoginUser } from "@/hooks/users";
 import { UserOutlined, WindowsOutlined } from "@ant-design/icons";
-import { useMsal } from "@azure/msal-react";
 import { Avatar, Button, Card, Layout, Space, Typography } from "antd";
 
 const { Title, Paragraph } = Typography;
 
 export default function SignIn() {
-  const { instance: msalInstance } = useMsal();
-  const { setUser } = useUser();
+  const loginUser = useLoginUser();
 
   return (
     <Layout className="grid place-content-center">
@@ -18,18 +14,8 @@ export default function SignIn() {
           <Avatar size={96} icon={<UserOutlined />} />
           <Space direction="vertical" className="text-center">
             <Title level={3}>Project Allocator</Title>
-            <Paragraph className="max-w-sm">
-              Project Allocator for Imperial College London
-            </Paragraph>
-            <Button
-              type="primary"
-              onClick={async () => {
-                const { account } = await msalInstance.loginPopup(authRequest);
-                msalInstance.setActiveAccount(account);
-                const user = await UserService.createUser();
-                setUser(user);
-              }}
-            >
+            <Paragraph className="max-w-sm">Project Allocator for Imperial College London</Paragraph>
+            <Button type="primary" onClick={() => loginUser.mutate()}>
               <Space>
                 Sign in with Microsoft
                 <WindowsOutlined />
