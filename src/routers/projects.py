@@ -225,7 +225,7 @@ async def delete_project(
     project = session.get(Project, project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
-    if not project.proposal or project.proposal.proposer != user:
+    if not project.proposal or project.proposal.proposer.id != user.id:
         raise HTTPException(status_code=401, detail="Project not proposed by user")
 
     # We use cascade delete to make sure that
@@ -274,3 +274,33 @@ async def reset_project_status(
     session.add(project)
     session.commit()
     return {"ok": True}
+
+
+@router.get(
+    "/users/me/projects/{project_id}/allocated",
+    response_model=bool,
+    dependencies=[Security(check_student)],
+)
+async def is_project_allocated(
+    project_id: str,
+    user: User = Depends(get_user),
+):
+    if not user.allocation: 
+        return False
+
+    return user.allocation.allocated_project.id == project_id
+
+
+@router.get(
+    "/users/me/projects/{project_id}/accepted",
+    response_model=bool | None,
+    dependencies=[Security(check_student)],
+)
+async def is_project_accepted(
+    project_id: str,
+    user: User = Depends(get_user),
+):
+    if not user.allocation or user.allocation.allocated_project.id != project_id:
+        raise HTTPException(status_code=404, detail="User not allocated to project")
+
+    return user.allocation.accepted

@@ -155,3 +155,17 @@ async def read_shortlisters(
     shortlists = session.exec(query).all()
     shortlists.sort(key=lambda shortlist: shortlist.preference)
     return [shortlist.shortlister for shortlist in shortlists]
+
+
+@router.get(
+    "/users/me/projects/{project_id}/shortlisted",
+    response_model=bool,
+    dependencies=[Security(check_student)],
+)
+async def is_project_shortlisted(
+    project_id: str,
+    user: Annotated[User, Depends(get_user)],
+    session: Annotated[Session, Depends(get_session)],
+):
+    shortlist = session.get(Shortlist, (user.id, project_id))
+    return bool(shortlist)

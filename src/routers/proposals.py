@@ -18,14 +18,18 @@ async def read_proposed(user: Annotated[User, Depends(get_user)]):
 
 
 @router.get(
-    "/users/me/proposed/{project_id}",
+    "/users/me/projects/{project_id}/proposed",
     response_model=bool,
     dependencies=[Security(check_staff)],
 )
-async def is_proposed(
+async def is_project_proposed(
     project_id: str,
     user: Annotated[User, Depends(get_user)],
     session: Annotated[Session, Depends(get_session)],
 ):
     project = session.get(Project, project_id)
-    return project.proposal.proposer == user
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
+
+    # Need to check by id because SQLModel instances are not comparable by default.
+    return project.proposal.proposer.id == user.id
