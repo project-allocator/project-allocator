@@ -1,18 +1,17 @@
-import { AdminService, ProjectRead, ProjectService } from "@/api";
-import { ProjectsTable } from "@/components/ProjectTable";
+import { ProjectsTable } from "@/components/projects/ProjectTable";
+import { useConflictingProjects } from "@/hooks/admins";
+import { useProjects } from "@/hooks/projects";
+import Loading from "@/pages/Loading";
 import { Divider, Typography } from "antd";
-import { useLoaderData } from "react-router-dom";
 
 const { Title, Paragraph } = Typography;
 
-export async function manageProjectsLoader() {
-  const nonApprovedProjects = ProjectService.readProjects(false);
-  const conflictingProjects = AdminService.readConflictingProjects();
-  return Promise.all([nonApprovedProjects, conflictingProjects]);
-}
-
 export default function ManageProjects() {
-  const [nonApprovedProjects, conflictingProjects] = useLoaderData() as [ProjectRead[], ProjectRead[]];
+  const nonApprovedProjects = useProjects(false);
+  const conflictingProjects = useConflictingProjects();
+
+  if (nonApprovedProjects.isLoading || conflictingProjects.isLoading) return <Loading />;
+  if (nonApprovedProjects.isError || conflictingProjects.isError) return null;
 
   return (
     <>
@@ -22,13 +21,13 @@ export default function ManageProjects() {
       <Paragraph className="text-slate-500">
         Projects that have not been rejected or not yet approved by administrators will be shown here.
       </Paragraph>
-      <ProjectsTable projects={nonApprovedProjects} />
+      <ProjectsTable projects={nonApprovedProjects.data!} />
       <Divider />
       <Title level={4}>Conflicting Projects</Title>
       <Paragraph className="text-slate-500">
         Projects with students who have not accepted or declined their allocation will be shown here.
       </Paragraph>
-      <ProjectsTable projects={conflictingProjects} />
+      <ProjectsTable projects={conflictingProjects.data!} />
     </>
   );
 }

@@ -1,25 +1,26 @@
-import { AdminService, UserRead, UserService } from "@/api";
-import UserList from "@/components/UserList";
+import { AdminService } from "@/api";
+import UserList from "@/components/users/UserList";
+import { useUnallocatedUsers } from "@/hooks/admins";
+import { useUsers } from "@/hooks/users";
+import Loading from "@/pages/Loading";
 import { CheckOutlined, UploadOutlined } from "@ant-design/icons";
 import { Button, Divider, Modal, Space, Typography, Upload, UploadFile } from "antd";
 import { RcFile } from "antd/es/upload";
 import { useState } from "react";
-import { useLoaderData } from "react-router-dom";
 
 const { Title, Paragraph } = Typography;
 
-export async function manageUsersLoader() {
-  const allUsers = UserService.readUsers();
-  const unallocatedUsers = AdminService.readUnallocatedUsers();
-  return Promise.all([allUsers, unallocatedUsers]);
-}
-
 export default function ManageUsers() {
-  const [allUsers, unallocatedUsers] = useLoaderData() as [UserRead[], UserRead[]];
+  const allUsers = useUsers();
+  const unallocatedUsers = useUnallocatedUsers();
+
   const [checkMissingUsersFiles, setCheckMissingUsersFiles] = useState<UploadFile[]>([]);
   const [checkMissingUsersLoading, setCheckMissingUsersLoading] = useState<boolean>(false);
   const [missingEmails, setMissingEmails] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
+  if (allUsers.isLoading || unallocatedUsers.isLoading) return <Loading />;
+  if (allUsers.isError || unallocatedUsers.isError) return null;
 
   return (
     <>
@@ -87,13 +88,13 @@ export default function ManageUsers() {
       <Paragraph className="text-slate-500">
         Users who have not been allocated to any project will be shown here.
       </Paragraph>
-      <UserList users={unallocatedUsers} />
+      <UserList users={unallocatedUsers.data!} />
       <Divider />
       <Title level={4}>Manage Users</Title>
       <Paragraph className="text-slate-500">
         Search for users and click on the link to view, edit and delete them.
       </Paragraph>
-      <UserList users={allUsers} />
+      <UserList users={allUsers.data!} />
     </>
   );
 }

@@ -1,5 +1,5 @@
-import { AdminService } from "@/api";
 import { useMessage } from "@/contexts/MessageContext";
+import { useExportData, useImportData, useResetDatabase } from "@/hooks/admins";
 import {
   CheckOutlined,
   DownloadOutlined,
@@ -16,35 +16,50 @@ const { Title, Paragraph } = Typography;
 const exampleContent = {
   users: [
     {
-      id: 1,
-      name: "Ms Carole Bradley",
-      email: "whittakeramber@example.com",
-      role: "admin",
-      accepted: null,
-      allocated_id: null,
+      id: "01HJJM36Y7C7BTCJFD1Z4Y74CQ",
+      email: "jesse83@example.org",
+      name: "Luke Glover",
+      role: "staff",
     },
   ],
   projects: [
     {
-      id: 1,
-      title: "Dolorum excepturi nostrum ut perspiciatis accusantium.",
-      description:
-        "Laboriosam reiciendis quas rerum voluptate ducimus corporis. Accusamus excepturi dignissimos molestias dolore modi nisi corporis. Vero ratione atque aliquid odit qui recusandae.",
-      categories: ["necessitatibus", "accusamus", "similique", "dicta", "dignissimos"],
+      id: "01HJJM36Y7VHSA06C09QFMBVSQ",
+      title: "Born already analysis allow alone author.",
+      description: "International wrong admit society community Democrat. Themselves part window world.",
       approved: true,
-      proposer_id: 1,
+      details: [
+        {
+          project_id: "01HJJM36Y7VHSA06C09QFMBVSQ",
+          key: "ability-commercial",
+          type: "radio",
+          value: "discuss",
+        },
+      ],
+      allocations: [
+        {
+          allocatee_id: "01HJJM371KGTC0AH4S5D37G0JE",
+          allocated_project_id: "01HJJM36Z20YDY2PV0N9H5WRYF",
+          accepted: null,
+        },
+      ],
     },
   ],
 };
 
 export default function ManageData() {
+  const { messageSuccess, messageError } = useMessage();
+
   const [exportType, setExportType] = useState<string>("json");
   const [exportLoading, setExportLoading] = useState<boolean>(false);
   const [importFiles, setImportFiles] = useState<UploadFile[]>([]);
   const [importLoading, setImportLoading] = useState<boolean>(false);
   const [resetDatabaseConfirmString, setResetDatabaseConfirmString] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const { messageSuccess, messageError } = useMessage();
+
+  const importData = useImportData();
+  const exportData = useExportData();
+  const resetDatabase = useResetDatabase();
 
   return (
     <>
@@ -90,11 +105,11 @@ export default function ManageData() {
             const reader = new FileReader();
             reader.onload = (event) => {
               const content = event.target?.result as string;
-              console.log(JSON.parse(content));
-              AdminService.importJson(JSON.parse(content))
-                .then(() => messageSuccess("Successfully imported JSON data."))
-                .catch(messageError)
-                .finally(() => setImportLoading(false));
+              importData.mutate(JSON.parse(content), {
+                onSuccess: () => messageSuccess("Successfully imported JSON data."),
+                onError: () => messageError("Failed to import JSON data."),
+                onSettled: () => setImportLoading(false),
+              });
             };
             reader.readAsText(importFiles[0] as RcFile);
           }}
@@ -126,20 +141,11 @@ export default function ManageData() {
           loading={exportLoading}
           onClick={() => {
             setExportLoading(true);
-            (exportType === "json" ? AdminService.exportJson() : AdminService.exportCsv())
-              .then((response) => {
-                // Create blob link to download
-                // https://stackoverflow.com/questions/50694881/how-to-download-file-in-react-js
-                const url = window.URL.createObjectURL(new Blob([response]));
-                const linkElement = document.createElement("a");
-                linkElement.href = url;
-                linkElement.setAttribute("download", `output.${exportType}`);
-                document.body.appendChild(linkElement);
-                linkElement.click();
-                document.body.removeChild(linkElement);
-              })
-              .catch(messageError)
-              .finally(() => setExportLoading(false));
+            exportData.mutate(exportType, {
+              onSuccess: () => messageSuccess("Successfully exported data."),
+              onError: () => messageError("Failed to export data."),
+              onSettled: () => setExportLoading(false),
+            });
           }}
         >
           Download File
@@ -168,10 +174,11 @@ export default function ManageData() {
               type="primary"
               disabled={resetDatabaseConfirmString != "RESET DATABASE"}
               onClick={() => {
-                AdminService.resetDatabase()
-                  .then(() => messageSuccess("Successfully reset database."))
-                  .catch(messageError)
-                  .finally(() => setIsModalOpen(false));
+                resetDatabase.mutate(undefined, {
+                  onSuccess: () => messageSuccess("Successfully reset database."),
+                  onError: () => messageError("Failed to reset database."),
+                  onSettled: () => setIsModalOpen(false),
+                });
               }}
             >
               OK

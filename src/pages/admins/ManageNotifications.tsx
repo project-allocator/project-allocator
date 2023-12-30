@@ -1,5 +1,5 @@
-import { NotificationService } from "@/api";
 import { useMessage } from "@/contexts/MessageContext";
+import { useSendNotifications } from "@/hooks/notifications";
 import { SendOutlined } from "@ant-design/icons";
 import { Button, Checkbox, Divider, Form, Input, Typography } from "antd";
 import TextArea from "antd/es/input/TextArea";
@@ -8,10 +8,13 @@ import { useState } from "react";
 const { Title, Paragraph } = Typography;
 
 export default function ManageNotifications() {
+  const { messageSuccess, messageError } = useMessage();
+
   const [proposalNotificationsLoading, setProposalNotificationsLoading] = useState<boolean>(false);
   const [allocationNotificationsLoading, setAllocationNotificationsLoading] = useState<boolean>(false);
   const [sendNotificationsLoading, setCustomNotificationsLoading] = useState<boolean>(false);
-  const { messageSuccess, messageError } = useMessage();
+
+  const sendNotifications = useSendNotifications();
 
   return (
     <>
@@ -25,18 +28,22 @@ export default function ManageNotifications() {
       <Button
         icon={<SendOutlined />}
         loading={proposalNotificationsLoading}
-        onClick={async () => {
+        onClick={() => {
           setProposalNotificationsLoading(true);
-          await NotificationService.sendNotifications({
-            notification_data: {
-              title: "Project proposals have been approved.",
-              description: "Students will be able to view and shortlist your project proposals from now onwards.",
+          sendNotifications.mutate(
+            {
+              notification_data: {
+                title: "Project proposals have been approved.",
+                description: "Students will be able to view and shortlist your project proposals from now onwards.",
+              },
+              roles: ["staff", "admin"],
             },
-            roles: ["staff", "admin"],
-          })
-            .then(() => messageSuccess("Successfully sent notifications."))
-            .catch(messageError);
-          setProposalNotificationsLoading(false);
+            {
+              onSuccess: () => messageSuccess("Successfully sent notifications."),
+              onError: () => messageError("Failed to send notifications."),
+              onSettled: () => setProposalNotificationsLoading(false),
+            }
+          );
         }}
       >
         Send
@@ -49,18 +56,22 @@ export default function ManageNotifications() {
       <Button
         icon={<SendOutlined />}
         loading={allocationNotificationsLoading}
-        onClick={async () => {
+        onClick={() => {
           setAllocationNotificationsLoading(true);
-          await NotificationService.sendNotifications({
-            notification_data: {
-              title: "Projects have been allocated.",
-              description: "Please accept or decline your project allocation on the Project Allocator.",
+          sendNotifications.mutate(
+            {
+              notification_data: {
+                title: "Projects have been allocated.",
+                description: "Please accept or decline your project allocation on the Project Allocator.",
+              },
+              roles: ["student"],
             },
-            roles: ["student"],
-          })
-            .then(() => messageSuccess("Successfully sent notifications."))
-            .catch(messageError);
-          setAllocationNotificationsLoading(false);
+            {
+              onSuccess: () => messageSuccess("Successfully sent notifications."),
+              onError: () => messageError("Failed to send notifications."),
+              onSettled: () => setAllocationNotificationsLoading(false),
+            }
+          );
         }}
       >
         Send
@@ -75,18 +86,22 @@ export default function ManageNotifications() {
         layout="vertical"
         autoComplete="off"
         className="max-w-xl"
-        onFinish={async (values) => {
+        onFinish={(values) => {
           setCustomNotificationsLoading(true);
-          await NotificationService.sendNotifications({
-            notification_data: {
-              title: values.title,
-              description: values.description,
+          sendNotifications.mutate(
+            {
+              notification_data: {
+                title: values.title,
+                description: values.description,
+              },
+              roles: values.roles,
             },
-            roles: values.roles,
-          })
-            .then(() => messageSuccess("Successfully sent notifications."))
-            .catch(messageError);
-          setCustomNotificationsLoading(false);
+            {
+              onSuccess: () => messageSuccess("Successfully sent notifications."),
+              onError: () => messageError("Failed to send notifications."),
+              onSettled: () => setCustomNotificationsLoading(false),
+            }
+          );
         }}
       >
         <Form.Item label="Title" name="title">

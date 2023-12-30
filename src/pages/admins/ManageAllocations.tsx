@@ -1,6 +1,7 @@
-import { AllocationService, ConfigService } from "@/api";
-import { useConfig } from "@/contexts/ConfigContext";
 import { useMessage } from "@/contexts/MessageContext";
+import { useAllocateProjects, useDeallocateProjects } from "@/hooks/allocations";
+import { useConfig, useUpdateConfig } from "@/hooks/configs";
+import Loading from "@/pages/Loading";
 import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
 import { Button, Divider, Switch, Typography } from "antd";
 import { useState } from "react";
@@ -8,44 +9,49 @@ import { useState } from "react";
 const { Title, Paragraph } = Typography;
 
 export default function ManageAllocations() {
-  const [allocateProjectsLoading, setAllocateProjectsLoading] = useState<boolean>(false);
-  const [deallocateProjectsLoading, setDeallocateProjectsLoading] = useState<boolean>(false);
   const { messageSuccess, messageError } = useMessage();
 
   const proposalsShutdown = useConfig("proposals_shutdown");
   const shortlistsShutdown = useConfig("shortlists_shutdown");
   const resetsShutdown = useConfig("resets_shutdown");
 
+  const updateProposalsShutdown = useUpdateConfig("proposals_shutdown");
+  const updateShortlistsShutdown = useUpdateConfig("shortlists_shutdown");
+  const updateResetsShutdown = useUpdateConfig("resets_shutdown");
+
+  const allocateProjects = useAllocateProjects();
+  const deallocateProjects = useDeallocateProjects();
+  const [allocateProjectsLoading, setAllocateProjectsLoading] = useState<boolean>(false);
+  const [deallocateProjectsLoading, setDeallocateProjectsLoading] = useState<boolean>(false);
+
+  if (proposalsShutdown.isLoading || shortlistsShutdown.isLoading || resetsShutdown.isLoading) return <Loading />;
+  if (proposalsShutdown.isError || shortlistsShutdown.isError || resetsShutdown.isError) return null;
+
   return (
     <>
+      {/* TODO: Support shortlist buttons etc */}
       <Title level={3}>Manage Allocations</Title>
       <Divider />
       <Title level={4}>Shutdown Proposals</Title>
-      <Paragraph className="text-slate-500">Turn this on to block any new project proposasl from staff.</Paragraph>
+      <Paragraph className="text-slate-500">Turn this on to block any new project proposals from staff.</Paragraph>
       <Switch
-        defaultChecked={proposalsShutdown}
+        defaultChecked={proposalsShutdown.data?.value}
         onChange={() =>
-          proposalsShutdown
-            ? ConfigService.updateConfig("proposals_shutdown", false) // TODO: Update state/cache after migrating to React Query
-                .then(() => messageSuccess("Successfully reopened proposals."))
-                .catch(messageError)
-            : ConfigService.updateConfig("proposals_shutdown", true)
-                .then(() => messageSuccess("Successfully shutdown proposals."))
-                .catch(messageError)
+          updateProposalsShutdown.mutate(!proposalsShutdown.data?.value, {
+            onSuccess: () => messageSuccess("Successfully updated proposals shutdown status"),
+            onError: () => messageError("Failed to update proposals shutdown status"),
+          })
         }
       />
       <Title level={4}>Shutdown Shortlists</Title>
       <Paragraph className="text-slate-500">Turn this on to block any new project shortlists from students.</Paragraph>
       <Switch
-        defaultChecked={shortlistsShutdown}
+        defaultChecked={shortlistsShutdown.data?.value}
         onChange={() =>
-          shortlistsShutdown
-            ? ConfigService.updateConfig("shortlists_shutdown", false)
-                .then(() => messageSuccess("Successfully reopened shortlists."))
-                .catch(messageError)
-            : ConfigService.updateConfig("shortlists_shutdown", true)
-                .then(() => messageSuccess("Successfully shutdown shortlists."))
-                .catch(messageError)
+          updateShortlistsShutdown.mutate(!shortlistsShutdown.data?.value, {
+            onSuccess: () => messageSuccess("Successfully updated shortlists shutdown status"),
+            onError: () => messageError("Failed to update shortlists shutdown status"),
+          })
         }
       />
       <Title level={4}>Shutdown Resets</Title>
@@ -53,15 +59,12 @@ export default function ManageAllocations() {
         Turn this on to block students from resetting "Accept" or "Decline" to their project allocation.
       </Paragraph>
       <Switch
-        defaultChecked={resetsShutdown}
+        defaultChecked={resetsShutdown.data?.value}
         onChange={() =>
-          resetsShutdown
-            ? ConfigService.updateConfig("resets_shutdown", false)
-                .then(() => messageSuccess("Successfully reopened resets."))
-                .catch(messageError)
-            : ConfigService.updateConfig("resets_shutdown", true)
-                .then(() => messageSuccess("Successfully shutdown resets."))
-                .catch(messageError)
+          updateResetsShutdown.mutate(!resetsShutdown.data?.value, {
+            onSuccess: () => messageSuccess("Successfully updated resets shutdown status"),
+            onError: () => messageError("Failed to update resets shutdown status"),
+          })
         }
       />
       <Divider />
@@ -70,12 +73,13 @@ export default function ManageAllocations() {
       <Button
         icon={<CheckOutlined />}
         loading={allocateProjectsLoading}
-        onClick={async () => {
+        onClick={() => {
           setAllocateProjectsLoading(true);
-          await AllocationService.allocateProjects()
-            .then(() => messageSuccess("Successfully allocated projects."))
-            .catch(messageError);
-          setAllocateProjectsLoading(false);
+          allocateProjects.mutate(undefined, {
+            onSuccess: () => messageSuccess("Successfully allocated projects."),
+            onError: () => messageError("Failed to allocate projects."),
+            onSettled: () => setAllocateProjectsLoading(false),
+          });
         }}
       >
         Allocate
@@ -85,12 +89,13 @@ export default function ManageAllocations() {
       <Button
         icon={<CloseOutlined />}
         loading={deallocateProjectsLoading}
-        onClick={async () => {
+        onClick={() => {
           setDeallocateProjectsLoading(true);
-          await AllocationService.deallocateProjects()
-            .then(() => messageSuccess("Successfully deallocated projects."))
-            .catch(messageError);
-          setDeallocateProjectsLoading(false);
+          deallocateProjects.mutate(undefined, {
+            onSuccess: () => messageSuccess("Successfully deallocated projects."),
+            onError: () => messageError("Failed to deallocate projects."),
+            onSettled: () => setDeallocateProjectsLoading(false),
+          });
         }}
       >
         Deallocate
