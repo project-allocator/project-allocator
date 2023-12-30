@@ -1,11 +1,6 @@
 import { useMessage } from "@/contexts/MessageContext";
 import { useConfig } from "@/hooks/configs";
-import {
-  useIsProjectShortlisted,
-  useShortlistProject,
-  useShortlistedProjects,
-  useUnshortlistProject,
-} from "@/hooks/shortlists";
+import { useShortlistProject, useShortlistedProjects, useUnshortlistProject } from "@/hooks/shortlists";
 import { HeartOutlined } from "@ant-design/icons";
 import { Button, Tooltip } from "antd";
 import { useParams } from "react-router-dom";
@@ -16,16 +11,16 @@ export default function ProjectShortlistButton() {
   const maxShortlists = useConfig("max_shortlists");
   const shortlistShutdown = useConfig("shortlists_shutdown");
 
-  const { id: projectId } = useParams();
-  const isShortlisted = useIsProjectShortlisted(projectId!);
   const shortlistedProjects = useShortlistedProjects();
+  const { id: projectId } = useParams();
   const shortlistProject = useShortlistProject(projectId!);
   const unshortlistProject = useUnshortlistProject(projectId!);
 
   if (maxShortlists.isLoading || maxShortlists.isError) return null;
   if (shortlistShutdown.isLoading || shortlistShutdown.isError || shortlistShutdown.data?.value) return null;
   if (shortlistedProjects.isLoading || shortlistedProjects.isError) return null;
-  if (isShortlisted.isLoading || isShortlisted.isError) return null;
+
+  const isShortlisted = shortlistedProjects.data!.some((project) => project.id === projectId);
 
   return (
     <Tooltip title="Shortlist">
@@ -33,10 +28,10 @@ export default function ProjectShortlistButton() {
         shape="circle"
         icon={<HeartOutlined />}
         disabled={maxShortlists.data!.value >= shortlistedProjects.data!.length}
-        type={isShortlisted.data ? "primary" : "default"}
+        type={isShortlisted ? "primary" : "default"}
         onClick={() =>
           // TODO: Toggle shortlisted?
-          isShortlisted.data
+          isShortlisted
             ? unshortlistProject.mutate(undefined, {
                 onSuccess: () => messageSuccess(`Successfully unshortlisted project.`),
                 onError: () => messageError(`Failed to unshortlist project.`),

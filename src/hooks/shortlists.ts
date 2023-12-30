@@ -10,10 +10,6 @@ export function useShortlistedProjects() {
   return useQuery(["projects", "shortlisted"], () => ShortlistService.readShortlistedProjects());
 }
 
-export function useIsProjectShortlisted(projectId: string) {
-  return useQuery(["projects", "shortlisted", projectId], () => ShortlistService.isProjectShortlisted(projectId));
-}
-
 export function useShortlistProject(projectId: string) {
   const queryClient = useQueryClient();
 
