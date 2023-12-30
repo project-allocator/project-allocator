@@ -6,7 +6,7 @@ from sqlmodel.pool import StaticPool
 
 from src.main import app
 from src.auth import azure_scheme
-from src.dependencies import get_session, get_token, get_user_or_none
+from src.dependencies import get_env, get_session, get_token, get_user_or_none
 from src.models import Config, User
 
 
@@ -72,6 +72,8 @@ def session_fixture(admin_user: User, staff_user: User, student_user: User):
 
 @pytest.fixture(name="app")
 def app_fixture(session: Session):
+    app.dependency_overrides[get_env] = lambda: "production"
+
     # We mock FastAPI dependencies by overriding them with our own functions.
     app.dependency_overrides[get_session] = lambda: session
 

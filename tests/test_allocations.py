@@ -125,15 +125,7 @@ def test_add_allocatees(
 
     response = admin_client.post(
         f"/api/projects/{project.id}/allocatees",
-        json=[
-            {
-                "id": student.id,
-                "email": student.email,
-                "name": student.name,
-                "role": student.role,
-            }
-            for student in students
-        ],
+        json=[student.id for student in students],
     )
     data = response.json()
     assert response.status_code == 200
@@ -166,7 +158,7 @@ def test_remove_allocatee(
     assert len(project.allocations) == len(students) - 1
 
 
-def test_read_allocated(
+def test_read_allocated_project(
     student_user: User,
     student_client: TestClient,
     session: Session,
@@ -185,37 +177,3 @@ def test_read_allocated(
     data = response.json()
     assert response.status_code == 200
     assert data["id"] == project.id
-
-
-def test_is_allocated(
-    student_user: User,
-    student_client: TestClient,
-    session: Session,
-):
-    project = ProjectFactory.build(approved=True)
-    allocation = Allocation(allocatee=student_user, allocated_project=project)
-    session.add(project)
-    session.add(allocation)
-    session.commit()
-
-    response = student_client.get(f"/api/users/me/allocated/{project.id}")
-    data = response.json()
-    assert response.status_code == 200
-    assert data is True
-
-
-def test_is_accepted(
-    student_user: User,
-    student_client: TestClient,
-    session: Session,
-):
-    project = ProjectFactory.build(approved=True)
-    allocation = Allocation(allocatee=student_user, allocated_project=project, accepted=True)
-    session.add(project)
-    session.add(allocation)
-    session.commit()
-
-    response = student_client.get("/api/users/me/allocated/accepted")
-    data = response.json()
-    assert response.status_code == 200
-    assert data is True

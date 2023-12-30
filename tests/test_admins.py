@@ -100,7 +100,7 @@ def test_read_unallocated_users(
 def test_export_json_and_csv(admin_client: TestClient, session: Session):
     students = UserFactory.build_batch(50, role="student")
     staff = UserFactory.build_batch(2, role="admin") + UserFactory.build_batch(10, role="staff")
-    templates = ProjectDetailTemplateFactory.build_batch(5)
+    templates = ProjectDetailTemplateFactory.build_batch(10)
     projects = ProjectFactory.build_batch(10, details__templates=templates)
     # fmt: off
     approved_projects = [project for project in projects if project.approved]
@@ -162,7 +162,7 @@ def test_export_json_and_csv(admin_client: TestClient, session: Session):
 def test_import_json(admin_client: TestClient, session: Session):
     students = UserFactory.build_batch(50, role="student")
     staff = UserFactory.build_batch(2, role="admin") + UserFactory.build_batch(10, role="staff")
-    templates = ProjectDetailTemplateFactory.build_batch(5)
+    templates = ProjectDetailTemplateFactory.build_batch(10)
     projects = ProjectFactory.build_batch(10, details__templates=templates)
     # We construct proposals and allocations manually instead of using SQLModel models
     # because the foreign keys are not updated until we commit the session.
@@ -203,7 +203,7 @@ def test_import_json(admin_client: TestClient, session: Session):
 def test_reset_database(admin_client: TestClient, session: Session):
     students = UserFactory.build_batch(50, role="student")
     staff = UserFactory.build_batch(2, role="admin") + UserFactory.build_batch(10, role="staff")
-    templates = ProjectDetailTemplateFactory.build_batch(5)
+    templates = ProjectDetailTemplateFactory.build_batch(10)
     projects = ProjectFactory.build_batch(10, details__templates=templates)
     # fmt: off
     approved_projects = [project for project in projects if project.approved]

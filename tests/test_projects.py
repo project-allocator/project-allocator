@@ -2,7 +2,7 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session
 import random
 
-from src.models import User, Project, Proposal
+from src.models import User, Project, Proposal, Allocation
 from src.factories import ProjectFactory, ProjectDetailTemplateFactory
 
 
@@ -61,7 +61,7 @@ def test_read_project(
     student_client: TestClient,
     session: Session,
 ):
-    templates = ProjectDetailTemplateFactory.build_batch(5)
+    templates = ProjectDetailTemplateFactory.build_batch(10)
     project = ProjectFactory.build(details__templates=templates, approved=True)
     proposal = Proposal(proposer=staff_user, proposed_project=project)
     session.add_all(templates)
@@ -84,7 +84,7 @@ def test_create_project(
     staff_client: TestClient,
     session: Session,
 ):
-    templates = ProjectDetailTemplateFactory.build_batch(5)
+    templates = ProjectDetailTemplateFactory.build_batch(10)
     session.add_all(templates)
     session.commit()
 
@@ -94,7 +94,7 @@ def test_create_project(
         "/api/projects",
         json={
             **project.model_dump(include=["title", "description"]),
-            "details": [detail.model_dump(include=["key", "type", "value"]) for detail in project.details],
+            "details": [detail.model_dump(include=["key", "value"]) for detail in project.details],
         },
     )
     data = response.json()
@@ -120,7 +120,7 @@ def test_update_project(
     staff_client: TestClient,
     session: Session,
 ):
-    templates = ProjectDetailTemplateFactory.build_batch(5)
+    templates = ProjectDetailTemplateFactory.build_batch(10)
     project = ProjectFactory.build(details__templates=templates)
     proposal = Proposal(proposer=staff_user, proposed_project=project)
     session.add_all(templates)
@@ -134,7 +134,7 @@ def test_update_project(
         f"/api/projects/{project.id}",
         json={
             **new_project.model_dump(include=["title", "description"]),
-            "details": [detail.model_dump(include=["key", "type", "value"]) for detail in new_project.details],
+            "details": [detail.model_dump(include=["key", "value"]) for detail in new_project.details],
         },
     )
     data = response.json()
@@ -213,3 +213,29 @@ def test_reset_project_status(
 
     session.refresh(project)
     assert project.approved is None
+
+
+def test_is_project_allocated(student_client: TestClient, student_user: User, session: Session):
+    project = ProjectFactory.build()
+    allocation = Allocation(allocatee=student_user, allocated_project=project)
+    session.add(project)
+    session.add(allocation)
+    session.commit()
+
+    response = student_client.get(f"/api/users/me/projects/{project.id}/allocated")
+    data = response.json()
+    assert response.status_code == 200
+    assert data is True
+
+
+def test_is_project_accepted(student_client: TestClient, student_user: User, session: Session):
+    project = ProjectFactory.build()
+    allocation = Allocation(allocatee=student_user, allocated_project=project)
+    session.add(project)
+    session.add(allocation)
+    session.commit()
+
+    response = student_client.get(f"/api/users/me/projects/{project.id}/accepted")
+    data = response.json()
+    assert response.status_code == 200
+    assert data is allocation.accepted

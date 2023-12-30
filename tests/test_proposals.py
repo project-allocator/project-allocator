@@ -1,12 +1,11 @@
 from fastapi.testclient import TestClient
 from sqlmodel import Session
-import random
 
 from src.models import User, Proposal
 from src.factories import ProjectFactory
 
 
-def test_read_proposed(
+def test_read_proposed_projects(
     staff_user: User,
     staff_client: TestClient,
     session: Session,
@@ -27,7 +26,7 @@ def test_read_proposed(
         == set([project.title for project in projects])
 
 
-def test_is_proposed(
+def test_is_project_proposed(
     staff_user: User,
     admin_user: User,
     staff_client: TestClient,
@@ -39,7 +38,7 @@ def test_is_proposed(
     session.add(proposal)
     session.commit()
 
-    response = staff_client.get(f"/api/users/me/proposed/{project.id}")
+    response = staff_client.get(f"/api/users/me/projects/{project.id}/proposed")
     data = response.json()
     assert response.status_code == 200
     assert data is True
@@ -48,7 +47,7 @@ def test_is_proposed(
     session.merge(proposal)  # override previous proposal
     session.commit()
 
-    response = staff_client.get(f"/api/users/me/proposed/{project.id}")
+    response = staff_client.get(f"/api/users/me/projects/{project.id}/proposed")
     data = response.json()
     assert response.status_code == 200
     assert data is False
