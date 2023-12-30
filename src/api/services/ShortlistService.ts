@@ -106,25 +106,4 @@ export class ShortlistService {
         });
     }
 
-    /**
-     * Is Project Shortlisted
-     * @param projectId
-     * @returns boolean Successful Response
-     * @throws ApiError
-     */
-    public static isProjectShortlisted(
-        projectId: string,
-    ): CancelablePromise<boolean> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/users/me/projects/{project_id}/shortlisted',
-            path: {
-                'project_id': projectId,
-            },
-            errors: {
-                422: `Validation Error`,
-            },
-        });
-    }
-
 }

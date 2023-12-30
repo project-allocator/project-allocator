@@ -22,25 +22,4 @@ export class ProposalService {
         });
     }
 
-    /**
-     * Is Project Proposed
-     * @param projectId
-     * @returns boolean Successful Response
-     * @throws ApiError
-     */
-    public static isProjectProposed(
-        projectId: string,
-    ): CancelablePromise<boolean> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/users/me/projects/{project_id}/proposed',
-            path: {
-                'project_id': projectId,
-            },
-            errors: {
-                422: `Validation Error`,
-            },
-        });
-    }
-
 }
