@@ -67,9 +67,31 @@ class ProjectUpdate(SQLModel):
     approved: Optional[bool] = None
 
 
-class ProjectDetailBase(SQLModel):
+class ProjectDetailTemplateBase(SQLModel):
     key: str
     type: str
+    required: bool
+    options: list[str]
+
+    # Used by the frontend to describe the detail.
+    title: str
+    description: str
+    message: str  # error message
+
+
+class ProjectDetailTemplate(TimestampMixin, ProjectDetailTemplateBase, table=True):
+    __tablename__ = "project_detail_template"
+
+    key: str = Field(primary_key=True)
+    options: list[str] = Field(sa_column=Column(JSON), default=[])
+
+
+class ProjectDetailTemplateRead(ProjectDetailTemplateBase):
+    pass
+
+
+class ProjectDetailBase(SQLModel):
+    key: str
     value: Any  # any type to allow input to be parsed
 
 
@@ -77,8 +99,10 @@ class ProjectDetailBase(SQLModel):
 class ProjectDetail(TimestampMixin, SQLModel, table=True):
     __tablename__ = "project_detail"
 
-    key: str = Field(primary_key=True)
-    type: str
+    key: str = Field(
+        primary_key=True,
+        foreign_key="project_detail_template.key",
+    )
     value: str  # must be stringified in database
 
     project_id: str = Field(
@@ -88,6 +112,8 @@ class ProjectDetail(TimestampMixin, SQLModel, table=True):
         default=None,
     )
     project: "Project" = Relationship(back_populates="details")
+
+    template: "ProjectDetailTemplate" = Relationship()
 
 
 class ProjectDetailRead(ProjectDetailBase):
@@ -112,26 +138,3 @@ class ProjectCreateWithDetails(ProjectCreate):
 
 class ProjectUpdateWithDetails(ProjectUpdate):
     details: list["ProjectDetailUpdate"] = []
-
-
-class ProjectDetailTemplateBase(SQLModel):
-    key: str
-    type: str
-    required: bool
-    options: list[str]
-
-    # Used by the frontend to describe the detail.
-    title: str
-    description: str
-    message: str  # error message
-
-
-class ProjectDetailTemplate(TimestampMixin, ProjectDetailTemplateBase, table=True):
-    __tablename__ = "project_detail_template"
-
-    key: str = Field(primary_key=True)
-    options: list[str] = Field(sa_column=Column(JSON), default=[])
-
-
-class ProjectDetailTemplateRead(ProjectDetailTemplateBase):
-    pass

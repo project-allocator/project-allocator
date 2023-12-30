@@ -29,9 +29,9 @@ class ProjectFactory(factory.alchemy.SQLAlchemyModelFactory):
         self.details = [
             ProjectDetailFactory.build(
                 key=template.key,
-                type=template.type,
-                options=template.options,
-                project_id=self.id,
+                value__type=template.type,
+                value__options=template.options,
+                project_id=self.id,  # TODO: Try project=self
             )
             for template in kwargs["templates"]
         ]
@@ -41,25 +41,30 @@ class ProjectDetailFactory(factory.alchemy.SQLAlchemyModelFactory):
     class Meta:
         model = ProjectDetail
 
+    value__type = None
+    value__options = []
+
     # This factory is used by ProjectFactory.
-    # Attributes such as key, type, options, project_id are provided by ProjectFactory.
-    @factory.lazy_attribute
-    def value(self):
-        match self.type:
+    @factory.post_generation
+    def value(self, create, extracted, **kwargs):
+        assert not create
+        assert not extracted
+
+        match kwargs["type"]:
             case "textfield":
-                return _fake.sentence()
+                self.value = _fake.sentence()
             case "textarea":
-                return _fake.paragraph()
+                self.value = _fake.paragraph()
             case "number" | "slider":
-                return str(_fake.random_int(min=0, max=1000000))
+                self.value = str(_fake.random_int(min=0, max=1000000))
             case "date" | "time":
-                return str(_fake.date_time())
+                self.value = str(_fake.date_time())
             case "switch":
-                return "true" if _fake.boolean() else "false"
+                self.value = "true" if _fake.boolean() else "false"
             case "select" | "radio":
-                return _fake.random_element(elements=self.options)
+                self.value = _fake.random_element(elements=kwargs["options"])
             case "checkbox" | "categories":
-                return json.dumps(_fake.random_elements(elements=self.options, unique=True))
+                self.value = json.dumps(_fake.random_elements(elements=kwargs["options"], unique=True))
 
 
 class ProjectDetailTemplateFactory(factory.alchemy.SQLAlchemyModelFactory):
