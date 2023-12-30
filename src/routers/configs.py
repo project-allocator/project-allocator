@@ -1,44 +1,48 @@
-from typing import Annotated, Any
-from fastapi import APIRouter, Body, Depends, HTTPException
-from sqlmodel import Session, select
+from typing import Annotated
+from fastapi import APIRouter, HTTPException, Depends
+from sqlmodel import Session
 import json
 
 from ..dependencies import get_session
-from ..models import Config, ConfigRead
+from ..models import Config, ConfigRead, ConfigUpdate
 
 router = APIRouter(tags=["config"])
 
 
-def serialize_config_value(key: str, value: Any) -> str:
+def serialize_config(key: str, config: ConfigUpdate):
     match key:
         case "admin_emails":
-            return json.dumps(value)
+            config.value = json.dumps(config.value)
         case "max_shortlists" | "max_allocations":
-            return str(value)
+            config.value = str(config.value)
         case "proposals_shutdown" | "shortlists_shutdown" | "resets_shutdown":
-            return "true" if value else "false"
+            config.value = "true" if config.value else "false"
 
 
-def parse_config_value(key: str, value: str) -> Any:
-    match key:
+def parse_config(config: Config):
+    match config.key:
         case "admin_emails":
-            return json.loads(value)
+            config.value = json.loads(config.value)
         case "max_shortlists" | "max_allocations":
-            return int(value)
+            config.value = int(config.value)
         case "proposals_shutdown" | "shortlists_shutdown" | "resets_shutdown":
-            return value == "true"
+            config.value = config.value == "true"
 
 
 @router.get(
-    "/configs",
-    response_model=list[ConfigRead],
+    "/configs/{key}",
+    response_model=ConfigRead,
 )
-async def read_configs(session: Annotated[Session, Depends(get_session)]):
-    configs = session.exec(select(Config)).all()
+async def read_config(
+    key: str,
+    session: Annotated[Session, Depends(get_session)],
+):
+    config = session.get(Config, key)
+    if not config:
+        raise HTTPException(status_code=404, detail="Config not found")
 
-    for config in configs:
-        config.value = parse_config_value(config.key, config.value)
-    return configs
+    parse_config(config)
+    return config
 
 
 @router.put(
@@ -47,17 +51,19 @@ async def read_configs(session: Annotated[Session, Depends(get_session)]):
 )
 async def update_config(
     key: str,
-    value: Any,  # top-level any becomes Query() parameter by default
+    # Cannot use any type for config_data
+    # because Body() cannot hold basic types and composite types at the same time.
+    config_data: ConfigUpdate,
     session: Annotated[Session, Depends(get_session)],
 ):
     config = session.get(Config, key)
     if not config:
         raise HTTPException(status_code=404, detail="Config not found")
 
-    config.value = serialize_config_value(key, value)
+    serialize_config(key, config_data)
+    config.value = config_data.value
     session.add(config)
     session.commit()
 
-    config = ConfigRead.model_validate(config)
-    config.value = parse_config_value(config.key, config.value)
+    parse_config(config)
     return config

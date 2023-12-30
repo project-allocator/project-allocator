@@ -19,3 +19,7 @@ class Config(TimestampMixin, SQLModel, table=True):
 
 class ConfigRead(ConfigBase):
     pass
+
+
+class ConfigUpdate(SQLModel):
+    value: Any  # any type to allow input to be parsed
