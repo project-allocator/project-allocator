@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi import APIRouter, HTTPException, Depends, Security
 from sqlmodel import Session, select
 
 from ..models import (
@@ -26,7 +26,7 @@ router = APIRouter(tags=["shortlist"])
     response_model=list[ProjectRead],
     dependencies=[Security(check_student)],
 )
-async def read_shortlisted(
+async def read_shortlisted_projects(
     user: Annotated[User, Depends(get_user)],
     session: Annotated[Session, Depends(get_session)],
 ):
@@ -39,25 +39,11 @@ async def read_shortlisted(
     return [shortlist.shortlisted_project for shortlist in shortlists]
 
 
-@router.get(
-    "/users/me/shortlisted/{project_id}",
-    response_model=bool,
-    dependencies=[Security(check_student)],
-)
-async def is_shortlisted(
-    project_id: str,
-    user: Annotated[User, Depends(get_user)],
-    session: Annotated[Session, Depends(get_session)],
-):
-    shortlist = session.get(Shortlist, (user.id, project_id))
-    return bool(shortlist)
-
-
 @router.post(
     "/users/me/shortlisted/{project_id}",
     dependencies=[Security(check_student), Security(block_on_shortlists_shutdown)],
 )
-async def set_shortlisted(
+async def shortlist_project(
     project_id: str,
     user: Annotated[User, Depends(get_user)],
     session: Annotated[Session, Depends(get_session)],
@@ -86,7 +72,7 @@ async def set_shortlisted(
     "/users/me/shortlisted/{project_id}",
     dependencies=[Security(check_student), Security(block_on_shortlists_shutdown)],
 )
-async def unset_shortlisted(
+async def unshortlist_project(
     project_id: str,
     user: Annotated[User, Depends(get_user)],
     session: Annotated[Session, Depends(get_session)],
@@ -111,7 +97,7 @@ async def unset_shortlisted(
     "/users/me/shortlisted",
     dependencies=[Security(check_student), Security(block_on_shortlists_shutdown)],
 )
-async def reorder_shortlisted(
+async def reorder_shortlisted_projects(
     project_ids: list[str],
     user: Annotated[User, Depends(get_user)],
     session: Annotated[Session, Depends(get_session)],
