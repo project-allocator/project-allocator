@@ -3,22 +3,15 @@ import { NotificationInstance } from "antd/es/notification/interface";
 import React, { useContext } from "react";
 
 interface MessageContextType {
+  // TODO: Naming can be confusing here
   instance: NotificationInstance;
   messageSuccess: (message: string) => void;
   messageError: (message: string) => void;
 }
 
-const MessageContext = React.createContext<MessageContextType | undefined>(
-  undefined,
-);
+const MessageContext = React.createContext<MessageContextType | undefined>(undefined);
 
-interface MessageContextProviderProps {
-  children: React.ReactNode;
-}
-
-export function MessageContextProvider({
-  children,
-}: MessageContextProviderProps) {
+export function MessageContextProvider({ children }: { children: React.ReactNode }) {
   const [instance, contextHolder] = notification.useNotification();
 
   return (
