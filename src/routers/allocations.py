@@ -1,7 +1,6 @@
 from typing import Annotated, Optional
 from fastapi import APIRouter, HTTPException, Depends, Security, Body
 from sqlmodel import Session, select
-from operator import and_
 
 from .. import algorithms
 from ..dependencies import (
@@ -109,8 +108,6 @@ async def read_allocatees(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    # TODO:
-    # This is a temporary hack which needs to be fixed.
     allocatees = []
     for allocation in project.allocations:
         allocatee = UserRead.model_validate(allocation.allocatee)
@@ -125,7 +122,7 @@ async def read_allocatees(
 )
 async def add_allocatees(
     project_id: str,
-    users: list[UserRead],
+    user_ids: list[str],
     session: Annotated[Session, Depends(get_session)],
 ):
     project = session.get(Project, project_id)
@@ -135,8 +132,10 @@ async def add_allocatees(
         # Cannot add students to non approved projects
         raise HTTPException(status_code=404, detail="Project not approved")
 
-    for user in users:
-        user = session.get(User, user.id)
+    for user_id in user_ids:
+        user = session.get(User, user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
         if user.role != "student":
             raise HTTPException(status_code=404, detail="User not a student")
 
@@ -170,32 +169,8 @@ async def remove_allocatee(
     response_model=ProjectRead,
     dependencies=[Security(check_student)],
 )
-async def read_allocated(user: Annotated[User, Depends(get_user)]):
+async def read_allocated_project(user: Annotated[User, Depends(get_user)]):
     if not user.allocation:
         raise HTTPException(status_code=404, detail="User not allocated to project")
 
     return user.allocation.allocated_project
-
-
-@router.get(
-    "/users/me/allocated/accepted",
-    response_model=Optional[bool],
-    dependencies=[Security(check_student)],
-)
-async def is_accepted(user: User = Depends(get_user)):
-    if not user.allocation:
-        raise HTTPException(status_code=404, detail="User not allocated to project")
-
-    return user.allocation.accepted
-
-
-@router.get(
-    "/users/me/allocated/{project_id}",
-    response_model=bool,
-    dependencies=[Security(check_student)],
-)
-async def is_allocated(
-    project_id: str,
-    user: Annotated[User, Depends(get_user)],
-):
-    return user.allocation and user.allocation.allocated_project.id == project_id
