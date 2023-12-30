@@ -1,145 +1,162 @@
-import {
-  AllocationService,
-  ProjectReadWithDetails,
-  ProjectService,
-  ShortlistService,
-  UserRead,
-  UserService,
-} from "@/api";
-import { ProjectContent } from "@/components/ProjectContent";
-import ProjectHeader from "@/components/ProjectHeader";
-import StaffRoute from "@/routes/StaffRoute";
+import ProjectAlert from "@/components/projects/ProjectAlert";
+import { ProjectContent } from "@/components/projects/ProjectContent";
+import ProjectEditDeleteButtons from "@/components/projects/ProjectEditDeleteButtons";
+import ProjectShortlistButton from "@/components/projects/ProjectShortlistButton";
+import { useUnallocatedUsers } from "@/hooks/admins";
+import { useAddAllocatees, useAllocatees, useRemoveAllocatee } from "@/hooks/allocations";
+import { useProject } from "@/hooks/projects";
+import { useShortlisters } from "@/hooks/shortlists";
+import { useCurrentUserRole } from "@/hooks/users";
+import Loading from "@/pages/Loading";
 import { getInitialLetters } from "@/utils";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
-import { Avatar, Button, Divider, List, Select, Tooltip, Typography } from "antd";
-import { useEffect, useState } from "react";
-import { Link, useLoaderData, type LoaderFunctionArgs } from "react-router-dom";
+import { Avatar, Button, Divider, List, Select, Space, Tooltip, Typography } from "antd";
+import { useState } from "react";
+import { Link, useParams } from "react-router-dom";
 
 const { Title, Paragraph, Text } = Typography;
 
-export async function projectLoader({ params }: LoaderFunctionArgs) {
-  const project = ProjectService.readProject(params.id!);
-  const students = UserService.readUsers("student");
-  const shortlisters = ShortlistService.readShortlisters(params.id!);
-  const allocatees = AllocationService.readAllocatees(params.id!);
-  return Promise.all([project, students, shortlisters, allocatees]);
-}
-
 export default function Project() {
-  const [project, students, shortlisters, initialAllocatees] = useLoaderData() as [
-    ProjectReadWithDetails,
-    UserRead[],
-    UserRead[],
-    UserRead[],
-  ];
+  const { isAdmin, isStaff, isStudent } = useCurrentUserRole();
 
-  const [allocatees, setAllocatees] = useState<UserRead[]>(initialAllocatees);
-  const [extraAllocateeIndices, setExtraAllocateeIndices] = useState<number[]>([]);
+  const { id } = useParams();
+  const project = useProject(id!);
 
-  const [hasConflict, setHasConflict] = useState<boolean | null>(null);
-  const updateHasConflict = (allocatees: UserRead[]) =>
-    setHasConflict(!allocatees?.every((allocatee) => allocatee.accepted));
-  useEffect(() => updateHasConflict(allocatees), []);
+  if (project.isLoading) return <Loading />;
+  if (project.isError) return null;
 
   return (
     <>
-      <ProjectHeader
-        title="Project"
-        project={project}
-        hasConflict={hasConflict}
-        hasAllocatees={allocatees?.length > 0}
-      />
+      <ProjectAlert />
+      <Space className="flex items-end justify-between">
+        <Title level={3}>Project</Title>
+        {isStudent && <ProjectShortlistButton />}
+        {(isStaff || isAdmin) && <ProjectEditDeleteButtons />}
+      </Space>
       <Divider />
-      <ProjectContent project={project} />
-      <StaffRoute>
-        <Divider />
-        <Title level={4}>Allocated Students</Title>
-        <Paragraph className="text-slate-500">
-          List of students allocated by the administrator will be shown here.
-        </Paragraph>
-        <div className="flex gap-x-2 mt-6 mr-2">
-          <Select
-            mode="multiple"
-            allowClear
-            className="w-full grow"
-            placeholder="Select students to add"
-            value={extraAllocateeIndices}
-            options={students.map((student, index) => ({
-              label: `${student.name} (${student.email})`,
-              value: index,
-            }))}
-            filterOption={(inputValue, option) => {
-              if (!option) return false;
-              const target = inputValue.toLowerCase();
-              const student = students[option!.value];
-              return [student.email, student.name].some((item) => item.toLowerCase().includes(target));
-            }}
-            onChange={(indices: number[]) => setExtraAllocateeIndices(indices)}
-          />
-          <Button
-            shape="circle"
-            className="flex-none"
-            icon={<PlusOutlined />}
-            onClick={() => {
-              const extraAllocatees = extraAllocateeIndices.map((index) => students[index]);
-              AllocationService.addAllocatees(project.id, extraAllocatees);
-              const newAllocatees = [...extraAllocatees, ...allocatees];
-              setAllocatees(newAllocatees);
-              updateHasConflict(newAllocatees);
-              setExtraAllocateeIndices([]);
-            }}
-          />
-        </div>
-        <List
-          className="mt-4"
-          itemLayout="horizontal"
-          dataSource={allocatees}
-          renderItem={(allocatee) => (
-            <List.Item
-              actions={[
-                <Tooltip title="Delete">
-                  <Button
-                    className="border-none"
-                    icon={<DeleteOutlined />}
-                    onClick={() => {
-                      AllocationService.removeAllocatee(project.id, allocatee.id);
-                      const newAllocatees = allocatees.filter((item) => item.id !== allocatee.id);
-                      setAllocatees(newAllocatees);
-                      updateHasConflict(newAllocatees);
-                    }}
-                  />
-                </Tooltip>,
-              ]}
-            >
-              <List.Item.Meta
-                avatar={<Avatar>{getInitialLetters(allocatee.name)}</Avatar>}
-                title={<Link to={`/users/${allocatee.id}`}>{allocatee.name}</Link>}
-                description={allocatee.email}
-              />
-              <Text>{allocatee.accepted === null ? "No response" : allocatee.accepted ? "Accepted" : "Declined"}</Text>
-            </List.Item>
-          )}
+      <ProjectContent project={project.data!} />
+      {isAdmin && (
+        <>
+          <Divider />
+          <AllocatedStudents />
+        </>
+      )}
+      {(isStaff || isAdmin) && (
+        <>
+          <Divider />
+          <ShortlistedStudents />
+        </>
+      )}
+    </>
+  );
+}
+
+function AllocatedStudents() {
+  const { id: projectId } = useParams();
+
+  const allocatees = useAllocatees(projectId!);
+  const unallocatedUsers = useUnallocatedUsers();
+  const addAllocatees = useAddAllocatees(projectId!);
+  const removeAllocatee = useRemoveAllocatee(projectId!);
+
+  const [extraAllocateeIndices, setExtraAllocateeIndices] = useState<number[]>([]);
+
+  if (allocatees.isLoading) return <Loading />;
+  if (allocatees.isError) return null;
+
+  return (
+    <>
+      <Title level={4}>Allocated Students</Title>
+      <Paragraph className="text-slate-500">
+        List of students allocated by the administrator will be shown here.
+      </Paragraph>
+      <div className="flex gap-x-2 mt-6 mr-2">
+        <Select
+          mode="multiple"
+          allowClear
+          className="w-full grow"
+          placeholder="Select students to add"
+          value={extraAllocateeIndices}
+          options={unallocatedUsers.data?.map((student, index) => ({
+            label: `${student.name} (${student.email})`,
+            value: index,
+          }))}
+          filterOption={(inputValue, option) => {
+            if (!unallocatedUsers.data || !option) return false;
+            const target = inputValue.toLowerCase();
+            const student = unallocatedUsers.data[option!.value];
+            return [student.email, student.name].some((item) => item.toLowerCase().includes(target));
+          }}
+          onChange={(indices) => setExtraAllocateeIndices(indices)}
         />
-        <Divider />
-        <Title level={4}>Shortlisted Students</Title>
-        <Paragraph className="text-slate-500">
-          List of students who shortlisted this projected will be shown in here, in the order of their preference.
-        </Paragraph>
-        <List
-          className="mt-4"
-          itemLayout="horizontal"
-          dataSource={shortlisters}
-          renderItem={(shortlister) => (
-            <List.Item>
-              <List.Item.Meta
-                avatar={<Avatar>{getInitialLetters(shortlister.name)}</Avatar>}
-                title={<Link to={`/users/${shortlister.id}`}>{shortlister.name}</Link>}
-                description={shortlister.email}
-              />
-            </List.Item>
-          )}
+        <Button
+          shape="circle"
+          className="flex-none"
+          icon={<PlusOutlined />}
+          onClick={() => {
+            if (!unallocatedUsers.data) return;
+            const extraAllocatees = extraAllocateeIndices.map((index) => unallocatedUsers.data[index]);
+            addAllocatees.mutate(extraAllocatees);
+            setExtraAllocateeIndices([]);
+          }}
         />
-      </StaffRoute>
+      </div>
+      <List
+        className="mt-4"
+        itemLayout="horizontal"
+        dataSource={allocatees.data}
+        renderItem={(allocatee) => (
+          <List.Item
+            actions={[
+              <Tooltip title="Delete">
+                <Button
+                  className="border-none"
+                  icon={<DeleteOutlined />}
+                  onClick={() => removeAllocatee.mutate(allocatee.id)}
+                />
+              </Tooltip>,
+            ]}
+          >
+            <List.Item.Meta
+              avatar={<Avatar>{getInitialLetters(allocatee.name)}</Avatar>}
+              title={<Link to={`/users/${allocatee.id}`}>{allocatee.name}</Link>}
+              description={allocatee.email}
+            />
+            <Text>{allocatee.accepted === null ? "No Response" : allocatee.accepted ? "Accepted" : "Declined"}</Text>
+          </List.Item>
+        )}
+      />
+    </>
+  );
+}
+
+function ShortlistedStudents() {
+  const { id } = useParams();
+  const shortlisters = useShortlisters(id!);
+
+  if (shortlisters.isLoading) return <Loading />;
+  if (shortlisters.isError) return null;
+
+  return (
+    <>
+      <Title level={4}>Shortlisted Students</Title>
+      <Paragraph className="text-slate-500">
+        List of students who shortlisted this projected will be shown in here, in the order of their preference.
+      </Paragraph>
+      <List
+        className="mt-4"
+        itemLayout="horizontal"
+        dataSource={shortlisters.data}
+        renderItem={(shortlister) => (
+          <List.Item>
+            <List.Item.Meta
+              avatar={<Avatar>{getInitialLetters(shortlister.name)}</Avatar>}
+              title={<Link to={`/users/${shortlister.id}`}>{shortlister.name}</Link>}
+              description={shortlister.email}
+            />
+          </List.Item>
+        )}
+      />
     </>
   );
 }

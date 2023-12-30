@@ -1,28 +1,23 @@
-import { ProjectRead, ProjectService } from "@/api";
-import { ProjectForm } from "@/components/ProjectForm";
+import { ProjectForm } from "@/components/projects/ProjectForm";
+import { useProject } from "@/hooks/projects";
+import Loading from "@/pages/Loading";
 import { Divider, Typography } from "antd";
-import { redirect, useLoaderData, type ActionFunctionArgs, type LoaderFunctionArgs } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 const { Title } = Typography;
 
-export async function editProjectLoader({ params }: LoaderFunctionArgs) {
-  return await ProjectService.readProject(params.id!);
-}
-
-export async function editProjectAction({ request, params }: ActionFunctionArgs) {
-  const data = await request.json();
-  await ProjectService.updateProject(params.id!, data);
-  return redirect(`/projects/${params.id}`);
-}
-
 export default function EditProject() {
-  const initialProject = useLoaderData() as ProjectRead;
+  const { id: projectId } = useParams();
+  const initialProject = useProject(projectId!);
+
+  if (initialProject.isLoading) return <Loading />;
+  if (initialProject.isError) return null;
 
   return (
     <>
       <Title level={3}>Edit Project</Title>
       <Divider />
-      <ProjectForm initProject={initialProject as ProjectRead} />
+      <ProjectForm initProject={initialProject.data!} />
     </>
   );
 }
