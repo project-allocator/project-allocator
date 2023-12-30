@@ -2,10 +2,15 @@ from typing import Optional
 from fastapi import Depends, HTTPException, Header
 from fastapi_azure_auth.user import User as AzureUser
 from sqlmodel import Session, select
+import os
 
 from .models import Config, User
 from .db import engine
 from .auth import azure_scheme
+
+
+def get_env():
+    return os.environ.get("FASTAPI_ENV")
 
 
 def get_session():

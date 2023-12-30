@@ -6,7 +6,7 @@ from datetime import datetime
 import requests
 import json
 
-from ..dependencies import check_admin, get_user, get_session, get_token
+from ..dependencies import check_admin, get_env, get_user, get_session, get_token
 from ..models import User, Notification, NotificationRead, NotificationCreate
 
 router = APIRouter(tags=["notification"])
@@ -66,6 +66,8 @@ def send_notifications(
     roles: list[str],
     token: Annotated[str, Depends(get_token)],
     session: Annotated[Session, Depends(get_session)],
+    user: Annotated[User, Depends(get_user)],  # For development only
+    env: Annotated[str, Depends(get_env)],
 ):
     # Get the email template.
     base_path = dirname(dirname(abspath(__file__)))
@@ -73,8 +75,13 @@ def send_notifications(
     with open(template_path) as file:
         template = file.read()
 
-    # Get the target users.
-    users = session.exec(select(User).where(User.role.in_(roles))).all()
+    # Only send emails to users if in production.
+    if env == "production":
+        query = select(User).where(User.role.in_(roles))
+        users = session.exec(query).all()
+    else:
+        users = [user]
+
     for user in users:
         # Create in-app notification.
         notification = Notification.model_validate(notification_data)
