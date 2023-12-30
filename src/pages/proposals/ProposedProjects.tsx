@@ -1,0 +1,38 @@
+import { ProjectsTable } from "@/components/projects/ProjectTable";
+import { useConfig } from "@/hooks/configs";
+import { useProposedProjects } from "@/hooks/proposals";
+import { useCurrentUserRole } from "@/hooks/users";
+import Loading from "@/pages/Loading";
+import { PlusOutlined } from "@ant-design/icons";
+import { Button, Divider, Space, Tooltip, Typography } from "antd";
+import { Link } from "react-router-dom";
+
+const { Title } = Typography;
+
+export default function ProposedProjects() {
+  const { isAdmin, isStaff } = useCurrentUserRole();
+  const projects = useProposedProjects();
+  const proposalsShutdown = useConfig("proposals_shutdown");
+
+  if (projects.isLoading || proposalsShutdown.isLoading) return <Loading />;
+  if (projects.isError || proposalsShutdown.isError) return null;
+
+  return (
+    <>
+      <Space className="flex items-end justify-between">
+        <Title level={3} className="mb-0">
+          Proposed Projects
+        </Title>
+        {(isStaff || isAdmin) && !proposalsShutdown.data?.value && (
+          <Tooltip title="Add">
+            <Link to="/projects/add">
+              <Button shape="circle" icon={<PlusOutlined />} />
+            </Link>
+          </Tooltip>
+        )}
+      </Space>
+      <Divider />
+      <ProjectsTable projects={projects.data!} />
+    </>
+  );
+}

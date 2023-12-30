@@ -1,38 +1,44 @@
 import { ProjectRead, ShortlistService } from "@/api";
+import { useMessage } from "@/contexts/MessageContext";
+import { useReorderShortlistedProjects, useShortlistedProjects, useUnshortlistProject } from "@/hooks/shortlists";
+import Loading from "@/pages/Loading";
 import { DeleteOutlined, HolderOutlined } from "@ant-design/icons";
 import { Button, Divider, List, Space, Tooltip, Typography } from "antd";
 import { Reorder, useDragControls } from "framer-motion";
-import { useEffect, useState } from "react";
-import { Link, useLoaderData } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const { Title, Text } = Typography;
 
 export async function shortlistedProjectsLoader() {
-  return await ShortlistService.readShortlisted();
+  return await ShortlistService.readShortlistedProjects();
 }
 
 export default function ShortlistedProjects() {
-  const projects = useLoaderData() as ProjectRead[];
+  const { messageSuccess, messageError } = useMessage();
+  const projects = useShortlistedProjects();
+  const unshortlistProject = useUnshortlistProject("");
+  const reorderShortlistedProjects = useReorderShortlistedProjects();
 
-  // Framer Motion's Reorder component only works with primitive values
-  // so we use project ids as state.
-  const [projectIds, setProjectIds] = useState<string[]>([]);
+  if (projects.isLoading) return <Loading />;
+  if (projects.isError) return null;
 
-  useEffect(() => {
-    setProjectIds(projects.map((project: ProjectRead) => project.id) || []);
-  }, [projects]);
+  // We use Framer Motion's Reorder component for drag and drop,
+  // but this only works with primitive values so we use project ids, rather than ProjectRead[].
+  const projectIds = projects.data!.map((project: ProjectRead) => project.id);
 
   return (
     <>
-      <Title level={3}>List of Shortlisted Projects</Title>
+      <Title level={3}>Shortlisted Projects</Title>
       <Divider />
       <Reorder.Group
         as="div"
         axis="y"
         values={projectIds}
         onReorder={(projectIds) => {
-          ShortlistService.reorderShortlisted(projectIds);
-          setProjectIds(projectIds);
+          reorderShortlistedProjects.mutate(projectIds, {
+            onSuccess: () => messageSuccess("Successfully reordered shortlisted projects."),
+            onError: () => messageError("Failed to reorder shortlisted projects."),
+          });
         }}
       >
         <List
@@ -42,14 +48,13 @@ export default function ShortlistedProjects() {
           dataSource={projectIds}
           rowKey={(projectId: string) => projectId}
           renderItem={(projectId: string) => {
-            const project = projects?.find((project: ProjectRead) => project.id === projectId);
+            const project = projects.data?.find((project: ProjectRead) => project.id === projectId);
             if (project) {
               return (
                 <ProjectItem
                   project={project as ProjectRead}
                   onDelete={() => {
-                    ShortlistService.unsetShortlisted(projectId);
-                    setProjectIds(projectIds.filter((item) => item !== projectId));
+                    ShortlistService.unshortlistProject(projectId);
                   }}
                 />
               );
@@ -61,12 +66,7 @@ export default function ShortlistedProjects() {
   );
 }
 
-interface ProjectItemProps {
-  project: ProjectRead;
-  onDelete: () => void;
-}
-
-function ProjectItem({ project, onDelete }: ProjectItemProps) {
+function ProjectItem({ project, onDelete }: { project: ProjectRead; onDelete: () => void }) {
   // Drag controls for Framer Motion's Reorder component
   const controls = useDragControls();
 
