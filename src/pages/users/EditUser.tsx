@@ -1,26 +1,23 @@
-import { UserRead, UserService } from "@/api";
+import { useUpdateUser, useUser } from "@/hooks/users";
+import Loading from "@/pages/Loading";
 import { Button, Divider, Form, Input, Select, Typography } from "antd";
-import { ActionFunctionArgs, LoaderFunctionArgs, redirect, useLoaderData, useSubmit } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const { Title } = Typography;
 
-export async function editUserLoader({ params }: LoaderFunctionArgs) {
-  return await UserService.readUser(params.id!);
-}
-
-export async function editUserAction({ request, params }: ActionFunctionArgs) {
-  const data = await request.json();
-  await UserService.updateUser(params.id!, data);
-  return redirect(`/users/${params.id}`);
-}
-
 export function EditUser() {
-  const user = useLoaderData() as UserRead;
-  const submit = useSubmit();
+  const navigate = useNavigate();
+
+  const { id: userId } = useParams();
+  const user = useUser(userId!);
+  const updateUser = useUpdateUser(userId!);
+
+  if (user.isLoading) return <Loading />;
+  if (user.isError) return null;
 
   return (
     <>
-      <Title level={3}>Edit User #{user.id}</Title>
+      <Title level={3}>Edit User Profile</Title>
       <Divider />
       <Form
         method="post"
@@ -28,19 +25,18 @@ export function EditUser() {
         autoComplete="off"
         className="ml-6 max-w-xl"
         onFinish={(values) =>
-          submit(values, {
-            method: "post",
-            encType: "application/json",
+          updateUser.mutate(values, {
+            onSuccess: () => navigate(-1),
           })
         }
       >
-        <Form.Item label="Name" name="name" initialValue={user.name}>
+        <Form.Item label="Name" name="name" initialValue={user.data!.name}>
           <Input disabled />
         </Form.Item>
-        <Form.Item label="Email" name="email" initialValue={user.email}>
+        <Form.Item label="Email" name="email" initialValue={user.data!.email}>
           <Input disabled />
         </Form.Item>
-        <Form.Item label="Role" name="role" initialValue={user.role}>
+        <Form.Item label="Role" name="role" initialValue={user.data!.role}>
           <Select
             className="w-48"
             options={[
