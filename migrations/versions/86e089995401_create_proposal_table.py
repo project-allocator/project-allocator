@@ -1,7 +1,7 @@
 """create proposal table
 
 Revision ID: 86e089995401
-Revises: 7a959237829d
+Revises: 0d86aabed612
 Create Date: 2023-12-21 19:52:41.071698
 
 """
@@ -12,7 +12,7 @@ import sqlmodel
 
 # revision identifiers, used by Alembic.
 revision = "86e089995401"
-down_revision = "7a959237829d"
+down_revision = "0d86aabed612"
 branch_labels = None
 depends_on = None
 

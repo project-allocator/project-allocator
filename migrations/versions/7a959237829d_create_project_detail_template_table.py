@@ -1,7 +1,7 @@
 """create project detail template table
 
 Revision ID: 7a959237829d
-Revises: 0d86aabed612
+Revises: 48b9b8fe4c7e
 Create Date: 2023-12-21 19:52:37.323982
 
 """
@@ -12,7 +12,7 @@ import sqlmodel
 
 # revision identifiers, used by Alembic.
 revision = "7a959237829d"
-down_revision = "0d86aabed612"
+down_revision = "48b9b8fe4c7e"
 branch_labels = None
 depends_on = None
 
