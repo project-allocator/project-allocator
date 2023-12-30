@@ -1,16 +1,10 @@
-import { useUser } from "@/contexts/UserContext";
-import { Navigate } from "react-router-dom";
+import { useCurrentUser, useCurrentUserRole } from "@/hooks/users";
+import { Navigate, Outlet } from "react-router-dom";
 
-interface StaffRouteProps {
-  children: React.ReactNode;
-  fallback?: string;
-}
+export default function StaffRoute({ fallback }: { fallback: string }) {
+  const user = useCurrentUser();
+  if (user.isLoading) return null;
 
-export default function StaffRoute({ children, fallback }: StaffRouteProps) {
-  const { user } = useUser();
-  if (user?.role !== "staff" && user?.role !== "admin") {
-    if (fallback) return <Navigate to={fallback} />;
-    return null;
-  }
-  return children;
+  const { isAdmin, isStaff } = useCurrentUserRole();
+  return isStaff || isAdmin ? <Outlet /> : <Navigate to={fallback} />;
 }

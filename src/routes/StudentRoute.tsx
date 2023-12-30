@@ -1,19 +1,10 @@
-import { useUser } from "@/contexts/UserContext";
-import { Navigate } from "react-router-dom";
+import { useCurrentUser, useCurrentUserRole } from "@/hooks/users";
+import { Navigate, Outlet } from "react-router-dom";
 
-interface StudentRouteProps {
-  children: React.ReactNode;
-  fallback?: string;
-}
+export default function StudentRoute({ fallback }: { fallback: string }) {
+  const user = useCurrentUser();
+  if (user.isLoading) return null;
 
-export default function StudentRoute({
-  children,
-  fallback: fallback,
-}: StudentRouteProps) {
-  const { user } = useUser();
-  if (user?.role !== "student") {
-    if (fallback) return <Navigate to={fallback} />;
-    return null;
-  }
-  return children;
+  const { isStudent } = useCurrentUserRole();
+  return isStudent ? <Outlet /> : <Navigate to={fallback} />;
 }
