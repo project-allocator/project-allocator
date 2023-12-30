@@ -1,13 +1,16 @@
 import { Layout } from "antd";
+import { Outlet } from "react-router-dom";
+import PageHeader from "./PageHeader";
 
-interface CenterLayoutProps {
-  children: React.ReactNode;
-}
+const { Content } = Layout;
 
-export default function CenterLayout({ children }: CenterLayoutProps) {
+export default function CenterLayout() {
   return (
-    <Layout className="min-h-screen grid place-content-center">
-      {children}
+    <Layout className="min-h-screen">
+      <PageHeader />
+      <Content className="grid place-content-center">
+        <Outlet />
+      </Content>
     </Layout>
   );
 }

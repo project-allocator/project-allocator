@@ -1,18 +1,20 @@
 import { ProjectReadWithDetails } from "@/api";
-import { useTemplates } from "@/contexts/TemplateContext";
+import { useProjectDetailTemplates } from "@/hooks/projects";
+import Loading from "@/pages/Loading";
 import { Divider, Space, Tag, Typography } from "antd";
 import dayjs from "dayjs";
 import * as _ from "underscore";
 
 const { Title, Paragraph } = Typography;
 
-interface ProjectContentProps {
-  project: ProjectReadWithDetails;
-}
+export function ProjectContent({ project }: { project: ProjectReadWithDetails }) {
+  const templates = useProjectDetailTemplates();
 
-export function ProjectContent({ project }: ProjectContentProps) {
-  const templates = useTemplates();
-  const sortedTemplates = _.sortBy(templates, "key");
+  if (templates.isLoading) return <Loading />;
+  if (templates.isError) return null;
+
+  // TODO: Make aggregated endpoint to avoid this zipping.
+  const sortedTemplates = _.sortBy(templates.data!, "key");
   const sortedDetails = _.sortBy(project!.details!, "key");
   const detailsWithTemplates = _.zip(sortedDetails, sortedTemplates);
 
@@ -27,7 +29,7 @@ export function ProjectContent({ project }: ProjectContentProps) {
           <Paragraph className="text-slate-500">{template.description}</Paragraph>
           <Paragraph>
             {(() => {
-              switch (detail.type) {
+              switch (template.type) {
                 case "date":
                   return dayjs(detail.value as string).format("DD/MM/YYYY");
                 case "time":

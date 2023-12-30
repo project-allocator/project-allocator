@@ -1,5 +1,7 @@
 import { ProjectReadWithDetails } from "@/api";
-import { useTemplates } from "@/contexts/TemplateContext";
+import { useMessage } from "@/contexts/MessageContext";
+import { useCreateProject, useProjectDetailTemplates, useUpdateProject } from "@/hooks/projects";
+import Loading from "@/pages/Loading";
 import { PlusOutlined } from "@ant-design/icons";
 import type { InputRef } from "antd";
 import {
@@ -19,19 +21,44 @@ import {
 } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useRef, useState } from "react";
-import { useSubmit } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import * as _ from "underscore";
 
 const { TextArea } = Input;
 const { useForm, useFormInstance } = Form;
 
-interface ProjectFormProps {
-  initProject?: ProjectReadWithDetails;
-}
-
-export function ProjectForm({ initProject }: ProjectFormProps) {
+export function ProjectForm({ initProject }: { initProject?: ProjectReadWithDetails }) {
   const [form] = useForm();
-  const submit = useSubmit();
+
+  const navigate = useNavigate();
+  const { messageError } = useMessage();
+
+  const createProject = useCreateProject();
+  const updateProject = useUpdateProject(initProject?.id ?? "");
+
+  function onFinish(values: any) {
+    // Remove the detail- prefix from the form field names
+    // and convert them to an array of details.
+    values.details = [];
+    for (const [key, value] of Object.entries(values)) {
+      if (key.startsWith("detail-")) {
+        values.details.push({ key: key.replace("detail-", ""), value });
+        delete values[key];
+      }
+    }
+
+    if (initProject === undefined) {
+      createProject.mutate(values, {
+        onSuccess: () => navigate(-1),
+        onError: () => messageError("Failed to create project"),
+      });
+    } else {
+      updateProject.mutate(values, {
+        onSuccess: () => navigate(-1),
+        onError: () => messageError("Failed to update project"),
+      });
+    }
+  }
 
   return (
     <>
@@ -40,12 +67,7 @@ export function ProjectForm({ initProject }: ProjectFormProps) {
         method="post"
         layout="vertical"
         autoComplete="off"
-        onFinish={(values) =>
-          submit(values, {
-            method: "post",
-            encType: "application/json",
-          })
-        }
+        onFinish={onFinish}
         className="ml-6 max-w-xl"
       >
         <Form.Item
@@ -80,25 +102,28 @@ export function ProjectForm({ initProject }: ProjectFormProps) {
   );
 }
 
-interface ProjectDetailsFormProps {
-  initProject?: ProjectReadWithDetails;
-}
+function ProjectDetailsForm({ initProject }: { initProject?: ProjectReadWithDetails }) {
+  const templates = useProjectDetailTemplates();
 
-function ProjectDetailsForm({ initProject }: ProjectDetailsFormProps) {
-  const templates = useTemplates();
-  const sortedTemplates = _.sortBy(templates, "key");
-  const sortedDetails = _.sortBy(initProject!.details!, "key");
-  const detailsWithTemplates = _.zip(sortedDetails, sortedTemplates);
+  if (templates.isLoading) return <Loading />;
+  if (templates.isError) return null;
+
+  // TODO: Make aggregated endpoint to avoid this
+  const sortedTemplates = _.sortBy(templates.data!, "key");
+  const sortedDetails = _.sortBy(initProject?.details || [], "key");
+  const detailsWithTemplates = _.zip(sortedDetails, sortedTemplates); // zip does not truncate to the shorter array
 
   return detailsWithTemplates.map(([detail, template]) => (
     <Form.Item
       key={template.key}
-      name={template.key}
+      name={`detail-${template.key}`}
       label={template.title}
       tooltip={template.description}
       rules={[{ required: template.required, message: template.message }]}
       initialValue={(() => {
-        switch (detail.type) {
+        // No initial value if creating new project
+        if (initProject === undefined) return undefined;
+        switch (template.type) {
           case "date":
           case "time":
             return dayjs(detail.value as string);
@@ -107,7 +132,7 @@ function ProjectDetailsForm({ initProject }: ProjectDetailsFormProps) {
         }
       })()}
       valuePropName={(() => {
-        switch (detail.type) {
+        switch (template.type) {
           case "switch":
             return "checked";
           default:
@@ -142,18 +167,14 @@ function ProjectDetailsForm({ initProject }: ProjectDetailsFormProps) {
           case "radio":
             return <Radio.Group options={options} />;
           case "categories":
-            return <ProjectCategoriesForm initCategories={detail.value as string[]} />;
+            return <ProjectCategoriesForm initCategories={detail.value} />;
         }
       })()}
     </Form.Item>
   ));
 }
 
-interface ProjectCategoriesFormProps {
-  initCategories?: string[];
-}
-
-function ProjectCategoriesForm({ initCategories }: ProjectCategoriesFormProps) {
+function ProjectCategoriesForm({ initCategories }: { initCategories?: string[] }) {
   // Propagate change up to the parent form component
   const form = useFormInstance();
   function setCategoriesWithForm(categories: string[]) {

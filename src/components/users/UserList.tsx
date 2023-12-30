@@ -6,11 +6,7 @@ import { Link } from "react-router-dom";
 
 const { Search } = Input;
 
-interface UserListProps {
-  users: UserRead[];
-}
-
-export default function UserList({ users }: UserListProps) {
+export default function UserList({ users }: { users: UserRead[] }) {
   const [searchText, setSearchText] = useState<string>("");
 
   return (
