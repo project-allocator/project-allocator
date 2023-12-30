@@ -19,21 +19,3 @@ async def read_proposed_projects(user: Annotated[User, Depends(get_user)]):
     proposed_projects.sort(key=lambda project: project.updated_at, reverse=True)
 
     return proposed_projects
-
-
-@router.get(
-    "/users/me/projects/{project_id}/proposed",
-    response_model=bool,
-    dependencies=[Security(check_staff)],
-)
-async def is_project_proposed(
-    project_id: str,
-    user: Annotated[User, Depends(get_user)],
-    session: Annotated[Session, Depends(get_session)],
-):
-    project = session.get(Project, project_id)
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-
-    # Need to check by id because SQLModel instances are not comparable by default.
-    return project.proposal.proposer.id == user.id

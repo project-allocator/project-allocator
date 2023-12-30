@@ -127,20 +127,3 @@ def test_read_shortlisters(
 
     assert len(data) == len(shortlists)
     assert set([student["email"] for student in data]) == set([student.email for student in students])
-
-
-def test_is_project_shortlisted(
-    student_user: User,
-    student_client: TestClient,
-    session: Session,
-):
-    project = ProjectFactory.build(approved=True)
-    shortlist = Shortlist(shortlister=student_user, shortlisted_project=project, preference=0)
-    session.add(project)
-    session.add(shortlist)
-    session.commit()
-
-    response = student_client.get(f"/api/users/me/projects/{project.id}/shortlisted")
-    data = response.json()
-    assert response.status_code == 200
-    assert data is True
