@@ -5,7 +5,6 @@
 
 export type ProjectDetailRead = {
     key: string;
-    type: string;
     value: any;
 };
 

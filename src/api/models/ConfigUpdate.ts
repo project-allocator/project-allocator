@@ -3,8 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type ProjectDetailCreate = {
-    key: string;
+export type ConfigUpdate = {
     value: any;
 };
 

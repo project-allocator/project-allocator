@@ -180,4 +180,46 @@ export class ProjectService {
         });
     }
 
+    /**
+     * Is Project Allocated
+     * @param projectId
+     * @returns boolean Successful Response
+     * @throws ApiError
+     */
+    public static isProjectAllocated(
+        projectId: string,
+    ): CancelablePromise<boolean> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/users/me/projects/{project_id}/allocated',
+            path: {
+                'project_id': projectId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Is Project Accepted
+     * @param projectId
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static isProjectAccepted(
+        projectId: string,
+    ): CancelablePromise<(boolean | null)> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/users/me/projects/{project_id}/accepted',
+            path: {
+                'project_id': projectId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
 }

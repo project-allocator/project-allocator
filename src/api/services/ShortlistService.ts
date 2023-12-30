@@ -12,11 +12,11 @@ import { request as __request } from '../core/request';
 export class ShortlistService {
 
     /**
-     * Read Shortlisted
+     * Read Shortlisted Projects
      * @returns ProjectRead Successful Response
      * @throws ApiError
      */
-    public static readShortlisted(): CancelablePromise<Array<ProjectRead>> {
+    public static readShortlistedProjects(): CancelablePromise<Array<ProjectRead>> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/users/me/shortlisted',
@@ -24,12 +24,12 @@ export class ShortlistService {
     }
 
     /**
-     * Reorder Shortlisted
+     * Reorder Shortlisted Projects
      * @param requestBody
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static reorderShortlisted(
+    public static reorderShortlistedProjects(
         requestBody: Array<string>,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
@@ -44,33 +44,12 @@ export class ShortlistService {
     }
 
     /**
-     * Is Shortlisted
-     * @param projectId
-     * @returns boolean Successful Response
-     * @throws ApiError
-     */
-    public static isShortlisted(
-        projectId: string,
-    ): CancelablePromise<boolean> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/users/me/shortlisted/{project_id}',
-            path: {
-                'project_id': projectId,
-            },
-            errors: {
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Set Shortlisted
+     * Shortlist Project
      * @param projectId
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static setShortlisted(
+    public static shortlistProject(
         projectId: string,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
@@ -86,12 +65,12 @@ export class ShortlistService {
     }
 
     /**
-     * Unset Shortlisted
+     * Unshortlist Project
      * @param projectId
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static unsetShortlisted(
+    public static unshortlistProject(
         projectId: string,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
@@ -118,6 +97,27 @@ export class ShortlistService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/projects/{project_id}/shortlisters',
+            path: {
+                'project_id': projectId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Is Project Shortlisted
+     * @param projectId
+     * @returns boolean Successful Response
+     * @throws ApiError
+     */
+    public static isProjectShortlisted(
+        projectId: string,
+    ): CancelablePromise<boolean> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/users/me/projects/{project_id}/shortlisted',
             path: {
                 'project_id': projectId,
             },

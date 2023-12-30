@@ -11,11 +11,11 @@ import { request as __request } from '../core/request';
 export class ProposalService {
 
     /**
-     * Read Proposed
+     * Read Proposed Projects
      * @returns ProjectRead Successful Response
      * @throws ApiError
      */
-    public static readProposed(): CancelablePromise<Array<ProjectRead>> {
+    public static readProposedProjects(): CancelablePromise<Array<ProjectRead>> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/users/me/proposed',
@@ -23,17 +23,17 @@ export class ProposalService {
     }
 
     /**
-     * Is Proposed
+     * Is Project Proposed
      * @param projectId
      * @returns boolean Successful Response
      * @throws ApiError
      */
-    public static isProposed(
+    public static isProjectProposed(
         projectId: string,
     ): CancelablePromise<boolean> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/users/me/proposed/{project_id}',
+            url: '/api/users/me/projects/{project_id}/proposed',
             path: {
                 'project_id': projectId,
             },

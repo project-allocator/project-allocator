@@ -98,7 +98,7 @@ export class AllocationService {
      */
     public static addAllocatees(
         projectId: string,
-        requestBody: Array<UserRead>,
+        requestBody: Array<string>,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
@@ -139,47 +139,14 @@ export class AllocationService {
     }
 
     /**
-     * Read Allocated
+     * Read Allocated Project
      * @returns ProjectRead Successful Response
      * @throws ApiError
      */
-    public static readAllocated(): CancelablePromise<ProjectRead> {
+    public static readAllocatedProject(): CancelablePromise<ProjectRead> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/users/me/allocated',
-        });
-    }
-
-    /**
-     * Is Accepted
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public static isAccepted(): CancelablePromise<(boolean | null)> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/users/me/allocated/accepted',
-        });
-    }
-
-    /**
-     * Is Allocated
-     * @param projectId
-     * @returns boolean Successful Response
-     * @throws ApiError
-     */
-    public static isAllocated(
-        projectId: string,
-    ): CancelablePromise<boolean> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/users/me/allocated/{project_id}',
-            path: {
-                'project_id': projectId,
-            },
-            errors: {
-                422: `Validation Error`,
-            },
         });
     }
 

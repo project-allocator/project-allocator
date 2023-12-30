@@ -5,7 +5,6 @@
 
 export type ProjectDetailUpdate = {
     key: string;
-    type: string;
     value: any;
 };
 
