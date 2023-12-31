@@ -23,6 +23,7 @@ def upgrade() -> None:
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.Column("accepted", sa.Boolean(), nullable=True),
+        sa.Column("locked", sa.Boolean(), nullable=False),
         sa.Column("allocatee_id", sqlmodel.sql.sqltypes.AutoString(length=26), nullable=False),
         sa.Column("allocated_project_id", sqlmodel.sql.sqltypes.AutoString(length=26), nullable=False),
         sa.ForeignKeyConstraint(["allocated_project_id"], ["project.id"]),
