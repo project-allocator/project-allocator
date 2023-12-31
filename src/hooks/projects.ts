@@ -1,15 +1,24 @@
-import { ProjectCreateWithDetails, ProjectService, ProjectUpdateWithDetails } from "@/api";
+import { ProjectCreateWithDetails, ProjectRead, ProjectService, ProjectUpdateWithDetails } from "@/api";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
-export function useProjects(approved?: boolean) {
-  if (approved === undefined) {
-    return useQuery(["projects"], () => ProjectService.readProjects());
-  }
-  return useQuery(["projects", approved], () => ProjectService.readProjects(approved));
+export function useProjectDetailTemplates() {
+  return useQuery(["projects", "details", "templates"], () => ProjectService.readProjectDetailTemplates());
 }
 
-export function useProject(id: string) {
-  return useQuery(["projects", id], () => ProjectService.readProject(id));
+export function useApprovedProjects() {
+  return useQuery(["projects", "approved"], () => ProjectService.readApprovedProjects());
+}
+
+export function useDisapprovedProjects() {
+  return useQuery(["projects", "disapproved"], () => ProjectService.readDisapprovedProjects());
+}
+
+export function useNoResponseProjects() {
+  return useQuery(["projects", "no-response"], () => ProjectService.readNoResponseProjects());
+}
+
+export function useProject(projectId: string) {
+  return useQuery(["projects", projectId], () => ProjectService.readProject(projectId));
 }
 
 export function useCreateProject() {
@@ -42,52 +51,40 @@ export function useDeleteProject(id: string) {
   });
 }
 
-export function useSetProjectStatus(id: string) {
+export function useApproveProject(projectId: string) {
   const queryClient = useQueryClient();
 
-  return useMutation(({ approved }: { approved: boolean }) => ProjectService.setProjectStatus(id, { approved }), {
-    onMutate: async ({ approved }) => {
-      await queryClient.cancelQueries(["projects", id]);
-      const oldProject = queryClient.getQueryData(["projects", id]);
-      queryClient.setQueryData(["projects", id], { ...(oldProject as any), approved });
-      return { oldProject };
-    },
-    onError: (error, variables, context: any) => {
-      queryClient.setQueryData(["projects", id], context.oldProject);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries(["projects", id]);
-    },
-  });
-}
-
-export function useResetProjectStatus(id: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation(() => ProjectService.resetProjectStatus(id), {
+  return useMutation(() => ProjectService.approveProject(projectId), {
     onMutate: async () => {
-      await queryClient.cancelQueries(["projects", id]);
-      const oldProject = queryClient.getQueryData(["projects", id]);
-      queryClient.setQueryData(["projects", id], { ...(oldProject as any), approved: null });
+      await queryClient.cancelQueries(["projects", projectId]);
+      const oldProject = queryClient.getQueryData(["projects", projectId]) as ProjectRead;
+      queryClient.setQueryData(["projects", projectId], { ...oldProject, approved: true });
       return { oldProject };
     },
-    onError: (error, variables, context: any) => {
-      queryClient.setQueryData(["projects", id], context.oldProject);
+    onError: (error, variables, context) => {
+      queryClient.setQueryData(["projects", projectId], context?.oldProject);
     },
     onSettled: () => {
-      queryClient.invalidateQueries(["projects", id]);
+      queryClient.invalidateQueries(["projects", projectId]);
     },
   });
 }
 
-export function useProjectDetailTemplates() {
-  return useQuery(["projects", "details", "templates"], () => ProjectService.readProjectDetailTemplates());
-}
+export function useDisapproveProject(projectId: string) {
+  const queryClient = useQueryClient();
 
-export function useIsProjectAllocated(projectId: string) {
-  return useQuery(["projects", projectId, "allocated"], () => ProjectService.isProjectAllocated(projectId));
-}
-
-export function useIsProjectAccepted(projectId: string) {
-  return useQuery(["projects", projectId, "accepted"], () => ProjectService.isProjectAccepted(projectId));
+  return useMutation(() => ProjectService.disapproveProject(projectId), {
+    onMutate: async () => {
+      await queryClient.cancelQueries(["projects", projectId]);
+      const oldProject = queryClient.getQueryData(["projects", projectId]) as ProjectRead;
+      queryClient.setQueryData(["projects", projectId], { ...oldProject, approved: false });
+      return { oldProject };
+    },
+    onError: (error, variables, context) => {
+      queryClient.setQueryData(["projects", projectId], context?.oldProject);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(["projects", projectId]);
+    },
+  });
 }

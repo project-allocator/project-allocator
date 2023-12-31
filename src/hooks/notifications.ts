@@ -1,8 +1,8 @@
-import { NotificationCreate, NotificationService } from "@/api";
+import { NotificationCreate, NotificationRead, NotificationService } from "@/api";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
 export function useNotifications() {
-  return useQuery(["notifications"], () => NotificationService.readNotifications(), {
+  return useQuery(["users", "notifications"], () => NotificationService.readNotifications(), {
     refetchInterval: 60 * 1000, // 1 minute
   });
 }
@@ -15,33 +15,33 @@ export function useSendNotifications() {
       NotificationService.sendNotifications(variables),
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(["notifications"]);
+        queryClient.invalidateQueries(["users", "notifications"]);
       },
     }
   );
 }
 
-export function useMarkNotifications() {
+export function useMarkReadNotifications() {
   const queryClient = useQueryClient();
 
-  return useMutation((ids: string[]) => NotificationService.markNotifications(ids), {
+  return useMutation((ids: string[]) => NotificationService.markReadNotifications(ids), {
     onMutate: async (ids) => {
-      await queryClient.cancelQueries(["notifications"]);
-      const oldNotifications = queryClient.getQueryData(["notifications"]);
+      await queryClient.cancelQueries(["users", "notifications"]);
+      const oldNotifications = queryClient.getQueryData(["users", "notifications"]) as NotificationRead[];
       queryClient.setQueryData(
         ["notifications"],
-        (oldNotifications as any).map((notification: any) => {
+        oldNotifications.map((notification) => {
           if (!ids.includes(notification.id)) return notification;
           return { ...notification, read: true };
         })
       );
       return { oldNotifications };
     },
-    onError: (error, variables, context: any) => {
-      queryClient.setQueryData(["notifications"], context.oldNotifications);
+    onError: (error, variables, context) => {
+      queryClient.setQueryData(["users", "notifications"], context?.oldNotifications);
     },
     onSettled: () => {
-      queryClient.invalidateQueries(["notifications"]);
+      queryClient.invalidateQueries(["users", "notifications"]);
     },
   });
 }
@@ -51,19 +51,19 @@ export function useDeleteNotification() {
 
   return useMutation((id: string) => NotificationService.deleteNotification(id), {
     onMutate: async (id) => {
-      await queryClient.cancelQueries(["notifications"]);
-      const oldNotifications = queryClient.getQueryData(["notifications"]);
+      await queryClient.cancelQueries(["users", "notifications"]);
+      const oldNotifications = queryClient.getQueryData(["users", "notifications"]) as NotificationRead[];
       queryClient.setQueryData(
-        ["notifications"],
-        (oldNotifications as any).filter((notification: any) => notification.id !== id)
+        ["users", "notifications"],
+        oldNotifications.filter((notification) => notification.id !== id)
       );
       return { oldNotifications };
     },
-    onError: (error, variables, context: any) => {
-      queryClient.setQueryData(["notifications"], context.oldNotifications);
+    onError: (error, variables, context) => {
+      queryClient.setQueryData(["users", "notifications"], context?.oldNotifications);
     },
     onSettled: () => {
-      queryClient.invalidateQueries(["notifications"]);
+      queryClient.invalidateQueries(["users", "notifications"]);
     },
   });
 }

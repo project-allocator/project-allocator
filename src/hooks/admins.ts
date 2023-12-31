@@ -2,11 +2,11 @@ import { AdminService } from "@/api";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
 export function useConflictingProjects() {
-  return useQuery(["projects", "conflicting"], () => AdminService.readConflictingProjects());
+  return useQuery(["projects", "conflicting-projects"], () => AdminService.readConflictingProjects());
 }
 
 export function useUnallocatedUsers() {
-  return useQuery(["users", "unallocated"], () => AdminService.readUnallocatedUsers());
+  return useQuery(["users", "unallocated-users"], () => AdminService.readUnallocatedUsers());
 }
 
 export function useExportData() {

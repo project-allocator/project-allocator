@@ -1,4 +1,4 @@
-import { ShortlistService } from "@/api";
+import { ProjectRead, ShortlistService } from "@/api";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import * as _ from "underscore";
 
@@ -7,41 +7,48 @@ export function useShortlisters(projectId: string) {
 }
 
 export function useShortlistedProjects() {
-  return useQuery(["projects", "shortlisted"], () => ShortlistService.readShortlistedProjects());
+  return useQuery(["projects", "shortlisted-projects"], () => ShortlistService.readShortlistedProjects());
 }
 
-export function useShortlistProject(projectId: string) {
+export function useShortlistProject() {
   const queryClient = useQueryClient();
 
-  return useMutation(() => ShortlistService.shortlistProject(projectId), {
-    onMutate: async () => {
-      await queryClient.cancelQueries(["projects", "shortlisted"]);
-      queryClient.setQueryData(["projects", "shortlisted", projectId], true);
+  return useMutation((project: ProjectRead) => ShortlistService.shortlistProject(project.id), {
+    onMutate: async (project) => {
+      await queryClient.cancelQueries(["projects", "shortlisted-projects"]);
+      const oldShortlistedProjects = queryClient.getQueryData(["projects", "shortlisted-projects"]) as ProjectRead[];
+      queryClient.setQueryData(["projects", "shortlisted-projects"], oldShortlistedProjects.concat(project));
+      return { oldShortlistedProjects };
     },
     onError: (error, variables, context) => {
-      queryClient.setQueryData(["projects", "shortlisted", projectId], false);
+      queryClient.setQueryData(["projects", "shortlisted-projects"], context?.oldShortlistedProjects);
     },
     onSettled: () => {
       queryClient.invalidateQueries(["projects", "shortlisters"]);
-      queryClient.invalidateQueries(["projects", "shortlisted"]);
+      queryClient.invalidateQueries(["projects", "shortlisted-projects"]);
     },
   });
 }
 
-export function useUnshortlistProject(projectId: string) {
+export function useUnshortlistProject() {
   const queryClient = useQueryClient();
 
-  return useMutation(() => ShortlistService.unshortlistProject(projectId), {
-    onMutate: async () => {
-      await queryClient.cancelQueries(["projects", "shortlisted"]);
-      queryClient.setQueryData(["projects", "shortlisted", projectId], false);
+  return useMutation((projectId: string) => ShortlistService.unshortlistProject(projectId), {
+    onMutate: async (projectId) => {
+      await queryClient.cancelQueries(["projects", "shortlisted-projects"]);
+      const oldShortlistedProjects = queryClient.getQueryData(["projects", "shortlisted-projects"]) as ProjectRead[];
+      queryClient.setQueryData(
+        ["projects", "shortlisted-projects"],
+        oldShortlistedProjects.filter((project) => project.id !== projectId)
+      );
+      return { oldShortlistedProjects };
     },
     onError: (error, variables, context) => {
-      queryClient.setQueryData(["projects", "shortlisted", projectId], true);
+      queryClient.setQueryData(["projects", "shortlisted-projects"], context?.oldShortlistedProjects);
     },
     onSettled: () => {
       queryClient.invalidateQueries(["projects", "shortlisters"]);
-      queryClient.invalidateQueries(["projects", "shortlisted"]);
+      queryClient.invalidateQueries(["projects", "shortlisted-projects"]);
     },
   });
 }
@@ -51,19 +58,19 @@ export function useReorderShortlistedProjects() {
 
   return useMutation((projectIds: string[]) => ShortlistService.reorderShortlistedProjects(projectIds), {
     onMutate: async (projectIds) => {
-      await queryClient.cancelQueries(["projects", "shortlisted"]);
-      const oldShortlistedProjects = queryClient.getQueryData(["projects", "shortlisted"]);
+      await queryClient.cancelQueries(["projects", "shortlisted-projects"]);
+      const oldShortlistedProjects = queryClient.getQueryData(["projects", "shortlisted-projects"]) as ProjectRead[];
       queryClient.setQueryData(
-        ["projects", "shortlisted"],
-        _.sortBy(oldShortlistedProjects as any[], (project) => projectIds.indexOf(project.id))
+        ["projects", "shortlisted-projects"],
+        _.sortBy(oldShortlistedProjects, (project) => projectIds.indexOf(project.id))
       );
       return { oldShortlistedProjects };
     },
-    onError: (error, variables, context: any) => {
-      queryClient.setQueryData(["projects", "shortlisted"], context.oldShortlistedProjects);
+    onError: (error, variables, context) => {
+      queryClient.setQueryData(["projects", "shortlisted-projects"], context?.oldShortlistedProjects);
     },
     onSettled: () => {
-      queryClient.invalidateQueries(["projects", "shortlisted"]);
+      queryClient.invalidateQueries(["projects", "shortlisted-projects"]);
     },
   });
 }

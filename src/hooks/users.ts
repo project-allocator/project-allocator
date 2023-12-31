@@ -15,7 +15,12 @@ export function useUser(userId: string) {
 }
 
 export function useCurrentUser() {
-  return useQuery(["users", "current"], () => UserService.readCurrentUser().catch(() => null));
+  return useQuery(["users", "current"], () =>
+    UserService.readCurrentUser().catch((error) => {
+      if (error.status === 401 || error.status === 404) return Promise.resolve(null);
+      return Promise.reject(error);
+    })
+  );
 }
 
 export function useCurrentUserRole() {

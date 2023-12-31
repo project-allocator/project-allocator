@@ -1,8 +1,13 @@
-import { AllocationService, UserRead } from "@/api";
+import { AllocationService, ProjectReadWithAllocations, UserRead } from "@/api";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
 export function useAllocatedProject() {
-  return useQuery(["projects", "allocated"], () => AllocationService.readAllocatedProject());
+  return useQuery(["projects", "allocated-projects"], () =>
+    AllocationService.readAllocatedProject().catch((error) => {
+      if (error.status === 404) return Promise.resolve(null);
+      return Promise.reject(error);
+    })
+  );
 }
 
 export function useAllocatees(projectId: string) {
@@ -12,28 +17,21 @@ export function useAllocatees(projectId: string) {
 export function useAddAllocatees(projectId: string) {
   const queryClient = useQueryClient();
 
-  return useMutation(
-    // TODO: Passing UserRead[] to implement optimistic updates but there may be a better way
-    (users: UserRead[]) =>
-      AllocationService.addAllocatees(
-        projectId,
-        users.map((user) => user.id)
-      ),
-    {
-      onMutate: async (users) => {
-        await queryClient.cancelQueries(["projects", "allocatees", projectId]);
-        const oldAllocatees = queryClient.getQueryData(["projects", "allocatees", projectId]);
-        queryClient.setQueryData(["projects", "allocatees", projectId], (oldAllocatees as any).concat(users));
-        return { oldAllocatees };
-      },
-      onError: (error, variables, context: any) => {
-        queryClient.setQueryData(["projects", "allocatees", projectId], context.oldAllocatees);
-      },
-      onSettled: () => {
-        queryClient.invalidateQueries(["projects", "allocatees", projectId]);
-      },
-    }
-  );
+  // prettier-ignore
+  return useMutation((users: UserRead[]) => AllocationService.addAllocatees(projectId, users.map((user) => user.id)), {
+    onMutate: async (users) => {
+      await queryClient.cancelQueries(["projects", "allocatees", projectId]);
+      const oldAllocatees = queryClient.getQueryData(["projects", "allocatees", projectId]) as UserRead[];
+      queryClient.setQueryData(["projects", "allocatees", projectId], oldAllocatees.concat(users));
+      return { oldAllocatees };
+    },
+    onError: (error, variables, context) => {
+      queryClient.setQueryData(["projects", "allocatees", projectId], context?.oldAllocatees);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(["projects", "allocatees", projectId]);
+    },
+  });
 }
 
 export function useRemoveAllocatee(projectId: string) {
@@ -42,15 +40,15 @@ export function useRemoveAllocatee(projectId: string) {
   return useMutation((userId: string) => AllocationService.removeAllocatee(projectId, userId), {
     onMutate: async (userId: string) => {
       await queryClient.cancelQueries(["projects", "allocatees", projectId]);
-      const oldAllocatees = queryClient.getQueryData(["projects", "allocatees", projectId]);
+      const oldAllocatees = queryClient.getQueryData(["projects", "allocatees", projectId]) as UserRead[];
       queryClient.setQueryData(
         ["projects", "allocatees", projectId],
-        (oldAllocatees as any).filter((user: UserRead) => user.id !== userId)
+        oldAllocatees.filter((user: UserRead) => user.id !== userId)
       );
       return { oldAllocatees };
     },
-    onError: (error, variables, context: any) => {
-      queryClient.setQueryData(["projects", "allocatees", projectId], context.oldAllocatees);
+    onError: (error, variables, context) => {
+      queryClient.setQueryData(["projects", "allocatees", projectId], context?.oldAllocatees);
     },
     onSettled: () => {
       queryClient.invalidateQueries(["projects", "allocatees", projectId]);
@@ -63,8 +61,7 @@ export function useAllocateProjects() {
 
   return useMutation(() => AllocationService.allocateProjects(), {
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] }); // Maybe not needed
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries(["projects"]);
     },
   });
 }
@@ -74,46 +71,72 @@ export function useDeallocateProjects() {
 
   return useMutation(() => AllocationService.deallocateProjects(), {
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] }); // Maybe not needed
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries(["projects"]);
     },
   });
 }
 
-export function useSetAllocationStatus(userId: string) {
+export function useAcceptAllocation() {
   const queryClient = useQueryClient();
 
-  return useMutation(({ accepted }: { accepted: boolean }) => AllocationService.setAllocationStatus({ accepted }), {
-    onMutate: async ({ accepted }) => {
-      await queryClient.cancelQueries(["users", userId]);
-      const oldUser = queryClient.getQueryData(["users", userId]);
-      queryClient.setQueryData(["users", userId], ((oldUser as any).accepted = accepted));
-      return { oldUser };
-    },
-    onError: (error, variables, context: any) => {
-      queryClient.setQueryData(["users", userId], context.oldUser);
-    },
-    onSettled: () => {
-      queryClient.invalidateQueries(["users", userId]);
-    },
-  });
-}
-
-export function useResetAllocationStatus(userId: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation(() => AllocationService.resetAllocationStatus(), {
+  return useMutation(() => AllocationService.acceptAllocation(), {
     onMutate: async () => {
-      await queryClient.cancelQueries(["users", userId]);
-      const oldUser = queryClient.getQueryData(["users", userId]);
-      queryClient.setQueryData(["users", userId], ((oldUser as any).accepted = false));
-      return { oldUser };
+      await queryClient.cancelQueries(["projects", "allocated-projects"]);
+      const oldProject = queryClient.getQueryData(["projects", "allocated-projects"]) as ProjectReadWithAllocations;
+      queryClient.setQueryData(["projects", "allocated-projects"], {
+        ...oldProject,
+        allocations: [{ ...oldProject.allocations[0], accepted: true }],
+      });
+      return { oldProject };
     },
-    onError: (error, variables, context: any) => {
-      queryClient.setQueryData(["users", userId], context.oldUser);
+    onError: (error, variables, context) => {
+      queryClient.setQueryData(["projects", "allocated-projects"], context?.oldProject);
     },
     onSettled: () => {
-      queryClient.invalidateQueries(["users", userId]);
+      queryClient.invalidateQueries(["projects", "allocated-projects"]);
+    },
+  });
+}
+
+export function useRejectAllocation() {
+  const queryClient = useQueryClient();
+
+  return useMutation(() => AllocationService.rejectAllocation(), {
+    onMutate: async () => {
+      // TODO: This is not working
+      await queryClient.cancelQueries(["projects", "allocated-projects"]);
+      const oldProject = queryClient.getQueryData(["projects", "allocated-projects"]) as ProjectReadWithAllocations;
+      queryClient.setQueryData(["projects", "allocated-projects"], {
+        ...oldProject,
+        allocations: [{ ...oldProject.allocations[0], accepted: false }],
+      });
+      return { oldProject };
+    },
+    onError: (error, variables, context) => {
+      queryClient.setQueryData(["projects", "allocated-projects"], context?.oldProject);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(["projects", "allocated-projects"]);
+    },
+  });
+}
+
+export function useLockAllocations() {
+  const queryClient = useQueryClient();
+
+  return useMutation(() => AllocationService.lockAllocations(), {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["projects", "allocated-projects"]);
+    },
+  });
+}
+
+export function useUnlockAllocations() {
+  const queryClient = useQueryClient();
+
+  return useMutation(() => AllocationService.unlockAllocations(), {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["projects", "allocated-projects"]);
     },
   });
 }

@@ -15,8 +15,8 @@ export function useUpdateConfig(key: string) {
       queryClient.setQueryData(["config", key], value);
       return { oldConfig };
     },
-    onError: (error, variables, context: any) => {
-      queryClient.setQueryData(["config", key], context.oldConfig);
+    onError: (error, variables, context) => {
+      queryClient.setQueryData(["config", key], context?.oldConfig);
     },
     onSettled: () => {
       queryClient.invalidateQueries(["config", key]);

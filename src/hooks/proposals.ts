@@ -2,9 +2,9 @@ import { ProposalService } from "@/api";
 import { useQuery } from "react-query";
 
 export function useProposedProjects() {
-  return useQuery(["projects", "proposals"], () => ProposalService.readProposedProjects());
+  return useQuery(["projects", "proposed-projects"], () => ProposalService.readProposedProjects());
 }
 
-export function useIsProjectProposed(projectId: string) {
-  return useQuery(["projects", "proposals", projectId], () => ProposalService.isProjectProposed(projectId));
+export function useProposer(projectId: string) {
+  return useQuery(["projects", "proposer", projectId], () => ProposalService.readProposer(projectId));
 }
