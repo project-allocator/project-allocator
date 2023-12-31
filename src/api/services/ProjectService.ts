@@ -2,7 +2,6 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { Body_set_project_status } from '../models/Body_set_project_status';
 import type { ProjectCreateWithDetails } from '../models/ProjectCreateWithDetails';
 import type { ProjectDetailTemplateRead } from '../models/ProjectDetailTemplateRead';
 import type { ProjectReadWithDetails } from '../models/ProjectReadWithDetails';
@@ -27,43 +26,38 @@ export class ProjectService {
     }
 
     /**
-     * Read Projects
-     * @param approved
+     * Read Approved Projects
      * @returns ProjectReadWithDetails Successful Response
      * @throws ApiError
      */
-    public static readProjects(
-        approved: boolean = true,
-    ): CancelablePromise<Array<ProjectReadWithDetails>> {
+    public static readApprovedProjects(): CancelablePromise<Array<ProjectReadWithDetails>> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/projects',
-            query: {
-                'approved': approved,
-            },
-            errors: {
-                422: `Validation Error`,
-            },
+            url: '/api/projects/approved',
         });
     }
 
     /**
-     * Create Project
-     * @param requestBody
+     * Read Disapproved Projects
      * @returns ProjectReadWithDetails Successful Response
      * @throws ApiError
      */
-    public static createProject(
-        requestBody: ProjectCreateWithDetails,
-    ): CancelablePromise<ProjectReadWithDetails> {
+    public static readDisapprovedProjects(): CancelablePromise<Array<ProjectReadWithDetails>> {
         return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/projects',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                422: `Validation Error`,
-            },
+            method: 'GET',
+            url: '/api/projects/disapproved',
+        });
+    }
+
+    /**
+     * Read No Response Projects
+     * @returns ProjectReadWithDetails Successful Response
+     * @throws ApiError
+     */
+    public static readNoResponseProjects(): CancelablePromise<Array<ProjectReadWithDetails>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/projects/no-response',
         });
     }
 
@@ -135,22 +129,17 @@ export class ProjectService {
     }
 
     /**
-     * Set Project Status
-     * @param projectId
+     * Create Project
      * @param requestBody
-     * @returns any Successful Response
+     * @returns ProjectReadWithDetails Successful Response
      * @throws ApiError
      */
-    public static setProjectStatus(
-        projectId: string,
-        requestBody: Body_set_project_status,
-    ): CancelablePromise<any> {
+    public static createProject(
+        requestBody: ProjectCreateWithDetails,
+    ): CancelablePromise<ProjectReadWithDetails> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/projects/{project_id}/status',
-            path: {
-                'project_id': projectId,
-            },
+            url: '/api/projects',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -160,17 +149,17 @@ export class ProjectService {
     }
 
     /**
-     * Reset Project Status
+     * Approve Project
      * @param projectId
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static resetProjectStatus(
+    public static approveProject(
         projectId: string,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
-            method: 'DELETE',
-            url: '/api/projects/{project_id}/status',
+            method: 'POST',
+            url: '/api/projects/{project_id}/approve',
             path: {
                 'project_id': projectId,
             },
@@ -181,38 +170,17 @@ export class ProjectService {
     }
 
     /**
-     * Is Project Allocated
-     * @param projectId
-     * @returns boolean Successful Response
-     * @throws ApiError
-     */
-    public static isProjectAllocated(
-        projectId: string,
-    ): CancelablePromise<boolean> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/users/me/projects/{project_id}/allocated',
-            path: {
-                'project_id': projectId,
-            },
-            errors: {
-                422: `Validation Error`,
-            },
-        });
-    }
-
-    /**
-     * Is Project Accepted
+     * Disapprove Project
      * @param projectId
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static isProjectAccepted(
+    public static disapproveProject(
         projectId: string,
-    ): CancelablePromise<(boolean | null)> {
+    ): CancelablePromise<any> {
         return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/users/me/projects/{project_id}/accepted',
+            method: 'POST',
+            url: '/api/projects/{project_id}/disapprove',
             path: {
                 'project_id': projectId,
             },

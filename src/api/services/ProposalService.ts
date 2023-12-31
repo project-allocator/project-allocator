@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { ProjectRead } from '../models/ProjectRead';
+import type { UserRead } from '../models/UserRead';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -18,7 +19,28 @@ export class ProposalService {
     public static readProposedProjects(): CancelablePromise<Array<ProjectRead>> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/users/me/proposed',
+            url: '/api/users/me/proposed_projects',
+        });
+    }
+
+    /**
+     * Read Proposer
+     * @param projectId
+     * @returns UserRead Successful Response
+     * @throws ApiError
+     */
+    public static readProposer(
+        projectId: string,
+    ): CancelablePromise<UserRead> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/projects/{project_id}/proposer',
+            path: {
+                'project_id': projectId,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
         });
     }
 

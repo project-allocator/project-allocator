@@ -24,17 +24,17 @@ export class NotificationService {
     }
 
     /**
-     * Mark Notifications
+     * Mark Read Notifications
      * @param requestBody
      * @returns any Successful Response
      * @throws ApiError
      */
-    public static markNotifications(
+    public static markReadNotifications(
         requestBody: Array<string>,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
-            method: 'PUT',
-            url: '/api/users/me/notifications',
+            method: 'POST',
+            url: '/api/users/me/notifications/mark_read',
             body: requestBody,
             mediaType: 'application/json',
             errors: {

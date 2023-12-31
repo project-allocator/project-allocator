@@ -19,27 +19,7 @@ export class ShortlistService {
     public static readShortlistedProjects(): CancelablePromise<Array<ProjectRead>> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/users/me/shortlisted',
-        });
-    }
-
-    /**
-     * Reorder Shortlisted Projects
-     * @param requestBody
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public static reorderShortlistedProjects(
-        requestBody: Array<string>,
-    ): CancelablePromise<any> {
-        return __request(OpenAPI, {
-            method: 'PUT',
-            url: '/api/users/me/shortlisted',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                422: `Validation Error`,
-            },
+            url: '/api/users/me/shortlisted_projects',
         });
     }
 
@@ -54,8 +34,8 @@ export class ShortlistService {
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/users/me/shortlisted/{project_id}',
-            path: {
+            url: '/api/users/me/shortlisted_projects',
+            query: {
                 'project_id': projectId,
             },
             errors: {
@@ -75,10 +55,30 @@ export class ShortlistService {
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'DELETE',
-            url: '/api/users/me/shortlisted/{project_id}',
+            url: '/api/users/me/shortlisted_projects/{project_id}',
             path: {
                 'project_id': projectId,
             },
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Reorder Shortlisted Projects
+     * @param requestBody
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static reorderShortlistedProjects(
+        requestBody: Array<string>,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/users/me/shortlisted_projects/reorder',
+            body: requestBody,
+            mediaType: 'application/json',
             errors: {
                 422: `Validation Error`,
             },

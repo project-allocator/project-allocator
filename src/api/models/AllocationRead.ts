@@ -3,7 +3,8 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type Body_set_project_status = {
-    approved: boolean;
+export type AllocationRead = {
+    accepted?: (boolean | null);
+    locked?: boolean;
 };
 

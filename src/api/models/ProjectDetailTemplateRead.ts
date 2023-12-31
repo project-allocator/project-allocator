@@ -7,7 +7,7 @@ export type ProjectDetailTemplateRead = {
     key: string;
     type: string;
     required: boolean;
-    options: Array<string>;
+    options?: Array<string>;
     title: string;
     description: string;
     message: string;
