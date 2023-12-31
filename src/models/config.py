@@ -5,15 +5,14 @@ from ..mixins.timestamp import TimestampMixin
 
 
 class ConfigBase(SQLModel):
-    key: str
+    key: str = Field(primary_key=True)
     value: Any  # any type to allow input to be parsed
 
 
 # No need to inherit ConfigBase as all the fields are overridden.
-class Config(TimestampMixin, SQLModel, table=True):
+class Config(TimestampMixin, ConfigBase, table=True):
     __tablename__ = "config"
 
-    key: str = Field(primary_key=True)
     value: str  # must be stringified in database
 
 

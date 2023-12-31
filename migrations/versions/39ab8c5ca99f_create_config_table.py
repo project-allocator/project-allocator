@@ -67,12 +67,6 @@ def upgrade() -> None:
                 "created_at": timestamp,
                 "updated_at": timestamp,
             },
-            {
-                "key": "resets_shutdown",
-                "value": "false",
-                "created_at": timestamp,
-                "updated_at": timestamp,
-            },
         ],
     )
 
