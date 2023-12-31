@@ -69,7 +69,11 @@ def seed(yes: Annotated[bool, typer.Option(help="Skip confirmation.")] = False):
 
             # Allocate 1 random shortlisted project for each student.
             random_shortlist = random.choice(student.shortlists)
-            allocation = Allocation(allocatee=student, allocated_project=random_shortlist.shortlisted_project)
+            allocation = Allocation(
+                allocatee=student,
+                allocated_project=random_shortlist.shortlisted_project,
+                accepted=random.choice([True, False, None]),
+            )
             session.add(allocation)
 
         for user in track(users, description="Seeding notifications..."):

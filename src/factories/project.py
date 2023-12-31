@@ -31,7 +31,8 @@ class ProjectFactory(factory.alchemy.SQLAlchemyModelFactory):
                 key=template.key,
                 value__type=template.type,
                 value__options=template.options,
-                project_id=self.id,  # TODO: Try project=self
+                project=self,
+                template=template,
             )
             for template in kwargs["templates"]
         ]
@@ -63,8 +64,10 @@ class ProjectDetailFactory(factory.alchemy.SQLAlchemyModelFactory):
                 self.value = "true" if _fake.boolean() else "false"
             case "select" | "radio":
                 self.value = _fake.random_element(elements=kwargs["options"])
-            case "checkbox" | "categories":
+            case "checkbox":
                 self.value = json.dumps(_fake.random_elements(elements=kwargs["options"], unique=True))
+            case "categories":
+                self.value = json.dumps(_fake.words(nb=5, unique=True))
 
 
 class ProjectDetailTemplateFactory(factory.alchemy.SQLAlchemyModelFactory):
