@@ -69,12 +69,3 @@ def block_on_shortlists_shutdown(session: Session = Depends(get_session)):
             status_code=403,
             detail="Shortlists are currently shutdown.",
         )
-
-
-def block_on_resets_shutdown(session: Session = Depends(get_session)):
-    config = session.get(Config, "resets_shutdown")
-    if config.value == "true":
-        raise HTTPException(
-            status_code=403,
-            detail="Resets are currently shutdown.",
-        )
