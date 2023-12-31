@@ -1,14 +1,13 @@
-from typing import Optional, Any, TYPE_CHECKING
+from typing import Optional, Any
 from sqlalchemy import Column, JSON
 from sqlmodel import Field, Relationship, SQLModel
 import ulid
 
 from ..mixins.timestamp import TimestampMixin
 
-if TYPE_CHECKING:
-    from .allocation import Allocation
-    from .proposal import Proposal
-    from .shortlist import Shortlist
+from .allocation import Allocation, AllocationRead
+from .proposal import Proposal
+from .shortlist import Shortlist
 
 
 class ProjectBase(SQLModel):
@@ -53,6 +52,10 @@ class ProjectRead(ProjectBase):
     id: str
 
 
+class ProjectReadWithAllocations(ProjectRead):
+    allocations: list["AllocationRead"]
+
+
 class ProjectCreate(ProjectBase):
     pass
 
@@ -68,10 +71,10 @@ class ProjectUpdate(SQLModel):
 
 
 class ProjectDetailTemplateBase(SQLModel):
-    key: str
+    key: str = Field(primary_key=True)
     type: str
     required: bool
-    options: list[str]
+    options: list[str] = Field(sa_column=Column(JSON), default=[])
 
     # Used by the frontend to describe the detail.
     title: str
@@ -82,27 +85,22 @@ class ProjectDetailTemplateBase(SQLModel):
 class ProjectDetailTemplate(TimestampMixin, ProjectDetailTemplateBase, table=True):
     __tablename__ = "project_detail_template"
 
-    key: str = Field(primary_key=True)
-    options: list[str] = Field(sa_column=Column(JSON), default=[])
-
 
 class ProjectDetailTemplateRead(ProjectDetailTemplateBase):
     pass
 
 
 class ProjectDetailBase(SQLModel):
-    key: str
-    value: Any  # any type to allow input to be parsed
-
-
-# No need to inherit ConfigBase as all the fields are overridden.
-class ProjectDetail(TimestampMixin, SQLModel, table=True):
-    __tablename__ = "project_detail"
-
     key: str = Field(
         primary_key=True,
         foreign_key="project_detail_template.key",
     )
+    value: Any  # any type to allow input to be parsed
+
+
+class ProjectDetail(TimestampMixin, ProjectDetailBase, table=True):
+    __tablename__ = "project_detail"
+
     value: str  # must be stringified in database
 
     project_id: str = Field(

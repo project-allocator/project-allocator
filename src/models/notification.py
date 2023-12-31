@@ -12,7 +12,8 @@ if TYPE_CHECKING:
 class NotificationBase(SQLModel):
     title: str
     description: str
-    read_at: Optional[datetime] = Field(nullable=True, default=None)
+
+    read_at: Optional[datetime] = None
 
 
 class Notification(TimestampMixin, NotificationBase, table=True):

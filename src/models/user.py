@@ -1,14 +1,14 @@
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 from sqlmodel import Field, Relationship, SQLModel
 import ulid
 
+
 from ..mixins.timestamp import TimestampMixin
 
-if TYPE_CHECKING:
-    from .allocation import Allocation
-    from .proposal import Proposal
-    from .shortlist import Shortlist
-    from .notification import Notification
+from .allocation import Allocation, AllocationRead
+from .proposal import Proposal
+from .shortlist import Shortlist
+from .notification import Notification
 
 
 class UserBase(SQLModel):
@@ -49,12 +49,9 @@ class User(TimestampMixin, UserBase, table=True):
 class UserRead(UserBase):
     id: str
 
-    # True if user has accepted allocation.
-    # None means user has not made any response.
-    # TODO:
-    # This field has been temporarily added to UserRead
-    # to support /projects/{project_id}/read_allocatees endpoint.
-    accepted: Optional[bool] = None
+
+class UserReadWithAllocation(UserRead):
+    allocation: Optional["AllocationRead"]
 
 
 # We can only update user role.
