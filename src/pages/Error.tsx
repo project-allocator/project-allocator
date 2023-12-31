@@ -2,11 +2,10 @@ import { Button, Layout, Result } from "antd";
 import { ResultStatusType } from "antd/es/result";
 import { useNavigate, useRouteError } from "react-router-dom";
 
-// TODO: Sometimes we should just show "something went wrong" instead of rendering this component.
 export default function Error() {
   const navigate = useNavigate();
   const error = useRouteError() as any;
-  // TODO: Print the error for debugging purposes.
+  // TODO: Print the error for debugging.
   console.error(error);
 
   return (
