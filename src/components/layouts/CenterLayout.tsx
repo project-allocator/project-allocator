@@ -1,13 +1,13 @@
 import { Layout } from "antd";
 import { Outlet } from "react-router-dom";
-import PageHeader from "./PageHeader";
+import Header from "./Header";
 
 const { Content } = Layout;
 
 export default function CenterLayout() {
   return (
     <Layout className="min-h-screen">
-      <PageHeader />
+      <Header />
       <Content className="grid place-content-center">
         <Outlet />
       </Content>

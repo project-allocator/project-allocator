@@ -3,9 +3,7 @@ import { FileAddOutlined, FileDoneOutlined, FileTextOutlined, LockOutlined } fro
 import { Layout, Menu } from "antd";
 import { Link, useLocation } from "react-router-dom";
 
-const { Sider } = Layout;
-
-export default function PageSider() {
+export default function Sider() {
   const { pathname } = useLocation();
   const { isAdmin, isStaff, isStudent } = useCurrentUserRole();
 
@@ -65,13 +63,13 @@ export default function PageSider() {
 
   return (
     // TODO: Can width be specified by CSS?
-    <Sider width={300} className="min-h-screen">
+    <Layout.Sider width={300} className="min-h-screen">
       <Menu
         mode="inline"
         items={items.filter((item) => item) as any[]}
         defaultSelectedKeys={[pathname]}
         className="h-full"
       />
-    </Sider>
+    </Layout.Sider>
   );
 }

@@ -1,33 +1,30 @@
 import { NotificationRead } from "@/api";
 import { useDeleteNotification, useMarkReadNotifications, useNotifications } from "@/hooks/notifications";
-import Await from "@/pages/Await";
 import { DeleteOutlined } from "@ant-design/icons";
-import { Button, Card, Drawer, Empty, Space, Tooltip, Typography } from "antd";
+import * as antd from "antd";
+import { Button, Card, Empty, Space, Tooltip, Typography } from "antd";
 
 const { Text } = Typography;
 
-export default function PageDrawer({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) {
+export default function Drawer({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) {
   const notifications = useNotifications();
   const markReadNotifications = useMarkReadNotifications();
 
-  const notificationIds = notifications.data?.map((notification) => notification.id) || [];
-
   return (
-    <Drawer
+    <antd.Drawer
       title="Notifications"
       placement="right"
       open={open}
       onClose={() => {
         setOpen(false);
-        markReadNotifications.mutate(notificationIds);
+        const notificationIds = notifications.data?.map((notification) => notification.id);
+        markReadNotifications.mutate(notificationIds || []);
       }}
     >
       <Space direction="vertical" className="w-full">
-        <Await query={notifications} errorElement="Failed to load notifications">
-          {(notifications) => <NotificationList notifications={notifications} />}
-        </Await>
+        <NotificationList notifications={notifications.data || []} />
       </Space>
-    </Drawer>
+    </antd.Drawer>
   );
 }
 
