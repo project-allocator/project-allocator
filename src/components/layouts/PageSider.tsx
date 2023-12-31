@@ -1,5 +1,4 @@
-import { useCurrentUser, useCurrentUserRole } from "@/hooks/users";
-import Loading from "@/pages/Loading";
+import { useCurrentUserRole } from "@/hooks/users";
 import { FileAddOutlined, FileDoneOutlined, FileTextOutlined, LockOutlined } from "@ant-design/icons";
 import { Layout, Menu } from "antd";
 import { Link, useLocation } from "react-router-dom";
@@ -8,11 +7,7 @@ const { Sider } = Layout;
 
 export default function PageSider() {
   const { pathname } = useLocation();
-  const user = useCurrentUser();
   const { isAdmin, isStaff, isStudent } = useCurrentUserRole();
-
-  if (user.isLoading) return <Loading />;
-  if (user.isError) return null;
 
   const items = [
     {
