@@ -6,8 +6,19 @@ from datetime import datetime
 import requests
 import json
 
-from ..dependencies import check_admin, get_env, get_user, get_session, get_token
-from ..models import User, Notification, NotificationRead, NotificationCreate
+from ..dependencies import (
+    check_admin,
+    get_env,
+    get_user,
+    get_session,
+    get_token,
+)
+from ..models import (
+    User,
+    Notification,
+    NotificationRead,
+    NotificationCreate,
+)
 
 router = APIRouter(tags=["notification"])
 
@@ -26,9 +37,10 @@ async def read_notifications(
     return notifications
 
 
-# TODO: This endpoint is semantically misleading
-@router.put("/users/me/notifications")
-async def mark_notifications(
+@router.post(
+    "/users/me/notifications/mark_read",
+)
+async def mark_read_notifications(
     notification_ids: list[str],
     session: Annotated[Session, Depends(get_session)],
 ):
@@ -40,7 +52,9 @@ async def mark_notifications(
     return {"ok": True}
 
 
-@router.delete("/users/me/notifications/{notification_id}")
+@router.delete(
+    "/users/me/notifications/{notification_id}",
+)
 async def delete_notification(
     notification_id: str,
     user: Annotated[User, Depends(get_user)],

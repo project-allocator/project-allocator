@@ -1,15 +1,12 @@
-from operator import or_
 from typing import Annotated
-from fastapi import APIRouter, Body, Depends, HTTPException, Security
+from fastapi import APIRouter, HTTPException, Depends, Security
 from sqlmodel import Session, select
-import json
 
-
+from ..utils.projects import parse_project_details, serialize_project_detail
 from ..dependencies import (
     block_on_proposals_shutdown,
     check_admin,
     check_staff,
-    check_student,
     get_session,
     get_user,
 )
@@ -20,8 +17,6 @@ from ..models import (
     ProjectDetailTemplate,
     ProjectDetailTemplateRead,
     ProjectReadWithDetails,
-    ProjectDetailCreate,
-    ProjectDetailUpdate,
     ProjectCreateWithDetails,
     ProjectUpdateWithDetails,
     Proposal,
@@ -30,31 +25,13 @@ from ..models import (
 router = APIRouter(tags=["project"])
 
 
-def serialize_project_detail(type: str, detail: ProjectDetailCreate | ProjectDetailUpdate):
-    match type:
-        case "number" | "slider":
-            detail.value = str(detail.value)
-        case "switch":
-            detail.value = "true" if detail.value else "false"
-        case "checkbox" | "categories":
-            detail.value = json.dumps(detail.value)
-
-
-def parse_project_detail(detail: ProjectDetail):
-    match detail.template.type:
-        case "number" | "slider":
-            detail.value = int(detail.value)
-        case "switch":
-            detail.value = detail.value == "true"
-        case "checkbox" | "categories":
-            detail.value = json.loads(detail.value)
-
-
 @router.get(
     "/projects/details/templates",
     response_model=list[ProjectDetailTemplateRead],
 )
-async def read_project_detail_templates(session: Session = Depends(get_session)):
+async def read_project_detail_templates(
+    session: Annotated[Session, Depends(get_session)],
+):
     # Sort the templates so that the details are displayed in order of creation.
     templates = session.exec(select(ProjectDetailTemplate)).all()
     templates.sort(key=lambda template: template.created_at)
@@ -63,29 +40,48 @@ async def read_project_detail_templates(session: Session = Depends(get_session))
 
 
 @router.get(
-    "/projects",
+    "/projects/approved",
     response_model=list[ProjectReadWithDetails],
 )
-async def read_projects(
-    *,  # prevent default parameter ordering error
-    approved: bool = True,
+async def read_approved_projects(
     session: Annotated[Session, Depends(get_session)],
 ):
-    if approved:
-        # Only show projects approved by admins.
-        query = select(Project).where(Project.approved == True)
-    else:
-        # Only show projects disapproved or not approved by admins.
-        query = select(Project).where(or_(Project.approved == False, Project.approved == None))
-
     # Sort the projects so that the last updated project is returned first.
+    query = select(Project).where(Project.approved == True)
     projects = session.exec(query).all()
     projects.sort(key=lambda project: project.updated_at, reverse=True)
 
-    for project in projects:
-        for detail in project.details:
-            parse_project_detail(detail)
-    return projects
+    return [parse_project_details(project) for project in projects]
+
+
+@router.get(
+    "/projects/disapproved",
+    response_model=list[ProjectReadWithDetails],
+    dependencies=[Security(check_admin)],  # only admins
+)
+async def read_disapproved_projects(
+    session: Annotated[Session, Depends(get_session)],
+):
+    query = select(Project).where(Project.approved == False)
+    projects = session.exec(query).all()
+    projects.sort(key=lambda project: project.updated_at, reverse=True)
+
+    return [parse_project_details(project) for project in projects]
+
+
+@router.get(
+    "/projects/no-response",
+    response_model=list[ProjectReadWithDetails],
+    dependencies=[Security(check_admin)],  # only admins
+)
+async def read_no_response_projects(
+    session: Annotated[Session, Depends(get_session)],
+):
+    query = select(Project).where(Project.approved == None)
+    projects = session.exec(query).all()
+    projects.sort(key=lambda project: project.updated_at, reverse=True)
+
+    return [parse_project_details(project) for project in projects]
 
 
 @router.get(
@@ -100,10 +96,7 @@ async def read_project(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    # TODO: Model validate before return?
-    for detail in project.details:
-        parse_project_detail(detail)
-    return project
+    return parse_project_details(project)
 
 
 @router.post(
@@ -136,11 +129,11 @@ async def create_project(
             case "select" | "radio":
                 if detail.value not in template.options:
                     raise HTTPException(status_code=400, detail="Invalid project detail value")
-            case "checkbox" | "categories":
-                if not all(option in template.options for option in json.loads(detail.value)):
+            case "checkbox":
+                if not all(option in template.options for option in detail.value):
                     raise HTTPException(status_code=400, detail="Invalid project detail value")
 
-        serialize_project_detail(template.type, detail)
+        serialize_project_detail(template, detail)
         project_detail = ProjectDetail.model_validate(detail)
         project_details.append(project_detail)
     project.details = project_details
@@ -153,9 +146,7 @@ async def create_project(
     session.add(proposal)
     session.commit()
 
-    for detail in project.details:
-        parse_project_detail(detail)
-    return project
+    return parse_project_details(project)
 
 
 @router.put(
@@ -195,11 +186,11 @@ async def update_project(
             case "select" | "radio":
                 if detail.value not in template.options:
                     raise HTTPException(status_code=400, detail="Invalid project detail value")
-            case "checkbox" | "categories":
-                if not all(option in template.options for option in json.loads(detail.value)):
+            case "checkbox":
+                if not all(option in template.options for option in detail.value):
                     raise HTTPException(status_code=400, detail="Invalid project detail value")
 
-        serialize_project_detail(template.type, detail)
+        serialize_project_detail(template, detail)
         project_detail = session.get(ProjectDetail, (detail.key, project_id))
         project_detail.value = detail.value
         project_details.append(project_detail)
@@ -208,9 +199,7 @@ async def update_project(
     session.add_all(project_details)
     session.commit()
 
-    for detail in project.details:
-        parse_project_detail(detail)
-    return project
+    return parse_project_details(project)
 
 
 @router.delete(
@@ -236,71 +225,36 @@ async def delete_project(
 
 
 @router.post(
-    "/projects/{project_id}/status",
+    "/projects/{project_id}/approve",
     dependencies=[Security(check_admin)],
 )
-async def set_project_status(
-    project_id: str,
-    approved: Annotated[bool, Body(embed=True)],
-    session: Annotated[Session, Depends(get_session)],
-):
-    project = session.get(Project, project_id)
-    if not project:
-        raise HTTPException(status_code=404, detail="Project not found")
-    if project.approved is not None:
-        raise HTTPException(status_code=400, detail="Project already approved or disapproved")
-
-    project.approved = approved
-    session.add(project)
-    session.commit()
-    return {"ok": True}
-
-
-@router.delete(
-    "/projects/{project_id}/status",
-    dependencies=[Security(check_admin)],
-)
-async def reset_project_status(
+async def approve_project(
     project_id: str,
     session: Annotated[Session, Depends(get_session)],
 ):
     project = session.get(Project, project_id)
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
-    if project.approved is None:
-        raise HTTPException(status_code=400, detail="Project not approved or disapproved")
 
-    project.approved = None
+    project.approved = True
     session.add(project)
     session.commit()
     return {"ok": True}
 
 
-@router.get(
-    "/users/me/projects/{project_id}/allocated",
-    response_model=bool,
-    dependencies=[Security(check_student)],
+@router.post(
+    "/projects/{project_id}/disapprove",
+    dependencies=[Security(check_admin)],
 )
-async def is_project_allocated(
+async def disapprove_project(
     project_id: str,
-    user: User = Depends(get_user),
+    session: Annotated[Session, Depends(get_session)],
 ):
-    if not user.allocation: 
-        return False
+    project = session.get(Project, project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
 
-    return user.allocation.allocated_project.id == project_id
-
-
-@router.get(
-    "/users/me/projects/{project_id}/accepted",
-    response_model=bool | None,
-    dependencies=[Security(check_student)],
-)
-async def is_project_accepted(
-    project_id: str,
-    user: User = Depends(get_user),
-):
-    if not user.allocation or user.allocation.allocated_project.id != project_id:
-        raise HTTPException(status_code=404, detail="User not allocated to project")
-
-    return user.allocation.accepted
+    project.approved = False
+    session.add(project)
+    session.commit()
+    return {"ok": True}

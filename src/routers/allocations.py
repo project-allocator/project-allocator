@@ -1,10 +1,10 @@
-from typing import Annotated, Optional
+from typing import Annotated
 from fastapi import APIRouter, HTTPException, Depends, Security, Body
 from sqlmodel import Session, select
 
+
 from .. import algorithms
 from ..dependencies import (
-    block_on_resets_shutdown,
     check_admin,
     check_staff,
     check_student,
@@ -13,91 +13,35 @@ from ..dependencies import (
 )
 from ..models import (
     User,
-    UserRead,
+    UserReadWithAllocation,
     Project,
-    ProjectRead,
+    ProjectReadWithAllocations,
     Allocation,
     Shortlist,
     Config,
 )
 
+
 router = APIRouter(tags=["allocation"])
 
 
-@router.post(
-    "/projects/allocatees",
-    dependencies=[Security(check_admin)],
+@router.get(
+    "/users/me/allocated_project",
+    response_model=ProjectReadWithAllocations,
+    dependencies=[Security(check_student)],
 )
-async def allocate_projects(session: Annotated[Session, Depends(get_session)]):
-    students = session.exec(select(User).where(User.role == "student")).all()
-    projects = session.exec(select(Project)).all()
-    shortlists = session.exec(select(Shortlist)).all()
-
-    # Allocate projects using the custom algorithm
-    max_allocations = session.get(Config, "max_allocations")
-    max_allocations = int(max_allocations.value)
-    allocations = algorithms.allocate_projects(students, projects, shortlists, max_allocations)
-
-    # Commit the changes made by the custom algorithm
-    session.add_all(allocations)
-    session.commit()
-    return {"ok": True}
-
-
-@router.delete(
-    "/projects/allocatees",
-    dependencies=[Security(check_admin)],
-)
-async def deallocate_projects(session: Annotated[Session, Depends(get_session)]):
-    allocations = session.exec(select(Allocation)).all()
-    for allocation in allocations:
-        session.delete(allocation)
-    session.commit()
-    return {"ok": True}
-
-
-@router.post(
-    "/users/me/allocated/status",
-    dependencies=[Security(check_student), Security(block_on_resets_shutdown)],
-)
-async def set_allocation_status(
-    user: Annotated[User, Depends(get_user)],
-    accepted: Annotated[bool, Body(embed=True)],  # embed=True for clarity of generated API client
-    session: Annotated[Session, Depends(get_session)],
-):
+async def read_allocated_project(user: Annotated[User, Depends(get_user)]):
     if not user.allocation:
         raise HTTPException(status_code=404, detail="User not allocated to project")
-    if user.allocation.accepted is not None:
-        raise HTTPException(status_code=400, detail="User already accepted or rejected allocation")
 
-    user.allocation.accepted = accepted
-    session.add(user)
-    session.commit()
-    return {"ok": True}
-
-
-@router.delete(
-    "/users/me/allocated/status",
-    dependencies=[Security(check_student), Security(block_on_resets_shutdown)],
-)
-async def reset_allocation_status(
-    user: Annotated[User, Depends(get_user)],
-    session: Annotated[Session, Depends(get_session)],
-):
-    if not user.allocation:
-        raise HTTPException(status_code=404, detail="User not allocated to project")
-    if user.allocation.accepted is None:
-        raise HTTPException(status_code=400, detail="User has not accepted or rejected allocation")
-
-    user.allocation.accepted = None
-    session.add(user)
-    session.commit()
-    return {"ok": True}
+    allocated_project = user.allocation.allocated_project
+    allocated_project.allocations = [user.allocation]  # student can only see their own allocation
+    return allocated_project
 
 
 @router.get(
     "/projects/{project_id}/allocatees",
-    response_model=list[UserRead],
+    response_model=list[UserReadWithAllocation],
     dependencies=[Security(check_staff)],
 )
 async def read_allocatees(
@@ -108,12 +52,7 @@ async def read_allocatees(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    allocatees = []
-    for allocation in project.allocations:
-        allocatee = UserRead.model_validate(allocation.allocatee)
-        allocatee.accepted = allocation.accepted
-        allocatees.append(allocatee)
-    return allocatees
+    return [allocation.allocatee for allocation in project.allocations]
 
 
 @router.post(
@@ -164,13 +103,101 @@ async def remove_allocatee(
     return {"ok": True}
 
 
-@router.get(
-    "/users/me/allocated",
-    response_model=ProjectRead,
+@router.post(
+    "/projects/allocate",
+    dependencies=[Security(check_admin)],
+)
+async def allocate_projects(session: Annotated[Session, Depends(get_session)]):
+    students = session.exec(select(User).where(User.role == "student")).all()
+    projects = session.exec(select(Project)).all()
+    shortlists = session.exec(select(Shortlist)).all()
+
+    # Allocate projects using the custom algorithm
+    max_allocations = session.get(Config, "max_allocations")
+    max_allocations = int(max_allocations.value)
+    allocations = algorithms.allocate_projects(students, projects, shortlists, max_allocations)
+
+    # Commit the changes made by the custom algorithm
+    session.add_all(allocations)
+    session.commit()
+    return {"ok": True}
+
+
+@router.post(
+    "/projects/deallocate",
+    dependencies=[Security(check_admin)],
+)
+async def deallocate_projects(session: Annotated[Session, Depends(get_session)]):
+    allocations = session.exec(select(Allocation)).all()
+    for allocation in allocations:
+        session.delete(allocation)
+    session.commit()
+    return {"ok": True}
+
+
+@router.post(
+    "/users/me/allocation/accept",
     dependencies=[Security(check_student)],
 )
-async def read_allocated_project(user: Annotated[User, Depends(get_user)]):
+async def accept_allocation(
+    user: Annotated[User, Depends(get_user)],
+    session: Annotated[Session, Depends(get_session)],
+):
     if not user.allocation:
         raise HTTPException(status_code=404, detail="User not allocated to project")
+    if user.allocation.locked:
+        raise HTTPException(status_code=403, detail="Allocation locked")
 
-    return user.allocation.allocated_project
+    user.allocation.accepted = True
+    session.add(user)
+    session.commit()
+    return {"ok": True}
+
+
+@router.post(
+    "/users/me/allocation/reject",
+    dependencies=[Security(check_student)],
+)
+async def reject_allocation(
+    user: Annotated[User, Depends(get_user)],
+    session: Annotated[Session, Depends(get_session)],
+):
+    if not user.allocation:
+        raise HTTPException(status_code=404, detail="User not allocated to project")
+    if user.allocation.locked:
+        raise HTTPException(status_code=403, detail="Allocation locked")
+
+    user.allocation.accepted = False
+    session.add(user)
+    session.commit()
+    return {"ok": True}
+
+
+@router.post(
+    "/allocations/lock",
+    dependencies=[Security(check_admin)],
+)
+async def lock_allocations(
+    session: Annotated[Session, Depends(get_session)],
+):
+    allocations = session.exec(select(Allocation)).all()
+    for allocation in allocations:
+        allocation.locked = True
+        session.add(allocation)
+    session.commit()
+    return {"ok": True}
+
+
+@router.post(
+    "/allocations/unlock",
+    dependencies=[Security(check_admin)],
+)
+async def unlock_allocations(
+    session: Annotated[Session, Depends(get_session)],
+):
+    allocations = session.exec(select(Allocation)).all()
+    for allocation in allocations:
+        allocation.locked = False
+        session.add(allocation)
+    session.commit()
+    return {"ok": True}

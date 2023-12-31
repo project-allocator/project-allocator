@@ -1,32 +1,12 @@
 from typing import Annotated
 from fastapi import APIRouter, HTTPException, Depends
 from sqlmodel import Session
-import json
 
+from ..utils.configs import parse_config, serialize_config
 from ..dependencies import get_session
 from ..models import Config, ConfigRead, ConfigUpdate
 
 router = APIRouter(tags=["config"])
-
-
-def serialize_config(key: str, config: ConfigUpdate):
-    match key:
-        case "admin_emails":
-            config.value = json.dumps(config.value)
-        case "max_shortlists" | "max_allocations":
-            config.value = str(config.value)
-        case "proposals_shutdown" | "shortlists_shutdown" | "resets_shutdown":
-            config.value = "true" if config.value else "false"
-
-
-def parse_config(config: Config):
-    match config.key:
-        case "admin_emails":
-            config.value = json.loads(config.value)
-        case "max_shortlists" | "max_allocations":
-            config.value = int(config.value)
-        case "proposals_shutdown" | "shortlists_shutdown" | "resets_shutdown":
-            config.value = config.value == "true"
 
 
 @router.get(
@@ -41,8 +21,7 @@ async def read_config(
     if not config:
         raise HTTPException(status_code=404, detail="Config not found")
 
-    parse_config(config)
-    return config
+    return parse_config(config)
 
 
 @router.put(
@@ -65,5 +44,4 @@ async def update_config(
     session.add(config)
     session.commit()
 
-    parse_config(config)
-    return config
+    return parse_config(config)

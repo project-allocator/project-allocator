@@ -22,7 +22,7 @@ router = APIRouter(tags=["shortlist"])
 
 
 @router.get(
-    "/users/me/shortlisted",
+    "/users/me/shortlisted_projects",
     response_model=list[ProjectRead],
     dependencies=[Security(check_student)],
 )
@@ -40,7 +40,7 @@ async def read_shortlisted_projects(
 
 
 @router.post(
-    "/users/me/shortlisted/{project_id}",
+    "/users/me/shortlisted_projects",
     dependencies=[Security(check_student), Security(block_on_shortlists_shutdown)],
 )
 async def shortlist_project(
@@ -49,6 +49,8 @@ async def shortlist_project(
     session: Annotated[Session, Depends(get_session)],
 ):
     project = session.get(Project, project_id)
+    if not project:
+        raise HTTPException(status_code=404, detail="Project not found")
     if not project.approved:
         # Cannot shortlist to non approved projects.
         raise HTTPException(status_code=404, detail="Project not approved")
@@ -69,7 +71,7 @@ async def shortlist_project(
 
 
 @router.delete(
-    "/users/me/shortlisted/{project_id}",
+    "/users/me/shortlisted_projects/{project_id}",
     dependencies=[Security(check_student), Security(block_on_shortlists_shutdown)],
 )
 async def unshortlist_project(
@@ -93,8 +95,8 @@ async def unshortlist_project(
     return {"ok": True}
 
 
-@router.put(
-    "/users/me/shortlisted",
+@router.post(
+    "/users/me/shortlisted_projects/reorder",
     dependencies=[Security(check_student), Security(block_on_shortlists_shutdown)],
 )
 async def reorder_shortlisted_projects(

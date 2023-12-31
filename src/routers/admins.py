@@ -79,7 +79,6 @@ async def export_json(session: Annotated[Session, Depends(get_session)]):
     for user in users:
         output_users.append(user.model_dump())
     for project in projects:
-        # fmt: off
         output_project = project.model_dump()
         output_project["details"] = [detail.model_dump() for detail in project.details]
         output_project["proposal"] = project.proposal.model_dump()
