@@ -1,13 +1,14 @@
 import ProjectAlert from "@/components/projects/ProjectAlert";
-import { ProjectContent } from "@/components/projects/ProjectContent";
+import ProjectDetails from "@/components/projects/ProjectDetails";
 import ProjectEditDeleteButtons from "@/components/projects/ProjectEditDeleteButtons";
 import ProjectShortlistButton from "@/components/projects/ProjectShortlistButton";
 import { useUnallocatedUsers } from "@/hooks/admins";
 import { useAddAllocatees, useAllocatees, useRemoveAllocatee } from "@/hooks/allocations";
 import { useProject } from "@/hooks/projects";
+import { useProposer } from "@/hooks/proposals";
 import { useShortlisters } from "@/hooks/shortlists";
 import { useCurrentUserRole } from "@/hooks/users";
-import Loading from "@/pages/Loading";
+import Await from "@/pages/Await";
 import { getInitialLetters } from "@/utils";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { Avatar, Button, Divider, List, Select, Space, Tooltip, Typography } from "antd";
@@ -17,24 +18,46 @@ import { Link, useParams } from "react-router-dom";
 const { Title, Paragraph, Text } = Typography;
 
 export default function Project() {
+  const { id: projectId } = useParams();
+  const project = useProject(projectId!);
+  const proposer = useProposer(projectId!);
+
   const { isAdmin, isStaff, isStudent } = useCurrentUserRole();
-
-  const { id } = useParams();
-  const project = useProject(id!);
-
-  if (project.isLoading) return <Loading />;
-  if (project.isError) return null;
 
   return (
     <>
       <ProjectAlert />
       <Space className="flex items-end justify-between">
-        <Title level={3}>Project</Title>
+        <Title level={3}>Project Overview</Title>
         {isStudent && <ProjectShortlistButton />}
         {(isStaff || isAdmin) && <ProjectEditDeleteButtons />}
       </Space>
       <Divider />
-      <ProjectContent project={project.data!} />
+      <Await query={project} errorElement="Failed to load project">
+        {(project) => (
+          <>
+            <Title level={4}>{project.title}</Title>
+            <Paragraph>{project.description}</Paragraph>
+          </>
+        )}
+      </Await>
+      <Divider />
+      <Await query={proposer} errorElement="Failed to load proposer">
+        {(proposer) => (
+          <>
+            <Title level={4}>Proposer</Title>
+            <Paragraph>
+              <Link to={`/users/${proposer.id}`}>
+                {proposer.name} ({proposer.email})
+              </Link>
+            </Paragraph>
+          </>
+        )}
+      </Await>
+      <Divider />
+      <Await query={project} errorElement="Failed to load project">
+        {(project) => <ProjectDetails project={project} />}
+      </Await>
       {isAdmin && (
         <>
           <Divider />
@@ -60,9 +83,6 @@ function AllocatedStudents() {
   const removeAllocatee = useRemoveAllocatee(projectId!);
 
   const [extraAllocateeIndices, setExtraAllocateeIndices] = useState<number[]>([]);
-
-  if (allocatees.isLoading) return <Loading />;
-  if (allocatees.isError) return null;
 
   return (
     <>
@@ -101,31 +121,41 @@ function AllocatedStudents() {
           }}
         />
       </div>
-      <List
-        className="mt-4"
-        itemLayout="horizontal"
-        dataSource={allocatees.data}
-        renderItem={(allocatee) => (
-          <List.Item
-            actions={[
-              <Tooltip title="Delete">
-                <Button
-                  className="border-none"
-                  icon={<DeleteOutlined />}
-                  onClick={() => removeAllocatee.mutate(allocatee.id)}
+      <Await query={allocatees} errorElement="Failed to load allocated students">
+        {(allocatees) => (
+          <List
+            className="mt-4"
+            itemLayout="horizontal"
+            dataSource={allocatees}
+            renderItem={(allocatee) => (
+              <List.Item
+                actions={[
+                  <Tooltip title="Delete">
+                    <Button
+                      className="border-none"
+                      icon={<DeleteOutlined />}
+                      onClick={() => removeAllocatee.mutate(allocatee.id)}
+                    />
+                  </Tooltip>,
+                ]}
+              >
+                <List.Item.Meta
+                  avatar={<Avatar>{getInitialLetters(allocatee.name)}</Avatar>}
+                  title={<Link to={`/users/${allocatee.id}`}>{allocatee.name}</Link>}
+                  description={allocatee.email}
                 />
-              </Tooltip>,
-            ]}
-          >
-            <List.Item.Meta
-              avatar={<Avatar>{getInitialLetters(allocatee.name)}</Avatar>}
-              title={<Link to={`/users/${allocatee.id}`}>{allocatee.name}</Link>}
-              description={allocatee.email}
-            />
-            <Text>{allocatee.accepted === null ? "No Response" : allocatee.accepted ? "Accepted" : "Declined"}</Text>
-          </List.Item>
+                <Text>
+                  {allocatee.allocation?.accepted === null
+                    ? "No Response"
+                    : allocatee.allocation?.accepted
+                      ? "Accepted"
+                      : "Declined"}
+                </Text>
+              </List.Item>
+            )}
+          />
         )}
-      />
+      </Await>
     </>
   );
 }
@@ -134,29 +164,30 @@ function ShortlistedStudents() {
   const { id } = useParams();
   const shortlisters = useShortlisters(id!);
 
-  if (shortlisters.isLoading) return <Loading />;
-  if (shortlisters.isError) return null;
-
   return (
     <>
       <Title level={4}>Shortlisted Students</Title>
       <Paragraph className="text-slate-500">
         List of students who shortlisted this projected will be shown in here, in the order of their preference.
       </Paragraph>
-      <List
-        className="mt-4"
-        itemLayout="horizontal"
-        dataSource={shortlisters.data}
-        renderItem={(shortlister) => (
-          <List.Item>
-            <List.Item.Meta
-              avatar={<Avatar>{getInitialLetters(shortlister.name)}</Avatar>}
-              title={<Link to={`/users/${shortlister.id}`}>{shortlister.name}</Link>}
-              description={shortlister.email}
-            />
-          </List.Item>
+      <Await query={shortlisters} errorElement="Failed to load shortlisted students">
+        {(shortlisters) => (
+          <List
+            className="mt-4"
+            itemLayout="horizontal"
+            dataSource={shortlisters}
+            renderItem={(shortlister) => (
+              <List.Item>
+                <List.Item.Meta
+                  avatar={<Avatar>{getInitialLetters(shortlister.name)}</Avatar>}
+                  title={<Link to={`/users/${shortlister.id}`}>{shortlister.name}</Link>}
+                  description={shortlister.email}
+                />
+              </List.Item>
+            )}
+          />
         )}
-      />
+      </Await>
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { ProjectForm } from "@/components/projects/ProjectForm";
+import ProjectForm from "@/components/projects/ProjectForm";
 import { Divider, Typography } from "antd";
 
 const { Title } = Typography;

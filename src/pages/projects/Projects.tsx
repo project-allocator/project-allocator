@@ -1,21 +1,20 @@
-import { ProjectsTable } from "@/components/projects/ProjectTable";
-import { useProjects } from "@/hooks/projects";
-import Loading from "@/pages/Loading";
+import { ProjectTable } from "@/components/projects/ProjectTable";
+import { useApprovedProjects } from "@/hooks/projects";
+import Await from "@/pages/Await";
 import { Divider, Typography } from "antd";
 
 const { Title } = Typography;
 
 export default function Projects() {
-  const projects = useProjects();
-
-  if (projects.isLoading) return <Loading />;
-  if (projects.isError) return null;
+  const projects = useApprovedProjects();
 
   return (
     <>
       <Title level={3}>All Projects</Title>
       <Divider />
-      <ProjectsTable projects={projects.data!} />
+      <Await query={projects} errorElement="Failed to load projects">
+        {(projects) => <ProjectTable projects={projects} />}
+      </Await>
     </>
   );
 }
