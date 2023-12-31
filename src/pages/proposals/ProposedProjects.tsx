@@ -1,8 +1,8 @@
-import { ProjectsTable } from "@/components/projects/ProjectTable";
+import { ProjectTable } from "@/components/projects/ProjectTable";
 import { useConfig } from "@/hooks/configs";
 import { useProposedProjects } from "@/hooks/proposals";
 import { useCurrentUserRole } from "@/hooks/users";
-import Loading from "@/pages/Loading";
+import Await from "@/pages/Await";
 import { PlusOutlined } from "@ant-design/icons";
 import { Button, Divider, Space, Tooltip, Typography } from "antd";
 import { Link } from "react-router-dom";
@@ -14,8 +14,7 @@ export default function ProposedProjects() {
   const projects = useProposedProjects();
   const proposalsShutdown = useConfig("proposals_shutdown");
 
-  if (projects.isLoading || proposalsShutdown.isLoading) return <Loading />;
-  if (projects.isError || proposalsShutdown.isError) return null;
+  if (proposalsShutdown.isLoading || proposalsShutdown.isError) return null;
 
   return (
     <>
@@ -23,7 +22,7 @@ export default function ProposedProjects() {
         <Title level={3} className="mb-0">
           Proposed Projects
         </Title>
-        {(isStaff || isAdmin) && !proposalsShutdown.data?.value && (
+        {(isStaff || isAdmin) && !proposalsShutdown.data!.value && (
           <Tooltip title="Add">
             <Link to="/projects/add">
               <Button shape="circle" icon={<PlusOutlined />} />
@@ -32,7 +31,9 @@ export default function ProposedProjects() {
         )}
       </Space>
       <Divider />
-      <ProjectsTable projects={projects.data!} />
+      <Await query={projects} errorElement="Failed to load projects">
+        {(projects) => <ProjectTable projects={projects} />}
+      </Await>
     </>
   );
 }

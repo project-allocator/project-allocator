@@ -1,7 +1,7 @@
 import { ProjectRead, ShortlistService } from "@/api";
 import { useMessage } from "@/contexts/MessageContext";
 import { useReorderShortlistedProjects, useShortlistedProjects, useUnshortlistProject } from "@/hooks/shortlists";
-import Loading from "@/pages/Loading";
+import Await from "@/pages/Await";
 import { DeleteOutlined, HolderOutlined } from "@ant-design/icons";
 import { Button, Divider, List, Space, Tooltip, Typography } from "antd";
 import { Reorder, useDragControls } from "framer-motion";
@@ -16,52 +16,51 @@ export async function shortlistedProjectsLoader() {
 export default function ShortlistedProjects() {
   const { messageSuccess, messageError } = useMessage();
   const projects = useShortlistedProjects();
-  const unshortlistProject = useUnshortlistProject("");
+  const unshortlistProject = useUnshortlistProject();
   const reorderShortlistedProjects = useReorderShortlistedProjects();
-
-  if (projects.isLoading) return <Loading />;
-  if (projects.isError) return null;
 
   // We use Framer Motion's Reorder component for drag and drop,
   // but this only works with primitive values so we use project ids, rather than ProjectRead[].
-  const projectIds = projects.data!.map((project: ProjectRead) => project.id);
+  const projectIds = projects.data?.map((project: ProjectRead) => project.id) ?? [];
 
   return (
     <>
       <Title level={3}>Shortlisted Projects</Title>
       <Divider />
-      <Reorder.Group
-        as="div"
-        axis="y"
-        values={projectIds}
-        onReorder={(projectIds) => {
-          reorderShortlistedProjects.mutate(projectIds, {
-            onSuccess: () => messageSuccess("Successfully reordered shortlisted projects."),
-            onError: () => messageError("Failed to reorder shortlisted projects."),
-          });
-        }}
-      >
-        <List
-          header={<Text strong>Highest Preference</Text>}
-          footer={<Text strong>Lowest Preference</Text>}
-          bordered
-          dataSource={projectIds}
-          rowKey={(projectId: string) => projectId}
-          renderItem={(projectId: string) => {
-            const project = projects.data?.find((project: ProjectRead) => project.id === projectId);
-            if (project) {
-              return (
+      <Await query={projects} errorElement="Failed to load shortlisted projects">
+        {(projects) => (
+          <Reorder.Group
+            as="div"
+            axis="y"
+            values={projectIds}
+            onReorder={(projectIds) => {
+              reorderShortlistedProjects.mutate(projectIds, {
+                onSuccess: () => messageSuccess("Successfully reordered shortlisted projects."),
+                onError: () => messageError("Failed to reorder shortlisted projects."),
+              });
+            }}
+          >
+            <List
+              header={<Text strong>Highest Preference</Text>}
+              footer={<Text strong>Lowest Preference</Text>}
+              bordered
+              dataSource={projectIds}
+              rowKey={(projectId: string) => projectId}
+              renderItem={(projectId: string) => (
                 <ProjectItem
-                  project={project as ProjectRead}
+                  project={projects.find((project: ProjectRead) => project.id === projectId)!}
                   onDelete={() => {
-                    ShortlistService.unshortlistProject(projectId);
+                    unshortlistProject.mutate(projectId, {
+                      onSuccess: () => messageSuccess("Successfully unshortlisted project."),
+                      onError: () => messageError("Failed to unshortlist project."),
+                    });
                   }}
                 />
-              );
-            }
-          }}
-        />
-      </Reorder.Group>
+              )}
+            />
+          </Reorder.Group>
+        )}
+      </Await>
     </>
   );
 }
