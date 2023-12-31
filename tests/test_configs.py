@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
-from sqlmodel import Session, select
+from sqlmodel import Session
+import json
 
 from src.models import Config
 
@@ -12,7 +13,7 @@ def test_read_config(admin_client: TestClient, session: Session):
     assert response.status_code == 200
 
     assert data["key"] == config.key
-    assert data["value"] == config.value
+    assert data["value"] == json.loads(config.value)
 
 
 def test_update_config(admin_client: TestClient):

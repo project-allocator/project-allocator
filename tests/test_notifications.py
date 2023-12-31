@@ -32,7 +32,7 @@ def test_read_notifications(
         == set([notification.title for notification in notifications])
 
 
-def test_mark_notifications(
+def test_mark_read_notifications(
     student_user: User,
     student_client: TestClient,
     session: Session,
@@ -41,8 +41,8 @@ def test_mark_notifications(
     session.add_all(notifications)
     session.commit()
 
-    response = student_client.put(
-        "/api/users/me/notifications",
+    response = student_client.post(
+        "/api/users/me/notifications/mark_read",
         json=[notification.id for notification in notifications],
     )
     data = response.json()

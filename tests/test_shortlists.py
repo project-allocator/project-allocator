@@ -6,7 +6,7 @@ from src.factories import UserFactory, ProjectFactory
 from src.models import User, Shortlist, Config
 
 
-def test_read_shortlisted(
+def test_read_shortlisted_projects(
     student_user: User,
     student_client: TestClient,
     session: Session,
@@ -20,7 +20,7 @@ def test_read_shortlisted(
     session.add_all(shortlists)
     session.commit()
 
-    response = student_client.get("/api/users/me/shortlisted")
+    response = student_client.get("/api/users/me/shortlisted_projects")
     data = response.json()
     assert response.status_code == 200
 
@@ -41,7 +41,7 @@ def test_shortlist_project(
     session.add_all(projects)
     session.commit()
 
-    response = student_client.post(f"/api/users/me/shortlisted/{projects[0].id}")
+    response = student_client.post(f"/api/users/me/shortlisted_projects", params={"project_id": projects[0].id})
     data = response.json()
     assert response.status_code == 200
     assert data["ok"] is True
@@ -51,7 +51,7 @@ def test_shortlist_project(
     assert shortlist.preference == 0
 
     # Attempt to make more shortlists than allowed.
-    response = student_client.post(f"/api/users/me/shortlisted/{projects[1].id}")
+    response = student_client.post(f"/api/users/me/shortlisted_projects", params={"project_id": projects[1].id})
     data = response.json()
     assert response.status_code == 400
 
@@ -70,7 +70,7 @@ def test_unshortlist_project(
     session.add(shortlist)
     session.commit()
 
-    response = student_client.delete(f"/api/users/me/shortlisted/{project.id}")
+    response = student_client.delete(f"/api/users/me/shortlisted_projects/{project.id}")
     data = response.json()
     assert response.status_code == 200
     assert data["ok"] is True
@@ -95,7 +95,7 @@ def test_reorder_shortlisted_projects(
 
     project_ids = [shortlist.shortlisted_project.id for shortlist in shortlists]
     random.shuffle(project_ids)
-    response = student_client.put("/api/users/me/shortlisted", json=project_ids)
+    response = student_client.post("/api/users/me/shortlisted_projects/reorder", json=project_ids)
     data = response.json()
     assert response.status_code == 200
     assert data["ok"] is True

@@ -57,7 +57,10 @@ def test_read_conflicting_projects(admin_client: TestClient, session: Session):
     session.commit()
 
     # fmt: off
-    conflicting_projects = [project for project in projects if not all([allocation.accepted for allocation in project.allocations])]
+    conflicting_projects = [
+        project for project in projects
+        if not all([allocation.accepted for allocation in project.allocations])
+    ]
 
     response = admin_client.get("/api/admins/conflicting-projects")
     data = response.json()
@@ -102,10 +105,22 @@ def test_export_json_and_csv(admin_client: TestClient, session: Session):
     staff = UserFactory.build_batch(2, role="admin") + UserFactory.build_batch(10, role="staff")
     templates = ProjectDetailTemplateFactory.build_batch(10)
     projects = ProjectFactory.build_batch(10, details__templates=templates)
-    # fmt: off
     approved_projects = [project for project in projects if project.approved]
-    allocations = [Allocation(allocatee=student, allocated_project=random.choice(approved_projects)) for student in students]
-    proposals = [Proposal(proposer=random.choice(staff), proposed_project=project) for project in projects]
+    allocations = [
+        Allocation(
+            allocatee=student,
+            allocated_project=random.choice(approved_projects),
+            accepted=random.choice([True, False, None]),
+        )
+        for student in students
+    ]
+    proposals = [
+        Proposal(
+            proposer=random.choice(staff),
+            proposed_project=project,
+        )
+        for project in projects
+    ]
 
     session.add_all(students)
     session.add_all(staff)
@@ -166,10 +181,21 @@ def test_import_json(admin_client: TestClient, session: Session):
     projects = ProjectFactory.build_batch(10, details__templates=templates)
     # We construct proposals and allocations manually instead of using SQLModel models
     # because the foreign keys are not updated until we commit the session.
-    # fmt: off
     approved_projects = [project for project in projects if project.approved]
-    allocations = [{"allocatee_id": student.id, "allocated_project_id": random.choice(approved_projects).id} for student in students]
-    proposals = [{"proposer_id": random.choice(staff).id, "proposed_project_id": project.id} for project in projects]
+    allocations = [
+        {
+            "allocatee_id": student.id,
+            "allocated_project_id": random.choice(approved_projects).id,
+        }
+        for student in students
+    ]
+    proposals = [
+        {
+            "proposer_id": random.choice(staff).id,
+            "proposed_project_id": project.id,
+        }
+        for project in projects
+    ]
 
     user_fields = ["id", "email", "name", "role"]
     project_fields = ["id", "title", "description", "approved"]
@@ -179,8 +205,12 @@ def test_import_json(admin_client: TestClient, session: Session):
     for project in projects:
         project_data = project.model_dump(include=project_fields)
         project_data["details"] = [detail.model_dump(include=project_detail_fields) for detail in project.details]
-        project_data["proposal"] = next(proposal for proposal in proposals if proposal["proposed_project_id"] == project.id)
-        project_data["allocations"] = [allocation for allocation in allocations if allocation["allocated_project_id"] == project.id]
+        project_data["proposal"] = next(
+            proposal for proposal in proposals if proposal["proposed_project_id"] == project.id
+        )
+        project_data["allocations"] = [
+            allocation for allocation in allocations if allocation["allocated_project_id"] == project.id
+        ]
         projects_data.append(project_data)
 
     response = admin_client.post(
@@ -205,11 +235,33 @@ def test_reset_database(admin_client: TestClient, session: Session):
     staff = UserFactory.build_batch(2, role="admin") + UserFactory.build_batch(10, role="staff")
     templates = ProjectDetailTemplateFactory.build_batch(10)
     projects = ProjectFactory.build_batch(10, details__templates=templates)
-    # fmt: off
     approved_projects = [project for project in projects if project.approved]
-    allocations = [Allocation(allocatee=student, allocated_project=random.choice(approved_projects)) for student in students]
-    proposals = [Proposal(proposer=random.choice(staff), proposed_project=project) for project in projects]
-    shortlists = [[Shortlist(shortlister=student, shortlisted_project=project, preference=preference) for preference, project in enumerate(projects)] for student in students]
+    allocations = [
+        Allocation(
+            allocatee=student,
+            allocated_project=random.choice(approved_projects),
+            accepted=random.choice([True, False, None]),
+        )
+        for student in students
+    ]
+    proposals = [
+        Proposal(
+            proposer=random.choice(staff),
+            proposed_project=project,
+        )
+        for project in projects
+    ]
+    shortlists = [
+        [
+            Shortlist(
+                shortlister=student,
+                shortlisted_project=project,
+                preference=preference,
+            )
+            for preference, project in enumerate(projects)
+        ]
+        for student in students
+    ]
     shortlists = sum(shortlists, [])  # flatten list of lists
     notifications = [NotificationFactory.build(user=user) for user in students + staff]
 
@@ -241,7 +293,7 @@ def test_reset_database(admin_client: TestClient, session: Session):
     notifications = session.exec(select(Notification)).all()
     configs = session.exec(select(Config)).all()
 
-    assert len(users) == len(old_admins) # admins should not be deleted
+    assert len(users) == len(old_admins)  # admins should not be deleted
     assert len(templates) == len(templates)
     assert len(project_details) == 0
     assert len(projects) == 0
@@ -249,4 +301,4 @@ def test_reset_database(admin_client: TestClient, session: Session):
     assert len(proposals) == 0
     assert len(shortlists) == 0
     assert len(notifications) == 0
-    assert configs == old_configs # configs should not be deleted
+    assert configs == old_configs  # configs should not be deleted

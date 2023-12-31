@@ -1,9 +1,9 @@
 from fastapi.testclient import TestClient
 from sqlmodel import Session
-import random
 
-from src.models import User, Project, Proposal, Allocation
+from src.models import User, Project, Proposal
 from src.factories import ProjectFactory, ProjectDetailTemplateFactory
+from src.utils.projects import parse_project_details
 
 
 def test_read_project_detail_templates(
@@ -24,7 +24,7 @@ def test_read_project_detail_templates(
         == set([template.key for template in templates])
 
 
-def test_read_projects(
+def test_read_approved_projects(
     staff_user: User,
     admin_client: TestClient,
     session: Session,
@@ -35,7 +35,7 @@ def test_read_projects(
     session.add_all(proposals)
     session.commit()
 
-    response = admin_client.get("/api/projects")
+    response = admin_client.get("/api/projects/approved")
     data = response.json()
     assert response.status_code == 200
 
@@ -44,12 +44,45 @@ def test_read_projects(
     # fmt: off
     assert set([project["title"] for project in data]) \
         == set([approved_project.title for approved_project in approved_projects])
-    
-    response = admin_client.get("/api/projects", params={"approved": False})
+
+
+def test_read_disapproved_projects(
+    admin_user: User,
+    admin_client: TestClient,
+    session: Session,
+):
+    projects = ProjectFactory.build_batch(10)
+    proposals = [Proposal(proposer=admin_user, proposed_project=project) for project in projects]
+    session.add_all(projects)
+    session.add_all(proposals)
+    session.commit()
+
+    response = admin_client.get("/api/projects/disapproved")
     data = response.json()
     assert response.status_code == 200
 
-    non_approved_projects = [project for project in projects if not project.approved]
+    disapproved_projects = [project for project in projects if project.approved is False]
+    assert len(data) == len(disapproved_projects)
+    # fmt: off
+    assert set([project["title"] for project in data]) \
+        == set([disapproved_project.title for disapproved_project in disapproved_projects])
+
+
+def test_read_no_response_projects(
+    admin_user: User,
+    admin_client: TestClient,
+    session: Session,
+):
+    projects = ProjectFactory.build_batch(10)
+    proposals = [Proposal(proposer=admin_user, proposed_project=project) for project in projects]
+    session.add_all(projects)
+    session.add_all(proposals)
+    session.commit()
+    response = admin_client.get("/api/projects/no-response")
+    data = response.json()
+    assert response.status_code == 200
+
+    non_approved_projects = [project for project in projects if project.approved is None]
     assert len(data) == len(non_approved_projects)
     # fmt: off
     assert set([project["title"] for project in data]) \
@@ -89,6 +122,7 @@ def test_create_project(
     session.commit()
 
     project = ProjectFactory.build(details__templates=templates)
+    project = parse_project_details(project)
 
     response = staff_client.post(
         "/api/projects",
@@ -129,6 +163,7 @@ def test_update_project(
     session.commit()
 
     new_project = ProjectFactory.build(details__templates=templates)
+    new_project = parse_project_details(new_project)
 
     response = staff_client.put(
         f"/api/projects/{project.id}",
@@ -174,7 +209,7 @@ def test_delete_project(
     assert project is None
 
 
-def test_set_project_status(
+def test_approve_project(
     staff_user: User,
     admin_client: TestClient,
     session: Session,
@@ -185,57 +220,30 @@ def test_set_project_status(
     session.add(proposal)
     session.commit()
 
-    approved = random.choice([True, False])
-    response = admin_client.post(f"/api/projects/{project.id}/status", json={"approved": approved})
+    response = admin_client.post(f"/api/projects/{project.id}/approve")
     data = response.json()
     assert response.status_code == 200
     assert data["ok"] is True
 
     session.refresh(project)
-    assert project.approved is approved
+    assert project.approved is True
 
 
-def test_reset_project_status(
+def test_disapprove_project(
     staff_user: User,
     admin_client: TestClient,
     session: Session,
 ):
-    project = ProjectFactory.build(approved=random.choice([True, False]))
+    project = ProjectFactory.build(approved=None)
     proposal = Proposal(proposer=staff_user, proposed_project=project)
     session.add(project)
     session.add(proposal)
     session.commit()
 
-    response = admin_client.delete(f"/api/projects/{project.id}/status")
+    response = admin_client.post(f"/api/projects/{project.id}/disapprove")
     data = response.json()
     assert response.status_code == 200
     assert data["ok"] is True
 
     session.refresh(project)
-    assert project.approved is None
-
-
-def test_is_project_allocated(student_client: TestClient, student_user: User, session: Session):
-    project = ProjectFactory.build()
-    allocation = Allocation(allocatee=student_user, allocated_project=project)
-    session.add(project)
-    session.add(allocation)
-    session.commit()
-
-    response = student_client.get(f"/api/users/me/projects/{project.id}/allocated")
-    data = response.json()
-    assert response.status_code == 200
-    assert data is True
-
-
-def test_is_project_accepted(student_client: TestClient, student_user: User, session: Session):
-    project = ProjectFactory.build()
-    allocation = Allocation(allocatee=student_user, allocated_project=project)
-    session.add(project)
-    session.add(allocation)
-    session.commit()
-
-    response = student_client.get(f"/api/users/me/projects/{project.id}/accepted")
-    data = response.json()
-    assert response.status_code == 200
-    assert data is allocation.accepted
+    assert project.approved is False
