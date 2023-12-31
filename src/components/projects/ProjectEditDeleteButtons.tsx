@@ -15,11 +15,12 @@ export default function EditDeleteButtons() {
   const { id: projectId } = useParams();
   const deleteUser = useDeleteProject(projectId!);
 
-  if (proposedProjects.isLoading || !proposedProjects.data) return null;
-  if (proposalsShutdown.isLoading || proposalsShutdown.data?.value) return null;
+  if (proposedProjects.isLoading || proposedProjects.isError) return null;
+  if (proposalsShutdown.isLoading || proposalsShutdown.isError) return null;
+  if (proposalsShutdown.data!.value) return null;
 
   const isProposed = proposedProjects.data!.some((project) => project.id === projectId);
-  if (!isProposed) return;
+  if (!isProposed) return null;
 
   return (
     <Space>

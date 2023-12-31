@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 
 const { Search } = Input;
 
-export function ProjectsTable({ projects }: { projects: ProjectRead[] }) {
+export function ProjectTable({ projects }: { projects: ProjectRead[] }) {
   const [searchText, setSearchText] = useState("");
 
   const columns = [

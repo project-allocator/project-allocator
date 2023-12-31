@@ -1,18 +1,19 @@
-import { ProjectReadWithDetails } from "@/api";
+import { ProjectDetailRead, ProjectDetailTemplateRead, ProjectReadWithDetails } from "@/api";
 import { useMessage } from "@/contexts/MessageContext";
 import { useCreateProject, useProjectDetailTemplates, useUpdateProject } from "@/hooks/projects";
-import Loading from "@/pages/Loading";
 import { PlusOutlined } from "@ant-design/icons";
 import type { InputRef } from "antd";
 import {
   Button,
   Checkbox,
   DatePicker,
+  Empty,
   Form,
   Input,
   InputNumber,
   Radio,
   Select,
+  Skeleton,
   Slider,
   Space,
   Switch,
@@ -27,11 +28,10 @@ import * as _ from "underscore";
 const { TextArea } = Input;
 const { useForm, useFormInstance } = Form;
 
-export function ProjectForm({ initProject }: { initProject?: ProjectReadWithDetails }) {
+export default function ProjectForm({ initProject }: { initProject?: ProjectReadWithDetails }) {
   const [form] = useForm();
-
   const navigate = useNavigate();
-  const { messageError } = useMessage();
+  const { messageError, messageSuccess } = useMessage();
 
   const createProject = useCreateProject();
   const updateProject = useUpdateProject(initProject?.id ?? "");
@@ -49,12 +49,18 @@ export function ProjectForm({ initProject }: { initProject?: ProjectReadWithDeta
 
     if (initProject === undefined) {
       createProject.mutate(values, {
-        onSuccess: () => navigate(-1),
+        onSuccess: () => {
+          messageSuccess("Successfully created project");
+          navigate(-1);
+        },
         onError: () => messageError("Failed to create project"),
       });
     } else {
       updateProject.mutate(values, {
-        onSuccess: () => navigate(-1),
+        onSuccess: () => {
+          messageSuccess("Successfully updated project");
+          navigate(-1);
+        },
         onError: () => messageError("Failed to update project"),
       });
     }
@@ -105,10 +111,9 @@ export function ProjectForm({ initProject }: { initProject?: ProjectReadWithDeta
 function ProjectDetailsForm({ initProject }: { initProject?: ProjectReadWithDetails }) {
   const templates = useProjectDetailTemplates();
 
-  if (templates.isLoading) return <Loading />;
-  if (templates.isError) return null;
+  if (templates.isLoading) return <Skeleton active />;
+  if (templates.isError) return <Empty description="Failed to load project detail templates" />;
 
-  // TODO: Make aggregated endpoint to avoid this
   const sortedTemplates = _.sortBy(templates.data!, "key");
   const sortedDetails = _.sortBy(initProject?.details || [], "key");
   const detailsWithTemplates = _.zip(sortedDetails, sortedTemplates); // zip does not truncate to the shorter array
@@ -167,22 +172,22 @@ function ProjectDetailsForm({ initProject }: { initProject?: ProjectReadWithDeta
           case "radio":
             return <Radio.Group options={options} />;
           case "categories":
-            return <ProjectCategoriesForm initCategories={detail.value} />;
+            return <CategoriesField detail={detail} template={template} />;
         }
       })()}
     </Form.Item>
   ));
 }
 
-function ProjectCategoriesForm({ initCategories }: { initCategories?: string[] }) {
+function CategoriesField({ detail, template }: { detail: ProjectDetailRead; template: ProjectDetailTemplateRead }) {
   // Propagate change up to the parent form component
   const form = useFormInstance();
   function setCategoriesWithForm(categories: string[]) {
-    form.setFieldValue("categories", categories);
+    form.setFieldValue(`detail-${template.key}`, categories);
     setCategories(categories);
   }
 
-  const [categories, setCategories] = useState<string[]>(initCategories || []);
+  const [categories, setCategories] = useState<string[]>(detail.value || []);
   const [addInputVisible, setAddInputVisible] = useState(false);
   const [addInputValue, setAddInputValue] = useState("");
   const [editInputIndex, setEditInputIndex] = useState(-1);
