@@ -2,7 +2,7 @@ import { AdminService } from "@/api";
 import UserList from "@/components/users/UserList";
 import { useUnallocatedUsers } from "@/hooks/admins";
 import { useUsers } from "@/hooks/users";
-import Loading from "@/pages/Loading";
+import Await from "@/pages/Await";
 import { CheckOutlined, UploadOutlined } from "@ant-design/icons";
 import { Button, Divider, Modal, Space, Typography, Upload, UploadFile } from "antd";
 import { RcFile } from "antd/es/upload";
@@ -16,11 +16,9 @@ export default function ManageUsers() {
 
   const [checkMissingUsersFiles, setCheckMissingUsersFiles] = useState<UploadFile[]>([]);
   const [checkMissingUsersLoading, setCheckMissingUsersLoading] = useState<boolean>(false);
+
   const [missingEmails, setMissingEmails] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-
-  if (allUsers.isLoading || unallocatedUsers.isLoading) return <Loading />;
-  if (allUsers.isError || unallocatedUsers.isError) return null;
 
   return (
     <>
@@ -88,13 +86,17 @@ export default function ManageUsers() {
       <Paragraph className="text-slate-500">
         Users who have not been allocated to any project will be shown here.
       </Paragraph>
-      <UserList users={unallocatedUsers.data!} />
+      <Await query={unallocatedUsers} errorElement="Failed to load unallocated users">
+        {(unallocatedUsers) => <UserList users={unallocatedUsers} />}
+      </Await>
       <Divider />
       <Title level={4}>Manage Users</Title>
       <Paragraph className="text-slate-500">
         Search for users and click on the link to view, edit and delete them.
       </Paragraph>
-      <UserList users={allUsers.data!} />
+      <Await query={allUsers} errorElement="Failed to load users">
+        {(allUsers) => <UserList users={allUsers} />}
+      </Await>
     </>
   );
 }

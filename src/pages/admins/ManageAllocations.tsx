@@ -1,8 +1,13 @@
 import { useMessage } from "@/contexts/MessageContext";
-import { useAllocateProjects, useDeallocateProjects } from "@/hooks/allocations";
+import {
+  useAllocateProjects,
+  useDeallocateProjects,
+  useLockAllocations,
+  useUnlockAllocations,
+} from "@/hooks/allocations";
 import { useConfig, useUpdateConfig } from "@/hooks/configs";
-import Loading from "@/pages/Loading";
-import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
+import Await from "@/pages/Await";
+import { CheckOutlined, CloseOutlined, LockOutlined, UnlockOutlined } from "@ant-design/icons";
 import { Button, Divider, Switch, Typography } from "antd";
 import { useState } from "react";
 
@@ -13,60 +18,92 @@ export default function ManageAllocations() {
 
   const proposalsShutdown = useConfig("proposals_shutdown");
   const shortlistsShutdown = useConfig("shortlists_shutdown");
-  const resetsShutdown = useConfig("resets_shutdown");
-
   const updateProposalsShutdown = useUpdateConfig("proposals_shutdown");
   const updateShortlistsShutdown = useUpdateConfig("shortlists_shutdown");
-  const updateResetsShutdown = useUpdateConfig("resets_shutdown");
 
+  const lockAllocations = useLockAllocations();
+  const unlockAllocations = useUnlockAllocations();
   const allocateProjects = useAllocateProjects();
   const deallocateProjects = useDeallocateProjects();
+
+  const [lockAllocationsLoading, setLockAllocationsLoading] = useState<boolean>(false);
+  const [unlockAllocationsLoading, setUnlockAllocationsLoading] = useState<boolean>(false);
   const [allocateProjectsLoading, setAllocateProjectsLoading] = useState<boolean>(false);
   const [deallocateProjectsLoading, setDeallocateProjectsLoading] = useState<boolean>(false);
 
-  if (proposalsShutdown.isLoading || shortlistsShutdown.isLoading || resetsShutdown.isLoading) return <Loading />;
-  if (proposalsShutdown.isError || shortlistsShutdown.isError || resetsShutdown.isError) return null;
-
   return (
     <>
-      {/* TODO: Support shortlist buttons etc */}
       <Title level={3}>Manage Allocations</Title>
       <Divider />
       <Title level={4}>Shutdown Proposals</Title>
       <Paragraph className="text-slate-500">Turn this on to block any new project proposals from staff.</Paragraph>
-      <Switch
-        defaultChecked={proposalsShutdown.data?.value}
-        onChange={() =>
-          updateProposalsShutdown.mutate(!proposalsShutdown.data?.value, {
-            onSuccess: () => messageSuccess("Successfully updated proposals shutdown status"),
-            onError: () => messageError("Failed to update proposals shutdown status"),
-          })
-        }
-      />
+      <Await query={proposalsShutdown} errorElement="Failed to load proposals shutdown status">
+        {(proposalsShutdown) => (
+          <Switch
+            defaultChecked={proposalsShutdown.value}
+            onChange={() =>
+              updateProposalsShutdown.mutate(!proposalsShutdown.value, {
+                onSuccess: () => messageSuccess("Successfully updated proposals shutdown status"),
+                onError: () => messageError("Failed to update proposals shutdown status"),
+              })
+            }
+          />
+        )}
+      </Await>
       <Title level={4}>Shutdown Shortlists</Title>
       <Paragraph className="text-slate-500">Turn this on to block any new project shortlists from students.</Paragraph>
-      <Switch
-        defaultChecked={shortlistsShutdown.data?.value}
-        onChange={() =>
-          updateShortlistsShutdown.mutate(!shortlistsShutdown.data?.value, {
-            onSuccess: () => messageSuccess("Successfully updated shortlists shutdown status"),
-            onError: () => messageError("Failed to update shortlists shutdown status"),
-          })
-        }
-      />
-      <Title level={4}>Shutdown Resets</Title>
+      <Await query={shortlistsShutdown} errorElement="Failed to load shortlists shutdown status">
+        {(shortlistsShutdown) => (
+          <Switch
+            defaultChecked={shortlistsShutdown.value}
+            onChange={() =>
+              updateShortlistsShutdown.mutate(!shortlistsShutdown.value, {
+                onSuccess: () => messageSuccess("Successfully updated shortlists shutdown status"),
+                onError: () => messageError("Failed to update shortlists shutdown status"),
+              })
+            }
+          />
+        )}
+      </Await>
+      <Divider />
+      <Title level={4}>Lock Allocations</Title>
       <Paragraph className="text-slate-500">
-        Turn this on to block students from resetting "Accept" or "Decline" to their project allocation.
+        Click this to lock all project allocations so that students can no longer accept/reject their allocation or make
+        any changes.
       </Paragraph>
-      <Switch
-        defaultChecked={resetsShutdown.data?.value}
-        onChange={() =>
-          updateResetsShutdown.mutate(!resetsShutdown.data?.value, {
-            onSuccess: () => messageSuccess("Successfully updated resets shutdown status"),
-            onError: () => messageError("Failed to update resets shutdown status"),
-          })
-        }
-      />
+      <Button
+        icon={<LockOutlined />}
+        loading={lockAllocationsLoading}
+        onClick={() => {
+          setLockAllocationsLoading(true);
+          lockAllocations.mutate(undefined, {
+            onSuccess: () => messageSuccess("Successfully locked allocations."),
+            onError: () => messageError("Failed to lock allocations."),
+            onSettled: () => setLockAllocationsLoading(false),
+          });
+        }}
+      >
+        Lock
+      </Button>
+      <Title level={4}>Unlock Allocations</Title>
+      <Paragraph className="text-slate-500">
+        Click this to unlock all project allocations so that all students can accept/reject their allocation or make
+        some changes.
+      </Paragraph>
+      <Button
+        icon={<UnlockOutlined />}
+        loading={unlockAllocationsLoading}
+        onClick={() => {
+          setUnlockAllocationsLoading(true);
+          unlockAllocations.mutate(undefined, {
+            onSuccess: () => messageSuccess("Successfully unlocked allocations."),
+            onError: () => messageError("Failed to unlock allocations."),
+            onSettled: () => setUnlockAllocationsLoading(false),
+          });
+        }}
+      >
+        Unlock
+      </Button>
       <Divider />
       <Title level={4}>Allocate Projects</Title>
       <Paragraph className="text-slate-500">Click this to allocate projects to shortlisted students.</Paragraph>
