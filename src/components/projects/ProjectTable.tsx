@@ -1,4 +1,5 @@
-import { ProjectRead } from "@/api";
+import { ProjectRead, ProjectService, ProposalService } from "@/api";
+import { useQueryClient } from "@tanstack/react-query";
 import { Input, Table } from "antd";
 import { useState } from "react";
 import Highlighter from "react-highlight-words";
@@ -9,11 +10,29 @@ const { Search } = Input;
 export function ProjectTable({ projects }: { projects: ProjectRead[] }) {
   const [searchText, setSearchText] = useState("");
 
+  // Rendering Project component involves a lot of API requests
+  // so we should prefetch some data beforehand.
+  const queryClient = useQueryClient();
+  function prefetchProject(projectId: string) {
+    queryClient.prefetchQuery({
+      queryKey: ["projects", "details", "templates"],
+      queryFn: () => ProjectService.readProjectDetailTemplates(),
+    });
+    queryClient.prefetchQuery({
+      queryKey: ["projects", projectId],
+      queryFn: () => ProjectService.readProject(projectId),
+    });
+    queryClient.prefetchQuery({
+      queryKey: ["projects", "proposer", projectId],
+      queryFn: () => ProposalService.readProposer(projectId),
+    });
+  }
+
   const columns = [
     {
       title: "Title",
       render: (project: ProjectRead) => (
-        <Link to={`/projects/${project.id}`}>
+        <Link to={`/projects/${project.id}`} onMouseOver={() => prefetchProject(project.id)}>
           <Highlighter searchWords={[searchText]} textToHighlight={project.title} />
         </Link>
       ),
