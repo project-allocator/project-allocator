@@ -1,32 +1,36 @@
 import { ProjectCreateWithDetails, ProjectRead, ProjectService, ProjectUpdateWithDetails } from "@/api";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useProjectDetailTemplates() {
-  return useQuery(["projects", "details", "templates"], () => ProjectService.readProjectDetailTemplates());
+  return useQuery({
+    queryKey: ["projects", "details", "templates"],
+    queryFn: () => ProjectService.readProjectDetailTemplates(),
+  });
 }
 
 export function useApprovedProjects() {
-  return useQuery(["projects", "approved"], () => ProjectService.readApprovedProjects());
+  return useQuery({ queryKey: ["projects", "approved"], queryFn: () => ProjectService.readApprovedProjects() });
 }
 
 export function useDisapprovedProjects() {
-  return useQuery(["projects", "disapproved"], () => ProjectService.readDisapprovedProjects());
+  return useQuery({ queryKey: ["projects", "disapproved"], queryFn: () => ProjectService.readDisapprovedProjects() });
 }
 
 export function useNoResponseProjects() {
-  return useQuery(["projects", "no-response"], () => ProjectService.readNoResponseProjects());
+  return useQuery({ queryKey: ["projects", "no-response"], queryFn: () => ProjectService.readNoResponseProjects() });
 }
 
 export function useProject(projectId: string) {
-  return useQuery(["projects", projectId], () => ProjectService.readProject(projectId));
+  return useQuery({ queryKey: ["projects", projectId], queryFn: () => ProjectService.readProject(projectId) });
 }
 
 export function useCreateProject() {
   const queryClient = useQueryClient();
 
-  return useMutation((project: ProjectCreateWithDetails) => ProjectService.createProject(project), {
+  return useMutation({
+    mutationFn: (project: ProjectCreateWithDetails) => ProjectService.createProject(project),
     onSuccess: () => {
-      queryClient.invalidateQueries(["projects"]);
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
     },
   });
 }
@@ -34,9 +38,10 @@ export function useCreateProject() {
 export function useUpdateProject(id: string) {
   const queryClient = useQueryClient();
 
-  return useMutation((project: ProjectUpdateWithDetails) => ProjectService.updateProject(id, project), {
+  return useMutation({
+    mutationFn: (project: ProjectUpdateWithDetails) => ProjectService.updateProject(id, project),
     onSuccess: () => {
-      queryClient.invalidateQueries(["projects"]);
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
     },
   });
 }
@@ -44,9 +49,10 @@ export function useUpdateProject(id: string) {
 export function useDeleteProject(id: string) {
   const queryClient = useQueryClient();
 
-  return useMutation(() => ProjectService.deleteProject(id), {
+  return useMutation({
+    mutationFn: () => ProjectService.deleteProject(id),
     onSuccess: () => {
-      queryClient.invalidateQueries(["projects"]);
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
     },
   });
 }
@@ -54,9 +60,10 @@ export function useDeleteProject(id: string) {
 export function useApproveProject(projectId: string) {
   const queryClient = useQueryClient();
 
-  return useMutation(() => ProjectService.approveProject(projectId), {
+  return useMutation({
+    mutationFn: () => ProjectService.approveProject(projectId),
     onMutate: async () => {
-      await queryClient.cancelQueries(["projects", projectId]);
+      await queryClient.cancelQueries({ queryKey: ["projects", projectId] });
       const oldProject = queryClient.getQueryData(["projects", projectId]) as ProjectRead;
       queryClient.setQueryData(["projects", projectId], { ...oldProject, approved: true });
       return { oldProject };
@@ -65,7 +72,7 @@ export function useApproveProject(projectId: string) {
       queryClient.setQueryData(["projects", projectId], context?.oldProject);
     },
     onSettled: () => {
-      queryClient.invalidateQueries(["projects", projectId]);
+      queryClient.invalidateQueries({ queryKey: ["projects", projectId] });
     },
   });
 }
@@ -73,9 +80,10 @@ export function useApproveProject(projectId: string) {
 export function useDisapproveProject(projectId: string) {
   const queryClient = useQueryClient();
 
-  return useMutation(() => ProjectService.disapproveProject(projectId), {
+  return useMutation({
+    mutationFn: () => ProjectService.disapproveProject(projectId),
     onMutate: async () => {
-      await queryClient.cancelQueries(["projects", projectId]);
+      await queryClient.cancelQueries({ queryKey: ["projects", projectId] });
       const oldProject = queryClient.getQueryData(["projects", projectId]) as ProjectRead;
       queryClient.setQueryData(["projects", projectId], { ...oldProject, approved: false });
       return { oldProject };
@@ -84,7 +92,7 @@ export function useDisapproveProject(projectId: string) {
       queryClient.setQueryData(["projects", projectId], context?.oldProject);
     },
     onSettled: () => {
-      queryClient.invalidateQueries(["projects", projectId]);
+      queryClient.invalidateQueries({ queryKey: ["projects", projectId] });
     },
   });
 }

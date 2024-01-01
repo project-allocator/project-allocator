@@ -1,15 +1,14 @@
 import "./index.css";
 
 import { MsalProvider } from "@azure/msal-react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as React from "react";
 import ReactDOM from "react-dom/client";
-import { QueryClient, QueryClientProvider } from "react-query";
 import { Navigate, Route, RouterProvider, createBrowserRouter, createRoutesFromElements } from "react-router-dom";
 import { msalInstance } from "./auth";
 import CenterLayout from "./components/layouts/CenterLayout";
 import SiderLayout from "./components/layouts/SiderLayout";
 import { MessageContextProvider } from "./contexts/MessageContext";
-import Error from "./pages/Error";
 import SignIn from "./pages/SignIn";
 import ManageAllocations from "./pages/admins/ManageAllocations";
 import ManageData from "./pages/admins/ManageData";
@@ -36,7 +35,7 @@ import StudentRoute from "./routes/StudentRoute";
 // https://reactrouter.com/en/main/routers/picking-a-router
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route path="/" errorElement={<Error />}>
+    <Route path="/">
       <Route element={<GuestRoute fallback="/" />}>
         <Route element={<CenterLayout />}>
           <Route path="signin" element={<SignIn />} />

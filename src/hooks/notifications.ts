@@ -1,8 +1,10 @@
 import { NotificationCreate, NotificationRead, NotificationService } from "@/api";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useNotifications() {
-  return useQuery(["users", "notifications"], () => NotificationService.readNotifications(), {
+  return useQuery({
+    queryKey: ["users", "notifications"],
+    queryFn: () => NotificationService.readNotifications(),
     refetchInterval: 60 * 1000, // 1 minute
   });
 }
@@ -10,23 +12,22 @@ export function useNotifications() {
 export function useSendNotifications() {
   const queryClient = useQueryClient();
 
-  return useMutation(
-    (variables: { notification_data: NotificationCreate; roles: string[] }) =>
+  return useMutation({
+    mutationFn: (variables: { notification_data: NotificationCreate; roles: string[] }) =>
       NotificationService.sendNotifications(variables),
-    {
-      onSuccess: () => {
-        queryClient.invalidateQueries(["users", "notifications"]);
-      },
-    }
-  );
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users", "notifications"] });
+    },
+  });
 }
 
 export function useMarkReadNotifications() {
   const queryClient = useQueryClient();
 
-  return useMutation((ids: string[]) => NotificationService.markReadNotifications(ids), {
+  return useMutation({
+    mutationFn: (ids: string[]) => NotificationService.markReadNotifications(ids),
     onMutate: async (ids) => {
-      await queryClient.cancelQueries(["users", "notifications"]);
+      await queryClient.cancelQueries({ queryKey: ["users", "notifications"] });
       const oldNotifications = queryClient.getQueryData(["users", "notifications"]) as NotificationRead[];
       queryClient.setQueryData(
         ["notifications"],
@@ -41,7 +42,7 @@ export function useMarkReadNotifications() {
       queryClient.setQueryData(["users", "notifications"], context?.oldNotifications);
     },
     onSettled: () => {
-      queryClient.invalidateQueries(["users", "notifications"]);
+      queryClient.invalidateQueries({ queryKey: ["users", "notifications"] });
     },
   });
 }
@@ -49,9 +50,10 @@ export function useMarkReadNotifications() {
 export function useDeleteNotification() {
   const queryClient = useQueryClient();
 
-  return useMutation((id: string) => NotificationService.deleteNotification(id), {
+  return useMutation({
+    mutationFn: (id: string) => NotificationService.deleteNotification(id),
     onMutate: async (id) => {
-      await queryClient.cancelQueries(["users", "notifications"]);
+      await queryClient.cancelQueries({ queryKey: ["users", "notifications"] });
       const oldNotifications = queryClient.getQueryData(["users", "notifications"]) as NotificationRead[];
       queryClient.setQueryData(
         ["users", "notifications"],
@@ -63,7 +65,7 @@ export function useDeleteNotification() {
       queryClient.setQueryData(["users", "notifications"], context?.oldNotifications);
     },
     onSettled: () => {
-      queryClient.invalidateQueries(["users", "notifications"]);
+      queryClient.invalidateQueries({ queryKey: ["users", "notifications"] });
     },
   });
 }

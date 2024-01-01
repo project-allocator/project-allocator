@@ -1,10 +1,16 @@
 import { ProposalService } from "@/api";
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 
 export function useProposedProjects() {
-  return useQuery(["projects", "proposed-projects"], () => ProposalService.readProposedProjects());
+  return useQuery({
+    queryKey: ["projects", "proposed-projects"],
+    queryFn: () => ProposalService.readProposedProjects(),
+  });
 }
 
 export function useProposer(projectId: string) {
-  return useQuery(["projects", "proposer", projectId], () => ProposalService.readProposer(projectId));
+  return useQuery({
+    queryKey: ["projects", "proposer", projectId],
+    queryFn: () => ProposalService.readProposer(projectId),
+  });
 }
