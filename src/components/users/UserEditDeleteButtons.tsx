@@ -25,10 +25,10 @@ export default function UserEditDeleteButtons() {
           onClick={() => {
             deleteUser.mutate(undefined, {
               onSuccess: () => {
-                messageSuccess(`Successfully deleted user.`);
-                navigate(-1);
+                messageSuccess("Successfully deleted user.");
+                navigate("/users");
               },
-              onError: () => messageError(`Failed to delete user.`),
+              onError: () => messageError("Failed to delete user."),
             });
           }}
         />

@@ -9,6 +9,7 @@ const { Title } = Typography;
 
 export default function ProposedProjects() {
   const { isAdmin, isStaff } = useAuth();
+
   const projects = useProposedProjects();
 
   return (

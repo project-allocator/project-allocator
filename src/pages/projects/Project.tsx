@@ -2,6 +2,7 @@ import ProjectAlert from "@/components/projects/ProjectAlert";
 import ProjectDetails from "@/components/projects/ProjectDetails";
 import ProjectEditDeleteButtons from "@/components/projects/ProjectEditDeleteButtons";
 import ProjectShortlistButton from "@/components/projects/ProjectShortlistButton";
+import { useMessage } from "@/contexts/MessageContext";
 import { useUnallocatedUsers } from "@/hooks/admins";
 import { useAddAllocatees, useAllocatees, useRemoveAllocatee } from "@/hooks/allocations";
 import { useProject } from "@/hooks/projects";
@@ -17,10 +18,10 @@ import { Link, useParams } from "react-router-dom";
 const { Title, Paragraph, Text } = Typography;
 
 export default function Project() {
+  const { isAdmin, isStaff, isStudent } = useAuth();
+
   const { id: projectId } = useParams();
   const project = useProject(projectId!);
-
-  const { isAdmin, isStaff, isStudent } = useAuth();
 
   return (
     <>
@@ -56,13 +57,13 @@ export default function Project() {
       {isAdmin && (
         <Suspense fallback={<Skeleton active />}>
           <Divider />
-          <AllocatedStudentList />
+          <AllocateeList />
         </Suspense>
       )}
       {(isStaff || isAdmin) && (
         <Suspense fallback={<Skeleton active />}>
           <Divider />
-          <ShortlistedStudentList />
+          <ShortlisterList />
         </Suspense>
       )}
     </>
@@ -85,15 +86,12 @@ function Proposer() {
   );
 }
 
-function AllocatedStudentList() {
+function AllocateeList() {
   const { id: projectId } = useParams();
+  const { messageSuccess, messageError } = useMessage();
 
   const allocatees = useAllocatees(projectId!);
-  const unallocatedUsers = useUnallocatedUsers();
-  const addAllocatees = useAddAllocatees(projectId!);
   const removeAllocatee = useRemoveAllocatee(projectId!);
-
-  const [extraAllocateeIndices, setExtraAllocateeIndices] = useState<number[]>([]);
 
   return (
     <>
@@ -101,37 +99,7 @@ function AllocatedStudentList() {
       <Paragraph className="text-slate-500">
         List of students allocated by the administrator will be shown here.
       </Paragraph>
-      <div className="flex gap-x-2 mt-6 mr-2">
-        <Select
-          mode="multiple"
-          allowClear
-          className="w-full grow"
-          placeholder="Select students to add"
-          value={extraAllocateeIndices}
-          options={unallocatedUsers.data?.map((student, index) => ({
-            label: `${student.name} (${student.email})`,
-            value: index,
-          }))}
-          filterOption={(inputValue, option) => {
-            if (!unallocatedUsers.data || !option) return false;
-            const target = inputValue.toLowerCase();
-            const student = unallocatedUsers.data[option!.value];
-            return [student.email, student.name].some((item) => item.toLowerCase().includes(target));
-          }}
-          onChange={(indices) => setExtraAllocateeIndices(indices)}
-        />
-        <Button
-          shape="circle"
-          className="flex-none"
-          icon={<PlusOutlined />}
-          onClick={() => {
-            if (!unallocatedUsers.data) return;
-            const extraAllocatees = extraAllocateeIndices.map((index) => unallocatedUsers.data[index]);
-            addAllocatees.mutate(extraAllocatees);
-            setExtraAllocateeIndices([]);
-          }}
-        />
-      </div>
+      <ExtraAllocateeSelect />
       <List
         className="mt-4"
         itemLayout="horizontal"
@@ -143,7 +111,12 @@ function AllocatedStudentList() {
                 <Button
                   className="border-none"
                   icon={<DeleteOutlined />}
-                  onClick={() => removeAllocatee.mutate(allocatee.id)}
+                  onClick={() =>
+                    removeAllocatee.mutate(allocatee.id, {
+                      onSuccess: () => messageSuccess("Successfully removed allocated student"),
+                      onError: () => messageError("Failed to remove allocated student"),
+                    })
+                  }
                 />
               </Tooltip>,
             ]}
@@ -167,7 +140,54 @@ function AllocatedStudentList() {
   );
 }
 
-function ShortlistedStudentList() {
+function ExtraAllocateeSelect() {
+  const { id: projectId } = useParams();
+  const { messageSuccess, messageError } = useMessage();
+
+  const unallocatedUsers = useUnallocatedUsers();
+  const addAllocatees = useAddAllocatees(projectId!);
+
+  const [extraAllocateeIndices, setExtraAllocateeIndices] = useState<number[]>([]);
+
+  return (
+    <div className="flex gap-x-2 mt-6 mr-2">
+      <Select
+        mode="multiple"
+        allowClear
+        className="w-full grow"
+        placeholder="Select students to add"
+        value={extraAllocateeIndices}
+        options={unallocatedUsers.data?.map((student, index) => ({
+          label: `${student.name} (${student.email})`,
+          value: index,
+        }))}
+        filterOption={(inputValue, option) => {
+          if (!unallocatedUsers.data || !option) return false;
+          const target = inputValue.toLowerCase();
+          const student = unallocatedUsers.data[option!.value];
+          return [student.email, student.name].some((item) => item.toLowerCase().includes(target));
+        }}
+        onChange={(indices) => setExtraAllocateeIndices(indices)}
+      />
+      <Button
+        shape="circle"
+        className="flex-none"
+        icon={<PlusOutlined />}
+        onClick={() => {
+          if (!unallocatedUsers.data) return;
+          const extraAllocatees = extraAllocateeIndices.map((index) => unallocatedUsers.data[index]);
+          addAllocatees.mutate(extraAllocatees, {
+            onSuccess: () => messageSuccess("Successfully allocated students"),
+            onError: () => messageError("Failed to allocate students"),
+          });
+          setExtraAllocateeIndices([]);
+        }}
+      />
+    </div>
+  );
+}
+
+function ShortlisterList() {
   const { id } = useParams();
   const shortlisters = useShortlisters(id!);
 

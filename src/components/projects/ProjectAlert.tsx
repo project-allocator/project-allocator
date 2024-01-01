@@ -1,3 +1,4 @@
+import { useMessage } from "@/contexts/MessageContext";
 import { useAcceptAllocation, useAllocatedProject, useAllocatees, useRejectAllocation } from "@/hooks/allocations";
 import { useApproveProject, useDisapproveProject, useProject } from "@/hooks/projects";
 import { useAuth } from "@/hooks/users";
@@ -30,7 +31,9 @@ export default function ProjectAlert() {
 }
 
 function ApprovalAlert() {
+  const { messageSuccess, messageError } = useMessage();
   const { id: projectId } = useParams();
+
   const project = useProject(projectId!);
   const approveProject = useApproveProject(projectId!);
   const disapproveProject = useDisapproveProject(projectId!);
@@ -62,7 +65,12 @@ function ApprovalAlert() {
             type="primary"
             className="w-24"
             disabled={isApproved !== null && isApproved}
-            onClick={() => approveProject.mutate()}
+            onClick={() =>
+              approveProject.mutate(undefined, {
+                onSuccess: () => messageSuccess("Successfully approved project"),
+                onError: () => messageError("Failed to approve project"),
+              })
+            }
           >
             Approve
           </Button>
@@ -70,7 +78,12 @@ function ApprovalAlert() {
             size="small"
             className="w-24"
             disabled={isApproved !== null && !isApproved}
-            onClick={() => disapproveProject.mutate()}
+            onClick={() =>
+              disapproveProject.mutate(undefined, {
+                onSuccess: () => messageSuccess("Successfully disapproved project"),
+                onError: () => messageError("Failed to disapprove project"),
+              })
+            }
           >
             Disapprove
           </Button>
@@ -104,6 +117,8 @@ function ConflictAlert() {
 }
 
 function AllocationAlert() {
+  const { messageSuccess, messageError } = useMessage();
+
   const allocatedProject = useAllocatedProject();
   const acceptAllocation = useAcceptAllocation();
   const rejectAllocation = useRejectAllocation();
@@ -143,7 +158,12 @@ function AllocationAlert() {
             type="primary"
             className="w-24"
             disabled={isLocked || (isAccepted !== null && isAccepted)}
-            onClick={() => acceptAllocation.mutate()}
+            onClick={() =>
+              acceptAllocation.mutate(undefined, {
+                onSuccess: () => messageSuccess("Successfully accepted project allocation"),
+                onError: () => messageError("Failed to accept project allocation"),
+              })
+            }
           >
             Accept
           </Button>
@@ -151,7 +171,12 @@ function AllocationAlert() {
             size="small"
             className="w-24"
             disabled={isLocked || (isAccepted !== null && !isAccepted)}
-            onClick={() => rejectAllocation.mutate()}
+            onClick={() =>
+              rejectAllocation.mutate(undefined, {
+                onSuccess: () => messageSuccess("Successfully rejected project allocation"),
+                onError: () => messageError("Failed to reject project allocation"),
+              })
+            }
           >
             Reject
           </Button>

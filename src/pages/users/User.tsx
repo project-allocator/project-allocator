@@ -7,10 +7,10 @@ import { useParams } from "react-router-dom";
 const { Title, Paragraph } = Typography;
 
 export default function User() {
+  const { isAdmin } = useAuth();
+
   const { id: userId } = useParams();
   const user = useUser(userId!);
-
-  const { isAdmin } = useAuth();
 
   return (
     <>

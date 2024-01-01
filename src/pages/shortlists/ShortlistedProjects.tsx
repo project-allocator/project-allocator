@@ -9,9 +9,8 @@ import { Link } from "react-router-dom";
 const { Title, Text } = Typography;
 
 export default function ShortlistedProjects() {
-  const projects = useShortlistedProjects();
   const { messageSuccess, messageError } = useMessage();
-
+  const projects = useShortlistedProjects();
   const reorderShortlistedProjects = useReorderShortlistedProjects();
 
   // We use Framer Motion's Reorder component for drag and drop,
@@ -40,7 +39,9 @@ export default function ShortlistedProjects() {
           dataSource={projectIds}
           rowKey={(projectId: string) => projectId}
           renderItem={(projectId: string) => (
-            <ProjectItem project={projects.data!.find((project: ProjectRead) => project.id === projectId)!} />
+            <ShortlistedProjectItem
+              project={projects.data!.find((project: ProjectRead) => project.id === projectId)!}
+            />
           )}
         />
       </Reorder.Group>
@@ -48,7 +49,7 @@ export default function ShortlistedProjects() {
   );
 }
 
-function ProjectItem({ project }: { project: ProjectRead }) {
+function ShortlistedProjectItem({ project }: { project: ProjectRead }) {
   // Drag controls for Framer Motion's Reorder component
   const controls = useDragControls();
   const { messageSuccess, messageError } = useMessage();

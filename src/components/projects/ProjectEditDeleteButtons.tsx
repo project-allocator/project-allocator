@@ -35,7 +35,7 @@ export default function EditDeleteButtons() {
             deleteUser.mutate(undefined, {
               onSuccess: () => {
                 messageSuccess(`Successfully deleted project.`);
-                navigate(-1);
+                navigate("/projects");
               },
               onError: () => messageError(`Failed to delete project.`),
             });

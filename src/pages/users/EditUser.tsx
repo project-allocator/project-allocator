@@ -26,7 +26,7 @@ export default function EditUser() {
           updateUser.mutate(values, {
             onSuccess: () => {
               messageSuccess("Successfully updated user");
-              navigate(-1);
+              navigate(`/users/${user.data.id}`);
             },
             onError: () => messageError("Failed to update user"),
           })
