@@ -3,7 +3,7 @@ import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-q
 
 export function useAllocatedProject() {
   return useSuspenseQuery({
-    queryKey: ["projects", "allocated-projects"],
+    queryKey: ["projects", "allocated-project"],
     queryFn: () =>
       AllocationService.readAllocatedProject().catch((error) => {
         if (error.status === 404) return Promise.resolve(null);
@@ -94,19 +94,19 @@ export function useAcceptAllocation() {
   return useMutation({
     mutationFn: () => AllocationService.acceptAllocation(),
     onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: ["projects", "allocated-projects"] });
-      const oldProject = queryClient.getQueryData(["projects", "allocated-projects"]) as ProjectReadWithAllocations;
-      queryClient.setQueryData(["projects", "allocated-projects"], {
+      await queryClient.cancelQueries({ queryKey: ["projects", "allocated-project"] });
+      const oldProject = queryClient.getQueryData(["projects", "allocated-project"]) as ProjectReadWithAllocations;
+      queryClient.setQueryData(["projects", "allocated-project"], {
         ...oldProject,
         allocations: [{ ...oldProject.allocations[0], accepted: true }],
       });
       return { oldProject };
     },
     onError: (error, variables, context) => {
-      queryClient.setQueryData(["projects", "allocated-projects"], context?.oldProject);
+      queryClient.setQueryData(["projects", "allocated-project"], context?.oldProject);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects", "allocated-projects"] });
+      queryClient.invalidateQueries({ queryKey: ["projects", "allocated-project"] });
     },
   });
 }
@@ -118,19 +118,19 @@ export function useRejectAllocation() {
     mutationFn: () => AllocationService.rejectAllocation(),
     onMutate: async () => {
       // TODO: This is not working
-      await queryClient.cancelQueries({ queryKey: ["projects", "allocated-projects"] });
-      const oldProject = queryClient.getQueryData(["projects", "allocated-projects"]) as ProjectReadWithAllocations;
-      queryClient.setQueryData(["projects", "allocated-projects"], {
+      await queryClient.cancelQueries({ queryKey: ["projects", "allocated-project"] });
+      const oldProject = queryClient.getQueryData(["projects", "allocated-project"]) as ProjectReadWithAllocations;
+      queryClient.setQueryData(["projects", "allocated-project"], {
         ...oldProject,
         allocations: [{ ...oldProject.allocations[0], accepted: false }],
       });
       return { oldProject };
     },
     onError: (error, variables, context) => {
-      queryClient.setQueryData(["projects", "allocated-projects"], context?.oldProject);
+      queryClient.setQueryData(["projects", "allocated-project"], context?.oldProject);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects", "allocated-projects"] });
+      queryClient.invalidateQueries({ queryKey: ["projects", "allocated-project"] });
     },
   });
 }
@@ -141,7 +141,7 @@ export function useLockAllocations() {
   return useMutation({
     mutationFn: () => AllocationService.lockAllocations(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects", "allocated-projects"] });
+      queryClient.invalidateQueries({ queryKey: ["projects", "allocated-project"] });
     },
   });
 }
@@ -152,7 +152,7 @@ export function useUnlockAllocations() {
   return useMutation({
     mutationFn: () => AllocationService.unlockAllocations(),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects", "allocated-projects"] });
+      queryClient.invalidateQueries({ queryKey: ["projects", "allocated-project"] });
     },
   });
 }
