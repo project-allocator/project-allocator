@@ -22,7 +22,7 @@ import Project from "./pages/projects/Project";
 import Projects from "./pages/projects/Projects";
 import ProposedProjects from "./pages/proposals/ProposedProjects";
 import ShortlistedProjects from "./pages/shortlists/ShortlistedProjects";
-import { EditUser } from "./pages/users/EditUser";
+import EditUser from "./pages/users/EditUser";
 import User from "./pages/users/User";
 import AdminRoute from "./routes/AdminRoute";
 import AuthRoute from "./routes/AuthRoute";

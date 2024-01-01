@@ -2,6 +2,7 @@ import { NotificationCreate, NotificationRead, NotificationService } from "@/api
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function useNotifications() {
+  // Do not use suspense as there is no need to wait for notifications.
   return useQuery({
     queryKey: ["users", "notifications"],
     queryFn: () => NotificationService.readNotifications(),

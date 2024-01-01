@@ -1,7 +1,7 @@
 import { useNotifications } from "@/hooks/notifications";
 import { NotificationOutlined } from "@ant-design/icons";
-import { Badge, Button, Layout } from "antd";
-import { useState } from "react";
+import { Badge, Button, Layout, Skeleton } from "antd";
+import { Suspense, useState } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Outlet } from "react-router-dom";
 import Breadcrumb from "./Breadcrumb";
@@ -15,7 +15,7 @@ const { Content } = Layout;
 export default function SiderLayout() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  const notifications = useNotifications();
+  const notifications = useNotifications(); // does not throw error
   const notificationCount = notifications.data?.filter((notification) => !notification.read_at).length || 0;
 
   return (
@@ -38,7 +38,9 @@ export default function SiderLayout() {
           <Breadcrumb />
           <Content className="p-8 m-0 bg-white">
             <ErrorBoundary FallbackComponent={Error}>
-              <Outlet />
+              <Suspense fallback={<Skeleton active />}>
+                <Outlet />
+              </Suspense>
             </ErrorBoundary>
           </Content>
         </Layout>

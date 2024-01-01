@@ -1,8 +1,8 @@
 import { ConfigService } from "@/api";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 
 export function useConfig(key: string) {
-  return useQuery({ queryKey: ["config", key], queryFn: () => ConfigService.readConfig(key) });
+  return useSuspenseQuery({ queryKey: ["config", key], queryFn: () => ConfigService.readConfig(key) });
 }
 
 export function useUpdateConfig(key: string) {

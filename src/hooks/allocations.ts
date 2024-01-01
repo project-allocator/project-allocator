@@ -1,8 +1,8 @@
 import { AllocationService, ProjectReadWithAllocations, UserRead } from "@/api";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 
 export function useAllocatedProject() {
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: ["projects", "allocated-projects"],
     queryFn: () =>
       AllocationService.readAllocatedProject().catch((error) => {
@@ -13,7 +13,7 @@ export function useAllocatedProject() {
 }
 
 export function useAllocatees(projectId: string) {
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: ["projects", "allocatees", projectId],
     queryFn: () => AllocationService.readAllocatees(projectId),
   });

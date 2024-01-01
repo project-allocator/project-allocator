@@ -1,15 +1,18 @@
 import { AdminService } from "@/api";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 
 export function useConflictingProjects() {
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: ["projects", "conflicting-projects"],
     queryFn: () => AdminService.readConflictingProjects(),
   });
 }
 
 export function useUnallocatedUsers() {
-  return useQuery({ queryKey: ["users", "unallocated-users"], queryFn: () => AdminService.readUnallocatedUsers() });
+  return useSuspenseQuery({
+    queryKey: ["users", "unallocated-users"],
+    queryFn: () => AdminService.readUnallocatedUsers(),
+  });
 }
 
 export function useExportData() {

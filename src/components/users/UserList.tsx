@@ -1,5 +1,5 @@
 import { UserRead } from "@/api";
-import { getInitialLetters } from "@/utils";
+import { toInitialLetters } from "@/utils";
 import { Avatar, Input, List } from "antd";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -26,7 +26,7 @@ export default function UserList({ users }: { users: UserRead[] }) {
         renderItem={(user) => (
           <List.Item>
             <List.Item.Meta
-              avatar={<Avatar>{getInitialLetters(user.name)}</Avatar>}
+              avatar={<Avatar>{toInitialLetters(user.name)}</Avatar>}
               title={<Link to={`/users/${user.id}`}>{user.name}</Link>}
               description={user.email}
             />

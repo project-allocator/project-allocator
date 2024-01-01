@@ -1,11 +1,11 @@
-import { useCurrentUserRole } from "@/hooks/users";
+import { useAuth } from "@/hooks/users";
 import { FileAddOutlined, FileDoneOutlined, FileTextOutlined, LockOutlined } from "@ant-design/icons";
 import { Layout, Menu } from "antd";
 import { Link, useLocation } from "react-router-dom";
 
 export default function Sider() {
   const { pathname } = useLocation();
-  const { isAdmin, isStaff, isStudent } = useCurrentUserRole();
+  const { isAdmin, isStaff, isStudent } = useAuth();
 
   const items = [
     {

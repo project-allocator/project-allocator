@@ -1,21 +1,30 @@
 import { useAcceptAllocation, useAllocatedProject, useAllocatees, useRejectAllocation } from "@/hooks/allocations";
 import { useApproveProject, useDisapproveProject, useProject } from "@/hooks/projects";
-import { useCurrentUser, useCurrentUserRole } from "@/hooks/users";
+import { useAuth } from "@/hooks/users";
 import { Alert, Button, Space } from "antd";
+import { Suspense } from "react";
 import { useParams } from "react-router-dom";
 
 export default function ProjectAlert() {
-  const user = useCurrentUser();
-  const { isAdmin, isStaff, isStudent } = useCurrentUserRole();
-
-  // TODO: isError checks for other components
-  if (user.isLoading || user.isError) return null;
+  const { isAdmin, isStaff, isStudent } = useAuth();
 
   return (
     <Space direction="vertical" className="w-full">
-      {isAdmin && <ApprovalAlert />}
-      {(isStaff || isAdmin) && <ConflictAlert />}
-      {isStudent && <AllocationAlert />}
+      {isAdmin && (
+        <Suspense>
+          <ApprovalAlert />
+        </Suspense>
+      )}
+      {(isStaff || isAdmin) && (
+        <Suspense>
+          <ConflictAlert />
+        </Suspense>
+      )}
+      {isStudent && (
+        <Suspense>
+          <AllocationAlert />
+        </Suspense>
+      )}
     </Space>
   );
 }
@@ -25,8 +34,6 @@ function ApprovalAlert() {
   const project = useProject(projectId!);
   const approveProject = useApproveProject(projectId!);
   const disapproveProject = useDisapproveProject(projectId!);
-
-  if (project.isLoading || project.isError) return null;
 
   const isApproved = project.data?.approved;
 
@@ -77,7 +84,7 @@ function ConflictAlert() {
   const { id: projectId } = useParams();
   const allocatees = useAllocatees(projectId!);
 
-  if (allocatees.isLoading || allocatees.isError) return null;
+  // Hide if project has no allocations.
   if (allocatees.data!.length == 0) return null;
 
   const hasConflict = allocatees.data!.some((allocatee) => !allocatee.allocation?.accepted);
@@ -97,13 +104,9 @@ function ConflictAlert() {
 }
 
 function AllocationAlert() {
-  const user = useCurrentUser();
   const allocatedProject = useAllocatedProject();
   const acceptAllocation = useAcceptAllocation();
   const rejectAllocation = useRejectAllocation();
-
-  if (user.isLoading || user.isError) return null;
-  if (allocatedProject.isLoading || allocatedProject.isError) return null;
 
   const isAllocated = allocatedProject !== null;
   const isAccepted = allocatedProject.data?.allocations[0]?.accepted; // only the student's allocation is returned

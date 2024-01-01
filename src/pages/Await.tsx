@@ -1,5 +1,5 @@
+import { UseQueryResult } from "@tanstack/react-query";
 import { Empty, Skeleton } from "antd";
-import { UseQueryResult } from "react-query";
 
 export default function Await<TData, TError>({
   query,

@@ -13,58 +13,64 @@ import { useState } from "react";
 
 const { Title, Paragraph } = Typography;
 
-const exampleContent = {
-  users: [
-    {
-      id: "01HJJM36Y7C7BTCJFD1Z4Y74CQ",
-      email: "jesse83@example.org",
-      name: "Luke Glover",
-      role: "staff",
-    },
-  ],
-  projects: [
-    {
-      id: "01HJJM36Y7VHSA06C09QFMBVSQ",
-      title: "Born already analysis allow alone author.",
-      description: "International wrong admit society community Democrat. Themselves part window world.",
-      approved: true,
-      details: [
-        {
-          project_id: "01HJJM36Y7VHSA06C09QFMBVSQ",
-          key: "ability-commercial",
-          type: "radio",
-          value: "discuss",
-        },
-      ],
-      allocations: [
-        {
-          allocatee_id: "01HJJM371KGTC0AH4S5D37G0JE",
-          allocated_project_id: "01HJJM36Z20YDY2PV0N9H5WRYF",
-          accepted: null,
-        },
-      ],
-    },
-  ],
-};
-
 export default function ManageData() {
-  const { messageSuccess, messageError } = useMessage();
-
-  const [exportType, setExportType] = useState<string>("json");
-  const [exportLoading, setExportLoading] = useState<boolean>(false);
-  const [importFiles, setImportFiles] = useState<UploadFile[]>([]);
-  const [importLoading, setImportLoading] = useState<boolean>(false);
-  const [resetDatabaseConfirmString, setResetDatabaseConfirmString] = useState<string>("");
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-
-  const importData = useImportData();
-  const exportData = useExportData();
-  const resetDatabase = useResetDatabase();
-
   return (
     <>
       <Title level={3}>Manage Data</Title>
       <Divider />
+      <ImportData />
+      <Divider />
+      <ExportData />
+      <Divider />
+      <ResetDatabase />
+    </>
+  );
+}
+
+function ImportData() {
+  const { messageSuccess, messageError } = useMessage();
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const importData = useImportData();
+
+  // TODO: Store this in separate json file.
+  const sampleImportData = {
+    users: [
+      {
+        id: "01HJJM36Y7C7BTCJFD1Z4Y74CQ",
+        email: "jesse83@example.org",
+        name: "Luke Glover",
+        role: "staff",
+      },
+    ],
+    projects: [
+      {
+        id: "01HJJM36Y7VHSA06C09QFMBVSQ",
+        title: "Born already analysis allow alone author.",
+        description: "International wrong admit society community Democrat. Themselves part window world.",
+        approved: true,
+        details: [
+          {
+            project_id: "01HJJM36Y7VHSA06C09QFMBVSQ",
+            key: "ability-commercial",
+            type: "radio",
+            value: "discuss",
+          },
+        ],
+        allocations: [
+          {
+            allocatee_id: "01HJJM371KGTC0AH4S5D37G0JE",
+            allocated_project_id: "01HJJM36Z20YDY2PV0N9H5WRYF",
+            accepted: null,
+          },
+        ],
+      },
+    ],
+  };
+
+  return (
+    <>
       <Title level={4}>Import Data</Title>
       <Paragraph className="text-slate-500">Import data from the JSON format.</Paragraph>
       <Paragraph className="text-slate-500">
@@ -74,7 +80,7 @@ export default function ManageData() {
           title="Example of JSON Content"
           content={
             <pre className="max-w-lg max-h-60 whitespace-pre-wrap overflow-y-scroll">
-              {JSON.stringify(exampleContent, null, 2)}
+              {JSON.stringify(sampleImportData, null, 2)}
             </pre>
           }
         >
@@ -84,12 +90,12 @@ export default function ManageData() {
       <Space direction="vertical">
         <Upload
           maxCount={1}
-          fileList={importFiles}
+          fileList={fileList}
           onRemove={() => {
-            setImportFiles([]);
+            setFileList([]);
           }}
           beforeUpload={(file) => {
-            setImportFiles([file]);
+            setFileList([file]);
             // Prevent triggering upload.
             return false;
           }}
@@ -98,26 +104,38 @@ export default function ManageData() {
         </Upload>
         <Button
           icon={<CheckOutlined />}
-          loading={importLoading}
-          disabled={importFiles.length === 0}
+          loading={isLoading}
+          disabled={fileList.length === 0}
           onClick={() => {
-            setImportLoading(true);
+            setIsLoading(true);
             const reader = new FileReader();
             reader.onload = (event) => {
               const content = event.target?.result as string;
               importData.mutate(JSON.parse(content), {
                 onSuccess: () => messageSuccess("Successfully imported JSON data."),
                 onError: () => messageError("Failed to import JSON data."),
-                onSettled: () => setImportLoading(false),
+                onSettled: () => setIsLoading(false),
               });
             };
-            reader.readAsText(importFiles[0] as RcFile);
+            reader.readAsText(fileList[0] as RcFile);
           }}
         >
           Check
         </Button>
       </Space>
-      <Divider />
+    </>
+  );
+}
+
+function ExportData() {
+  const { messageSuccess, messageError } = useMessage();
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [exportType, setExportType] = useState<string>("json");
+  const exportData = useExportData();
+
+  return (
+    <>
       <Title level={4}>Export Data</Title>
       <Paragraph className="text-slate-500">Export data in the JSON or CSV format.</Paragraph>
       <Paragraph className="text-slate-500">
@@ -138,20 +156,32 @@ export default function ManageData() {
         />
         <Button
           icon={<DownloadOutlined />}
-          loading={exportLoading}
+          loading={isLoading}
           onClick={() => {
-            setExportLoading(true);
+            setIsLoading(true);
             exportData.mutate(exportType, {
               onSuccess: () => messageSuccess("Successfully exported data."),
               onError: () => messageError("Failed to export data."),
-              onSettled: () => setExportLoading(false),
+              onSettled: () => setIsLoading(false),
             });
           }}
         >
           Download File
         </Button>
       </Space>
-      <Divider />
+    </>
+  );
+}
+
+function ResetDatabase() {
+  const { messageSuccess, messageError } = useMessage();
+
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [confirmString, setConfirmString] = useState<string>("");
+  const resetDatabase = useResetDatabase();
+
+  return (
+    <>
       <Title level={4}>Reset Database</Title>
       <Paragraph className="text-slate-500">
         Reset the database of this Project Allocator instance.
@@ -172,7 +202,7 @@ export default function ManageData() {
             <Button onClick={() => setIsModalOpen(false)}>Cancel</Button>
             <Button
               type="primary"
-              disabled={resetDatabaseConfirmString != "RESET DATABASE"}
+              disabled={confirmString != "RESET DATABASE"}
               onClick={() => {
                 resetDatabase.mutate(undefined, {
                   onSuccess: () => messageSuccess("Successfully reset database."),
@@ -190,10 +220,7 @@ export default function ManageData() {
         <Paragraph>
           If you are sure you want to continue, please type <b>RESET DATABASE</b> in the box below.
         </Paragraph>
-        <Input
-          value={resetDatabaseConfirmString}
-          onChange={(event) => setResetDatabaseConfirmString(event.target.value)}
-        />
+        <Input value={confirmString} onChange={(event) => setConfirmString(event.target.value)} />
       </Modal>
     </>
   );

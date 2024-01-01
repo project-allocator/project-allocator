@@ -1,6 +1,6 @@
 import { ProjectReadWithDetails } from "@/api";
 import { useProjectDetailTemplates } from "@/hooks/projects";
-import { Empty, Skeleton, Space, Tag, Typography } from "antd";
+import { Space, Tag, Typography } from "antd";
 import dayjs from "dayjs";
 import * as _ from "underscore";
 
@@ -8,9 +8,6 @@ const { Title, Paragraph } = Typography;
 
 export default function ProjectDetails({ project }: { project: ProjectReadWithDetails }) {
   const templates = useProjectDetailTemplates();
-
-  if (templates.isLoading) return <Skeleton active />;
-  if (templates.isError) return <Empty description="Failed to load project detail templates" />;
 
   const sortedTemplates = _.sortBy(templates.data!, "key");
   const sortedDetails = _.sortBy(project!.details!, "key");

@@ -1,27 +1,33 @@
 import { ProjectCreateWithDetails, ProjectRead, ProjectService, ProjectUpdateWithDetails } from "@/api";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 
 export function useProjectDetailTemplates() {
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: ["projects", "details", "templates"],
     queryFn: () => ProjectService.readProjectDetailTemplates(),
   });
 }
 
 export function useApprovedProjects() {
-  return useQuery({ queryKey: ["projects", "approved"], queryFn: () => ProjectService.readApprovedProjects() });
+  return useSuspenseQuery({ queryKey: ["projects", "approved"], queryFn: () => ProjectService.readApprovedProjects() });
 }
 
 export function useDisapprovedProjects() {
-  return useQuery({ queryKey: ["projects", "disapproved"], queryFn: () => ProjectService.readDisapprovedProjects() });
+  return useSuspenseQuery({
+    queryKey: ["projects", "disapproved"],
+    queryFn: () => ProjectService.readDisapprovedProjects(),
+  });
 }
 
 export function useNoResponseProjects() {
-  return useQuery({ queryKey: ["projects", "no-response"], queryFn: () => ProjectService.readNoResponseProjects() });
+  return useSuspenseQuery({
+    queryKey: ["projects", "no-response"],
+    queryFn: () => ProjectService.readNoResponseProjects(),
+  });
 }
 
 export function useProject(projectId: string) {
-  return useQuery({ queryKey: ["projects", projectId], queryFn: () => ProjectService.readProject(projectId) });
+  return useSuspenseQuery({ queryKey: ["projects", projectId], queryFn: () => ProjectService.readProject(projectId) });
 }
 
 export function useCreateProject() {

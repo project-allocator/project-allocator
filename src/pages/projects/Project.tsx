@@ -7,12 +7,11 @@ import { useAddAllocatees, useAllocatees, useRemoveAllocatee } from "@/hooks/all
 import { useProject } from "@/hooks/projects";
 import { useProposer } from "@/hooks/proposals";
 import { useShortlisters } from "@/hooks/shortlists";
-import { useCurrentUserRole } from "@/hooks/users";
-import Await from "@/pages/Await";
-import { getInitialLetters } from "@/utils";
+import { useAuth } from "@/hooks/users";
+import { toInitialLetters } from "@/utils";
 import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
-import { Avatar, Button, Divider, List, Select, Space, Tooltip, Typography } from "antd";
-import { useState } from "react";
+import { Avatar, Button, Divider, List, Select, Skeleton, Space, Tooltip, Typography } from "antd";
+import { Suspense, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 const { Title, Paragraph, Text } = Typography;
@@ -20,61 +19,73 @@ const { Title, Paragraph, Text } = Typography;
 export default function Project() {
   const { id: projectId } = useParams();
   const project = useProject(projectId!);
-  const proposer = useProposer(projectId!);
 
-  const { isAdmin, isStaff, isStudent } = useCurrentUserRole();
+  const { isAdmin, isStaff, isStudent } = useAuth();
 
   return (
     <>
-      <ProjectAlert />
-      <Space className="flex items-end justify-between">
-        <Title level={3}>Project Overview</Title>
-        {isStudent && <ProjectShortlistButton />}
-        {(isStaff || isAdmin) && <ProjectEditDeleteButtons />}
+      <Suspense>
+        <ProjectAlert />
+      </Suspense>
+      <Space className="flex items-center justify-between my-8">
+        <Title level={3} className="my-0">
+          Project Overview
+        </Title>
+        {isStudent && (
+          <Suspense>
+            <ProjectShortlistButton />
+          </Suspense>
+        )}
+        {(isStaff || isAdmin) && (
+          <Suspense>
+            <ProjectEditDeleteButtons />
+          </Suspense>
+        )}
       </Space>
       <Divider />
-      <Await query={project} errorElement="Failed to load project">
-        {(project) => (
-          <>
-            <Title level={4}>{project.title}</Title>
-            <Paragraph>{project.description}</Paragraph>
-          </>
-        )}
-      </Await>
+      <Title level={4}>{project.data!.title}</Title>
+      <Paragraph>{project.data!.description}</Paragraph>
       <Divider />
-      <Await query={proposer} errorElement="Failed to load proposer">
-        {(proposer) => (
-          <>
-            <Title level={4}>Proposer</Title>
-            <Paragraph>
-              <Link to={`/users/${proposer.id}`}>
-                {proposer.name} ({proposer.email})
-              </Link>
-            </Paragraph>
-          </>
-        )}
-      </Await>
+      <Suspense fallback={<Skeleton active />}>
+        <Proposer />
+      </Suspense>
       <Divider />
-      <Await query={project} errorElement="Failed to load project">
-        {(project) => <ProjectDetails project={project} />}
-      </Await>
+      <Suspense fallback={<Skeleton active />}>
+        <ProjectDetails project={project.data!} />
+      </Suspense>
       {isAdmin && (
-        <>
+        <Suspense fallback={<Skeleton active />}>
           <Divider />
-          <AllocatedStudents />
-        </>
+          <AllocatedStudentList />
+        </Suspense>
       )}
       {(isStaff || isAdmin) && (
-        <>
+        <Suspense fallback={<Skeleton active />}>
           <Divider />
-          <ShortlistedStudents />
-        </>
+          <ShortlistedStudentList />
+        </Suspense>
       )}
     </>
   );
 }
 
-function AllocatedStudents() {
+function Proposer() {
+  const { id: projectId } = useParams();
+  const proposer = useProposer(projectId!);
+
+  return (
+    <>
+      <Title level={4}>Proposer</Title>
+      <Paragraph>
+        <Link to={`/users/${proposer.data!.id}`}>
+          {proposer.data!.name} ({proposer.data!.email})
+        </Link>
+      </Paragraph>
+    </>
+  );
+}
+
+function AllocatedStudentList() {
   const { id: projectId } = useParams();
 
   const allocatees = useAllocatees(projectId!);
@@ -121,46 +132,42 @@ function AllocatedStudents() {
           }}
         />
       </div>
-      <Await query={allocatees} errorElement="Failed to load allocated students">
-        {(allocatees) => (
-          <List
-            className="mt-4"
-            itemLayout="horizontal"
-            dataSource={allocatees}
-            renderItem={(allocatee) => (
-              <List.Item
-                actions={[
-                  <Tooltip title="Delete">
-                    <Button
-                      className="border-none"
-                      icon={<DeleteOutlined />}
-                      onClick={() => removeAllocatee.mutate(allocatee.id)}
-                    />
-                  </Tooltip>,
-                ]}
-              >
-                <List.Item.Meta
-                  avatar={<Avatar>{getInitialLetters(allocatee.name)}</Avatar>}
-                  title={<Link to={`/users/${allocatee.id}`}>{allocatee.name}</Link>}
-                  description={allocatee.email}
+      <List
+        className="mt-4"
+        itemLayout="horizontal"
+        dataSource={allocatees.data!}
+        renderItem={(allocatee) => (
+          <List.Item
+            actions={[
+              <Tooltip title="Delete">
+                <Button
+                  className="border-none"
+                  icon={<DeleteOutlined />}
+                  onClick={() => removeAllocatee.mutate(allocatee.id)}
                 />
-                <Text>
-                  {allocatee.allocation?.accepted === null
-                    ? "No Response"
-                    : allocatee.allocation?.accepted
-                      ? "Accepted"
-                      : "Declined"}
-                </Text>
-              </List.Item>
-            )}
-          />
+              </Tooltip>,
+            ]}
+          >
+            <List.Item.Meta
+              avatar={<Avatar>{toInitialLetters(allocatee.name)}</Avatar>}
+              title={<Link to={`/users/${allocatee.id}`}>{allocatee.name}</Link>}
+              description={allocatee.email}
+            />
+            <Text>
+              {allocatee.allocation?.accepted === null
+                ? "No Response"
+                : allocatee.allocation?.accepted
+                  ? "Accepted"
+                  : "Declined"}
+            </Text>
+          </List.Item>
         )}
-      </Await>
+      />
     </>
   );
 }
 
-function ShortlistedStudents() {
+function ShortlistedStudentList() {
   const { id } = useParams();
   const shortlisters = useShortlisters(id!);
 
@@ -170,24 +177,20 @@ function ShortlistedStudents() {
       <Paragraph className="text-slate-500">
         List of students who shortlisted this projected will be shown in here, in the order of their preference.
       </Paragraph>
-      <Await query={shortlisters} errorElement="Failed to load shortlisted students">
-        {(shortlisters) => (
-          <List
-            className="mt-4"
-            itemLayout="horizontal"
-            dataSource={shortlisters}
-            renderItem={(shortlister) => (
-              <List.Item>
-                <List.Item.Meta
-                  avatar={<Avatar>{getInitialLetters(shortlister.name)}</Avatar>}
-                  title={<Link to={`/users/${shortlister.id}`}>{shortlister.name}</Link>}
-                  description={shortlister.email}
-                />
-              </List.Item>
-            )}
-          />
+      <List
+        className="mt-4"
+        itemLayout="horizontal"
+        dataSource={shortlisters.data!}
+        renderItem={(shortlister) => (
+          <List.Item>
+            <List.Item.Meta
+              avatar={<Avatar>{toInitialLetters(shortlister.name)}</Avatar>}
+              title={<Link to={`/users/${shortlister.id}`}>{shortlister.name}</Link>}
+              description={shortlister.email}
+            />
+          </List.Item>
         )}
-      </Await>
+      />
     </>
   );
 }

@@ -55,6 +55,7 @@ axios.interceptors.request.use(async (config) => {
       account: msalInstance.getActiveAccount()!,
     });
     config.headers.set("Authorization", `Bearer ${apiToken}`);
+
     // We also provide the Microsoft Graph API token to the backend server
     // so that it can access the user profile and send emails with that token.
     // See the following discussion for the motivation:

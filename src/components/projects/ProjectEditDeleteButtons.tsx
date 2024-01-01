@@ -10,13 +10,11 @@ export default function EditDeleteButtons() {
   const navigate = useNavigate();
   const { messageSuccess, messageError } = useMessage();
 
+  const { id: projectId } = useParams();
   const proposalsShutdown = useConfig("proposals_shutdown");
   const proposedProjects = useProposedProjects();
-  const { id: projectId } = useParams();
   const deleteUser = useDeleteProject(projectId!);
 
-  if (proposedProjects.isLoading || proposedProjects.isError) return null;
-  if (proposalsShutdown.isLoading || proposalsShutdown.isError) return null;
   if (proposalsShutdown.data!.value) return null;
 
   const isProposed = proposedProjects.data!.some((project) => project.id === projectId);

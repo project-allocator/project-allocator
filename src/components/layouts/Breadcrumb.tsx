@@ -15,12 +15,9 @@ export default function Breadcrumb() {
     <antd.Breadcrumb
       className="my-4"
       items={[{ path: "/", breadcrumbName: "Home" }, ...breadcrumbs]}
-      itemRender={(breadcrumb) =>
-        // prettier-ignore
-        <Link to={breadcrumb.path!}>
-          {breadcrumb.path === "/" ? <HomeOutlined /> : breadcrumb.breadcrumbName}
-        </Link>
-      }
+      itemRender={(breadcrumb) => (
+        <Link to={breadcrumb.path!}>{breadcrumb.path === "/" ? <HomeOutlined /> : breadcrumb.breadcrumbName}</Link>
+      )}
     />
   );
 }

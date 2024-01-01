@@ -10,18 +10,14 @@ export default function ProjectShortlistButton() {
   const { messageSuccess, messageError } = useMessage();
   const { id: projectId } = useParams();
 
+  const project = useProject(projectId!);
+  const shortlistedProjects = useShortlistedProjects();
   const maxShortlists = useConfig("max_shortlists");
   const shortlistShutdown = useConfig("shortlists_shutdown");
 
-  const project = useProject(projectId!);
-  const shortlistedProjects = useShortlistedProjects();
   const shortlistProject = useShortlistProject();
   const unshortlistProject = useUnshortlistProject();
 
-  if (maxShortlists.isLoading || maxShortlists.isError) return null;
-  if (shortlistShutdown.isLoading || shortlistShutdown.isError) return null;
-  if (project.isLoading || project.isError) return null;
-  if (shortlistedProjects.isLoading || shortlistedProjects.isError) return null;
   if (shortlistShutdown.data!.value) return null;
 
   const isShortlisted = shortlistedProjects.data!.some((project) => project.id === projectId);

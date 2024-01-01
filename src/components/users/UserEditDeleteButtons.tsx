@@ -4,7 +4,7 @@ import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { Button, Space, Tooltip } from "antd";
 import { Link, useNavigate, useParams } from "react-router-dom";
 
-export default function EditDeleteButtons() {
+export default function UserEditDeleteButtons() {
   const navigate = useNavigate();
   const { messageSuccess, messageError } = useMessage();
 

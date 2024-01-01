@@ -8,74 +8,103 @@ import { useState } from "react";
 const { Title, Paragraph } = Typography;
 
 export default function ManageNotifications() {
-  const { messageSuccess, messageError } = useMessage();
-
-  const [proposalNotificationsLoading, setProposalNotificationsLoading] = useState<boolean>(false);
-  const [allocationNotificationsLoading, setAllocationNotificationsLoading] = useState<boolean>(false);
-  const [sendNotificationsLoading, setCustomNotificationsLoading] = useState<boolean>(false);
-
-  const sendNotifications = useSendNotifications();
-
   return (
     <>
       <Title level={3}>Manage Notifications</Title>
       <Divider />
-      <Title level={4}>Project Approvals</Title>
+      <ProjectApprovalNotifications />
+      <Divider />
+      <ProjectAllocationNotifications />
+      <Divider />
+      <CustomNotifications />
+    </>
+  );
+}
+
+function ProjectApprovalNotifications() {
+  const { messageSuccess, messageError } = useMessage();
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const sendNotifications = useSendNotifications();
+
+  return (
+    <>
+      <Title level={4}>Project Approval Notifications</Title>
       <Paragraph className="text-slate-500">
         Click this to notify staff about the approval of their project proposals via email and in-app notification. The
         emails will be sent from your Microsoft account.
       </Paragraph>
       <Button
         icon={<SendOutlined />}
-        loading={proposalNotificationsLoading}
+        loading={isLoading}
         onClick={() => {
-          setProposalNotificationsLoading(true);
-          sendNotifications.mutate(
-            {
-              notification_data: {
-                title: "Project proposals have been approved.",
-                description: "Students will be able to view and shortlist your project proposals from now onwards.",
-              },
-              roles: ["staff", "admin"],
+          setIsLoading(true);
+          const notification = {
+            notification_data: {
+              title: "Project proposals have been approved.",
+              description: "Students will be able to view and shortlist your project proposals from now onwards.",
             },
-            {
-              onSuccess: () => messageSuccess("Successfully sent notifications."),
-              onError: () => messageError("Failed to send notifications."),
-              onSettled: () => setProposalNotificationsLoading(false),
-            }
-          );
+            roles: ["staff", "admin"],
+          };
+          sendNotifications.mutate(notification, {
+            onSuccess: () => messageSuccess("Successfully sent notifications."),
+            onError: () => messageError("Failed to send notifications."),
+            onSettled: () => setIsLoading(false),
+          });
         }}
       >
         Send
       </Button>
-      <Title level={4}>Project Allocations</Title>
+    </>
+  );
+}
+
+function ProjectAllocationNotifications() {
+  const { messageSuccess, messageError } = useMessage();
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const sendNotifications = useSendNotifications();
+
+  return (
+    <>
+      <Title level={4}>Project Allocation Notifications</Title>
       <Paragraph className="text-slate-500">
         Click this to notify students about the project allocation via email and in-app notification. The emails will be
         sent from your Microsoft account.
       </Paragraph>
       <Button
         icon={<SendOutlined />}
-        loading={allocationNotificationsLoading}
+        loading={isLoading}
         onClick={() => {
-          setAllocationNotificationsLoading(true);
-          sendNotifications.mutate(
-            {
-              notification_data: {
-                title: "Projects have been allocated.",
-                description: "Please accept or decline your project allocation on the Project Allocator.",
-              },
-              roles: ["student"],
+          setIsLoading(true);
+          const notification = {
+            notification_data: {
+              title: "Projects have been allocated.",
+              description: "Please accept or decline your project allocation on the Project Allocator.",
             },
-            {
-              onSuccess: () => messageSuccess("Successfully sent notifications."),
-              onError: () => messageError("Failed to send notifications."),
-              onSettled: () => setAllocationNotificationsLoading(false),
-            }
-          );
+            roles: ["student"],
+          };
+          sendNotifications.mutate(notification, {
+            onSuccess: () => messageSuccess("Successfully sent notifications."),
+            onError: () => messageError("Failed to send notifications."),
+            onSettled: () => setIsLoading(false),
+          });
         }}
       >
         Send
       </Button>
+    </>
+  );
+}
+
+function CustomNotifications() {
+  const { messageSuccess, messageError } = useMessage();
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const sendNotifications = useSendNotifications();
+
+  return (
+    <>
       <Title level={4}>Custom Notifications</Title>
       <Paragraph className="text-slate-500">
         Click this to notify your choice of users with a custom message via email and in-app notification. The emails
@@ -87,7 +116,7 @@ export default function ManageNotifications() {
         autoComplete="off"
         className="max-w-xl"
         onFinish={(values) => {
-          setCustomNotificationsLoading(true);
+          setIsLoading(true);
           sendNotifications.mutate(
             {
               notification_data: {
@@ -99,7 +128,7 @@ export default function ManageNotifications() {
             {
               onSuccess: () => messageSuccess("Successfully sent notifications."),
               onError: () => messageError("Failed to send notifications."),
-              onSettled: () => setCustomNotificationsLoading(false),
+              onSettled: () => setIsLoading(false),
             }
           );
         }}
@@ -120,7 +149,7 @@ export default function ManageNotifications() {
           />
         </Form.Item>
         <Form.Item>
-          <Button icon={<SendOutlined />} type="primary" htmlType="submit" loading={sendNotificationsLoading}>
+          <Button icon={<SendOutlined />} type="primary" htmlType="submit" loading={isLoading}>
             Send
           </Button>
         </Form.Item>

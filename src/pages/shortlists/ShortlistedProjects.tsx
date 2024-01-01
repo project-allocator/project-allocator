@@ -1,7 +1,6 @@
-import { ProjectRead, ShortlistService } from "@/api";
+import { ProjectRead } from "@/api";
 import { useMessage } from "@/contexts/MessageContext";
 import { useReorderShortlistedProjects, useShortlistedProjects, useUnshortlistProject } from "@/hooks/shortlists";
-import Await from "@/pages/Await";
 import { DeleteOutlined, HolderOutlined } from "@ant-design/icons";
 import { Button, Divider, List, Space, Tooltip, Typography } from "antd";
 import { Reorder, useDragControls } from "framer-motion";
@@ -9,14 +8,10 @@ import { Link } from "react-router-dom";
 
 const { Title, Text } = Typography;
 
-export async function shortlistedProjectsLoader() {
-  return await ShortlistService.readShortlistedProjects();
-}
-
 export default function ShortlistedProjects() {
-  const { messageSuccess, messageError } = useMessage();
   const projects = useShortlistedProjects();
-  const unshortlistProject = useUnshortlistProject();
+  const { messageSuccess, messageError } = useMessage();
+
   const reorderShortlistedProjects = useReorderShortlistedProjects();
 
   // We use Framer Motion's Reorder component for drag and drop,
@@ -27,47 +22,38 @@ export default function ShortlistedProjects() {
     <>
       <Title level={3}>Shortlisted Projects</Title>
       <Divider />
-      <Await query={projects} errorElement="Failed to load shortlisted projects">
-        {(projects) => (
-          <Reorder.Group
-            as="div"
-            axis="y"
-            values={projectIds}
-            onReorder={(projectIds) => {
-              reorderShortlistedProjects.mutate(projectIds, {
-                onSuccess: () => messageSuccess("Successfully reordered shortlisted projects."),
-                onError: () => messageError("Failed to reorder shortlisted projects."),
-              });
-            }}
-          >
-            <List
-              header={<Text strong>Highest Preference</Text>}
-              footer={<Text strong>Lowest Preference</Text>}
-              bordered
-              dataSource={projectIds}
-              rowKey={(projectId: string) => projectId}
-              renderItem={(projectId: string) => (
-                <ProjectItem
-                  project={projects.find((project: ProjectRead) => project.id === projectId)!}
-                  onDelete={() => {
-                    unshortlistProject.mutate(projectId, {
-                      onSuccess: () => messageSuccess("Successfully unshortlisted project."),
-                      onError: () => messageError("Failed to unshortlist project."),
-                    });
-                  }}
-                />
-              )}
-            />
-          </Reorder.Group>
-        )}
-      </Await>
+      <Reorder.Group
+        as="div"
+        axis="y"
+        values={projectIds}
+        onReorder={(projectIds) => {
+          reorderShortlistedProjects.mutate(projectIds, {
+            onSuccess: () => messageSuccess("Successfully reordered shortlisted projects."),
+            onError: () => messageError("Failed to reorder shortlisted projects."),
+          });
+        }}
+      >
+        <List
+          header={<Text strong>Highest Preference</Text>}
+          footer={<Text strong>Lowest Preference</Text>}
+          bordered
+          dataSource={projectIds}
+          rowKey={(projectId: string) => projectId}
+          renderItem={(projectId: string) => (
+            <ProjectItem project={projects.data!.find((project: ProjectRead) => project.id === projectId)!} />
+          )}
+        />
+      </Reorder.Group>
     </>
   );
 }
 
-function ProjectItem({ project, onDelete }: { project: ProjectRead; onDelete: () => void }) {
+function ProjectItem({ project }: { project: ProjectRead }) {
   // Drag controls for Framer Motion's Reorder component
   const controls = useDragControls();
+  const { messageSuccess, messageError } = useMessage();
+
+  const unshortlistProject = useUnshortlistProject();
 
   return (
     <Reorder.Item as="div" key={project.id} value={project.id} dragListener={false} dragControls={controls}>
@@ -78,7 +64,16 @@ function ProjectItem({ project, onDelete }: { project: ProjectRead; onDelete: ()
         <Space>
           <HolderOutlined onPointerDown={(event) => controls.start(event)} />
           <Tooltip title="Delete">
-            <Button className="border-none" icon={<DeleteOutlined />} onClick={onDelete} />
+            <Button
+              className="border-none"
+              icon={<DeleteOutlined />}
+              onClick={() => {
+                unshortlistProject.mutate(project.id, {
+                  onSuccess: () => messageSuccess("Successfully unshortlisted project."),
+                  onError: () => messageError("Failed to unshortlist project."),
+                });
+              }}
+            />
           </Tooltip>
         </Space>
       </List.Item>

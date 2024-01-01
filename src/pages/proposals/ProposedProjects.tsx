@@ -1,39 +1,30 @@
+import ProjectAddButton from "@/components/projects/ProjectAddButton";
 import { ProjectTable } from "@/components/projects/ProjectTable";
-import { useConfig } from "@/hooks/configs";
 import { useProposedProjects } from "@/hooks/proposals";
-import { useCurrentUserRole } from "@/hooks/users";
-import Await from "@/pages/Await";
-import { PlusOutlined } from "@ant-design/icons";
-import { Button, Divider, Space, Tooltip, Typography } from "antd";
-import { Link } from "react-router-dom";
+import { useAuth } from "@/hooks/users";
+import { Divider, Space, Typography } from "antd";
+import { Suspense } from "react";
 
 const { Title } = Typography;
 
 export default function ProposedProjects() {
-  const { isAdmin, isStaff } = useCurrentUserRole();
+  const { isAdmin, isStaff } = useAuth();
   const projects = useProposedProjects();
-  const proposalsShutdown = useConfig("proposals_shutdown");
-
-  if (proposalsShutdown.isLoading || proposalsShutdown.isError) return null;
 
   return (
     <>
-      <Space className="flex items-end justify-between">
-        <Title level={3} className="mb-0">
+      <Space className="flex items-center justify-between my-8">
+        <Title level={3} className="my-0">
           Proposed Projects
         </Title>
-        {(isStaff || isAdmin) && !proposalsShutdown.data!.value && (
-          <Tooltip title="Add">
-            <Link to="/projects/add">
-              <Button shape="circle" icon={<PlusOutlined />} />
-            </Link>
-          </Tooltip>
+        {(isStaff || isAdmin) && (
+          <Suspense>
+            <ProjectAddButton />
+          </Suspense>
         )}
       </Space>
       <Divider />
-      <Await query={projects} errorElement="Failed to load projects">
-        {(projects) => <ProjectTable projects={projects} />}
-      </Await>
+      <ProjectTable projects={projects.data!} />
     </>
   );
 }

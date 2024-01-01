@@ -36,7 +36,7 @@ export default function ProjectForm({ initProject }: { initProject?: ProjectRead
   const createProject = useCreateProject();
   const updateProject = useUpdateProject(initProject?.id ?? "");
 
-  function onFinish(values: any) {
+  function extractProjectDetails(values: any) {
     // Remove the detail- prefix from the form field names
     // and convert them to an array of details.
     values.details = [];
@@ -46,24 +46,28 @@ export default function ProjectForm({ initProject }: { initProject?: ProjectRead
         delete values[key];
       }
     }
+  }
 
-    if (initProject === undefined) {
-      createProject.mutate(values, {
-        onSuccess: () => {
-          messageSuccess("Successfully created project");
-          navigate(-1);
-        },
-        onError: () => messageError("Failed to create project"),
-      });
-    } else {
-      updateProject.mutate(values, {
-        onSuccess: () => {
-          messageSuccess("Successfully updated project");
-          navigate(-1);
-        },
-        onError: () => messageError("Failed to update project"),
-      });
-    }
+  function handleCreateProject(values: any) {
+    extractProjectDetails(values);
+    createProject.mutate(values, {
+      onSuccess: () => {
+        messageSuccess("Successfully created project");
+        navigate(-1);
+      },
+      onError: () => messageError("Failed to create project"),
+    });
+  }
+
+  function handleUpdateProject(values: any) {
+    extractProjectDetails(values);
+    updateProject.mutate(values, {
+      onSuccess: () => {
+        messageSuccess("Successfully updated project");
+        navigate(-1);
+      },
+      onError: () => messageError("Failed to update project"),
+    });
   }
 
   return (
@@ -73,7 +77,7 @@ export default function ProjectForm({ initProject }: { initProject?: ProjectRead
         method="post"
         layout="vertical"
         autoComplete="off"
-        onFinish={onFinish}
+        onFinish={initProject === undefined ? handleCreateProject : handleUpdateProject}
         className="ml-6 max-w-xl"
       >
         <Form.Item
@@ -179,7 +183,7 @@ function ProjectDetailsForm({ initProject }: { initProject?: ProjectReadWithDeta
   ));
 }
 
-function CategoriesField({ detail, template }: { detail: ProjectDetailRead; template: ProjectDetailTemplateRead }) {
+function CategoriesField({ detail, template }: { detail?: ProjectDetailRead; template: ProjectDetailTemplateRead }) {
   // Propagate change up to the parent form component
   const form = useFormInstance();
   function setCategoriesWithForm(categories: string[]) {
@@ -187,7 +191,7 @@ function CategoriesField({ detail, template }: { detail: ProjectDetailRead; temp
     setCategories(categories);
   }
 
-  const [categories, setCategories] = useState<string[]>(detail.value || []);
+  const [categories, setCategories] = useState<string[]>(detail?.value || []);
   const [addInputVisible, setAddInputVisible] = useState(false);
   const [addInputValue, setAddInputValue] = useState("");
   const [editInputIndex, setEditInputIndex] = useState(-1);

@@ -1,21 +1,10 @@
 import { UserService, UserUpdate } from "@/api";
 import { authRequest } from "@/auth";
 import { useMsal } from "@azure/msal-react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 
-export function useUsers(role?: string) {
-  if (role === undefined) {
-    return useQuery({ queryKey: ["users"], queryFn: () => UserService.readUsers() });
-  }
-  return useQuery({ queryKey: ["users", role], queryFn: () => UserService.readUsers(role) });
-}
-
-export function useUser(userId: string) {
-  return useQuery({ queryKey: ["users", userId], queryFn: () => UserService.readUser(userId) });
-}
-
-export function useCurrentUser() {
-  return useQuery({
+export function useAuth() {
+  const user = useQuery({
     queryKey: ["users", "current"],
     queryFn: () =>
       UserService.readCurrentUser().catch((error) => {
@@ -23,16 +12,39 @@ export function useCurrentUser() {
         return Promise.reject(error);
       }),
   });
-}
 
-export function useCurrentUserRole() {
-  const user = useCurrentUser();
+  const isSuccess = !user.isLoading && !user.isError;
+  const isGuest = isSuccess && user.data === null;
+  const isAuth = isSuccess && !isGuest;
+  const isAdmin = isSuccess && isAuth && user.data!.role === "admin";
+  const isStaff = isSuccess && isAuth && user.data!.role === "staff";
+  const isStudent = isSuccess && isAuth && user.data!.role === "student";
 
   return {
-    isAdmin: user.data?.role === "admin" ?? false,
-    isStaff: user.data?.role === "staff" ?? false,
-    isStudent: user.data?.role === "student" ?? false,
+    isGuest,
+    isAuth,
+    isAdmin,
+    isStaff,
+    isStudent,
   };
+}
+
+export function useUsers(role?: string) {
+  if (role === undefined) {
+    return useSuspenseQuery({ queryKey: ["users"], queryFn: () => UserService.readUsers() });
+  }
+  return useSuspenseQuery({ queryKey: ["users", role], queryFn: () => UserService.readUsers(role) });
+}
+
+export function useUser(userId: string) {
+  return useSuspenseQuery({ queryKey: ["users", userId], queryFn: () => UserService.readUser(userId) });
+}
+
+export function useCurrentUser() {
+  return useSuspenseQuery({
+    queryKey: ["users", "current"],
+    queryFn: () => UserService.readCurrentUser(),
+  });
 }
 
 export function useUpdateUser(userId: string) {

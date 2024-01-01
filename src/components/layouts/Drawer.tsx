@@ -17,8 +17,7 @@ export default function Drawer({ open, setOpen }: { open: boolean; setOpen: (ope
       open={open}
       onClose={() => {
         setOpen(false);
-        const notificationIds = notifications.data?.map((notification) => notification.id);
-        markReadNotifications.mutate(notificationIds || []);
+        markReadNotifications.mutate(notifications.data?.map((notification) => notification.id) || []);
       }}
     >
       <Space direction="vertical" className="w-full">

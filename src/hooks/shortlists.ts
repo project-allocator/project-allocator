@@ -1,16 +1,16 @@
 import { ProjectRead, ShortlistService } from "@/api";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 import * as _ from "underscore";
 
 export function useShortlisters(projectId: string) {
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: ["projects", "shortlisters", projectId],
     queryFn: () => ShortlistService.readShortlisters(projectId),
   });
 }
 
 export function useShortlistedProjects() {
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: ["projects", "shortlisted-projects"],
     queryFn: () => ShortlistService.readShortlistedProjects(),
   });

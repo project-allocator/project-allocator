@@ -2,29 +2,40 @@ import { AdminService } from "@/api";
 import UserList from "@/components/users/UserList";
 import { useUnallocatedUsers } from "@/hooks/admins";
 import { useUsers } from "@/hooks/users";
-import Await from "@/pages/Await";
 import { CheckOutlined, UploadOutlined } from "@ant-design/icons";
-import { Button, Divider, Modal, Space, Typography, Upload, UploadFile } from "antd";
+import { Button, Divider, Modal, Skeleton, Space, Typography, Upload, UploadFile } from "antd";
 import { RcFile } from "antd/es/upload";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 
 const { Title, Paragraph } = Typography;
 
 export default function ManageUsers() {
-  const allUsers = useUsers();
-  const unallocatedUsers = useUnallocatedUsers();
-
-  const [checkMissingUsersFiles, setCheckMissingUsersFiles] = useState<UploadFile[]>([]);
-  const [checkMissingUsersLoading, setCheckMissingUsersLoading] = useState<boolean>(false);
-
-  const [missingEmails, setMissingEmails] = useState<string[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-
   return (
     <>
       <Title level={3}>Manage Users</Title>
       <Divider />
-      <Title level={4}>Check Missing Users</Title>
+      <MissingUsers />
+      <Divider />
+      <Suspense fallback={<Skeleton active />}>
+        <UnallocatedUsers />
+      </Suspense>
+      <Divider />
+      <Suspense fallback={<Skeleton active />}>
+        <AllUsers />
+      </Suspense>
+    </>
+  );
+}
+
+function MissingUsers() {
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [missingEmails, setMissingEmails] = useState<string[]>([]);
+
+  return (
+    <>
+      <Title level={4}>Missing Users</Title>
       <Paragraph className="text-slate-500">Check if all users have signed up with this project allocator.</Paragraph>
       <Paragraph className="text-slate-500">
         You can upload a CSV file with the list of all users' emails within your department.
@@ -32,12 +43,12 @@ export default function ManageUsers() {
       <Space direction="vertical">
         <Upload
           maxCount={1}
-          fileList={checkMissingUsersFiles}
+          fileList={fileList}
           onRemove={() => {
-            setCheckMissingUsersFiles([]);
+            setFileList([]);
           }}
           beforeUpload={(file) => {
-            setCheckMissingUsersFiles([file]);
+            setFileList([file]);
             // Prevent triggering upload.
             return false;
           }}
@@ -46,10 +57,10 @@ export default function ManageUsers() {
         </Upload>
         <Button
           icon={<CheckOutlined />}
-          loading={checkMissingUsersLoading}
-          disabled={checkMissingUsersFiles.length === 0}
+          loading={isLoading}
+          disabled={fileList.length === 0}
           onClick={() => {
-            setCheckMissingUsersLoading(true);
+            setIsLoading(true);
             const reader = new FileReader();
             reader.onload = async (event) => {
               const content = event.target?.result as string;
@@ -57,9 +68,9 @@ export default function ManageUsers() {
               const missingEmails = await AdminService.checkMissingUsers(allEmails);
               setMissingEmails(missingEmails);
               setIsModalOpen(true);
-              setCheckMissingUsersLoading(false);
+              setIsLoading(false);
             };
-            reader.readAsText(checkMissingUsersFiles[0] as RcFile);
+            reader.readAsText(fileList[0] as RcFile);
           }}
         >
           Check
@@ -81,22 +92,34 @@ export default function ManageUsers() {
           "You can close this window now."
         )}
       </Modal>
-      <Divider />
+    </>
+  );
+}
+
+function UnallocatedUsers() {
+  const unallocatedUsers = useUnallocatedUsers();
+
+  return (
+    <>
       <Title level={4}>Unallocated Users</Title>
       <Paragraph className="text-slate-500">
         Users who have not been allocated to any project will be shown here.
       </Paragraph>
-      <Await query={unallocatedUsers} errorElement="Failed to load unallocated users">
-        {(unallocatedUsers) => <UserList users={unallocatedUsers} />}
-      </Await>
-      <Divider />
-      <Title level={4}>Manage Users</Title>
+      <UserList users={unallocatedUsers.data} />
+    </>
+  );
+}
+
+function AllUsers() {
+  const allUsers = useUsers();
+
+  return (
+    <>
+      <Title level={4}>Check All Users</Title>
       <Paragraph className="text-slate-500">
         Search for users and click on the link to view, edit and delete them.
       </Paragraph>
-      <Await query={allUsers} errorElement="Failed to load users">
-        {(allUsers) => <UserList users={allUsers} />}
-      </Await>
+      <UserList users={allUsers.data} />
     </>
   );
 }

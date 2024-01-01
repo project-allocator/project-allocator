@@ -1,6 +1,5 @@
 import UserEditDeleteButtons from "@/components/users/UserEditDeleteButtons";
-import { useCurrentUserRole, useUser } from "@/hooks/users";
-import Await from "@/pages/Await";
+import { useAuth, useUser } from "@/hooks/users";
 import { toCapitalCase } from "@/utils";
 import { Divider, Space, Typography } from "antd";
 import { useParams } from "react-router-dom";
@@ -11,38 +10,30 @@ export default function User() {
   const { id: userId } = useParams();
   const user = useUser(userId!);
 
-  const { isAdmin } = useCurrentUserRole();
+  const { isAdmin } = useAuth();
 
   return (
     <>
-      <Space className="flex items-end justify-between">
-        <Title level={3} className="mb-0">
+      <Space className="flex items-center justify-between my-8">
+        <Title level={3} className="my-0">
           User Profile
         </Title>
         {isAdmin && <UserEditDeleteButtons />}
       </Space>
       <Divider />
-      <Await query={user} errorElement="Failed to load user">
-        {(user) => (
-          <>
-            <Title level={4}>Name</Title>
-            <Paragraph className="text-slate-500">
-              Full name of the user, which is based on the user's profile on Microsoft.
-            </Paragraph>
-            <Paragraph>{user.name}</Paragraph>
-            <Title level={4}>Email Address</Title>
-            <Paragraph className="text-slate-500">
-              Email address of the user, which is based on the user's profile on Microsoft.
-            </Paragraph>
-            <Paragraph>{user.email}</Paragraph>
-            <Title level={4}>Role</Title>
-            <Paragraph className="text-slate-500">
-              Role of the user. This will be one of student, staff or admin.
-            </Paragraph>
-            <Paragraph>{toCapitalCase(user.role)}</Paragraph>
-          </>
-        )}
-      </Await>
+      <Title level={4}>Name</Title>
+      <Paragraph className="text-slate-500">
+        Full name of the user, which is based on the user's profile on Microsoft.
+      </Paragraph>
+      <Paragraph>{user.data.name}</Paragraph>
+      <Title level={4}>Email Address</Title>
+      <Paragraph className="text-slate-500">
+        Email address of the user, which is based on the user's profile on Microsoft.
+      </Paragraph>
+      <Paragraph>{user.data.email}</Paragraph>
+      <Title level={4}>Role</Title>
+      <Paragraph className="text-slate-500">Role of the user. This will be one of student, staff or admin.</Paragraph>
+      <Paragraph>{toCapitalCase(user.data.role)}</Paragraph>
     </>
   );
 }

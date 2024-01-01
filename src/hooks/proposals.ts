@@ -1,15 +1,15 @@
 import { ProposalService } from "@/api";
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 
 export function useProposedProjects() {
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: ["projects", "proposed-projects"],
     queryFn: () => ProposalService.readProposedProjects(),
   });
 }
 
 export function useProposer(projectId: string) {
-  return useQuery({
+  return useSuspenseQuery({
     queryKey: ["projects", "proposer", projectId],
     queryFn: () => ProposalService.readProposer(projectId),
   });
