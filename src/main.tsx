@@ -33,6 +33,7 @@ import StudentRoute from "./routes/StudentRoute";
 // We use createBrowserRouter() for data API support,
 // together with createRoutesFromElements() for readability.
 // https://reactrouter.com/en/main/routers/picking-a-router
+// prettier-ignore
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/">
@@ -51,15 +52,16 @@ const router = createBrowserRouter(
               <Route path="add" element={<AddProject />} handle={{ crumb: "Add Project" }} />
               <Route path=":id/edit" element={<EditProject />} handle={{ crumb: "Edit Project" }} />
             </Route>
-          </Route>
-          <Route element={<StaffRoute fallback="/" />}>
-            <Route path="proposed" element={<ProposedProjects />} handle={{ crumb: "Proposed Projects" }} />
-          </Route>
-          <Route element={<StudentRoute fallback="/" />}>
-            <Route path="shortlisted" element={<ShortlistedProjects />} handle={{ crumb: "Shortlisted Projects" }} />
-            <Route path="allocated" element={<AllocatedProject />} handle={{ crumb: "Allocated Project" }} />
+            <Route element={<StaffRoute fallback="/" />}>
+              <Route path="proposed-projects" element={<ProposedProjects />} handle={{ crumb: "Proposed Projects" }} />
+            </Route>
+            <Route element={<StudentRoute fallback="/" />}>
+              <Route path="shortlisted-projects" element={<ShortlistedProjects />} handle={{ crumb: "Shortlisted Projects" }} />
+              <Route path="allocated-project" element={<AllocatedProject />} handle={{ crumb: "Allocated Project" }} />
+            </Route>
           </Route>
           <Route path="admins" element={<AdminRoute fallback="/" />} handle={{ crumb: "Admins" }}>
+            <Route index element={<Navigate to="/admins/users" />} />
             <Route path="users" element={<ManageUsers />} handle={{ crumb: "Manage Users" }} />
             <Route path="projects" element={<ManageProjects />} handle={{ crumb: "Manage Projects" }} />
             <Route path="allocations" element={<ManageAllocations />} handle={{ crumb: "Manage Allocations" }} />

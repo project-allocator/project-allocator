@@ -4,8 +4,8 @@ import { Layout, Menu } from "antd";
 import { Link, useLocation } from "react-router-dom";
 
 export default function Sider() {
-  const { pathname } = useLocation();
   const { isAdmin, isStaff, isStudent } = useAuth();
+  const { pathname } = useLocation();
 
   const items = [
     {
@@ -14,19 +14,19 @@ export default function Sider() {
       label: <Link to="/projects">All Projects</Link>,
     },
     (isStaff || isAdmin) && {
-      key: "/proposed",
+      key: "/projects/proposed-projects",
       icon: <FileAddOutlined />,
-      label: <Link to="/proposed">Proposed Projects</Link>,
+      label: <Link to="/projects/proposed-projects">Proposed Projects</Link>,
     },
     isStudent && {
-      key: "/allocated",
+      key: "/projects/allocated-project",
       icon: <FileDoneOutlined />,
-      label: <Link to="/allocated">Allocated Project</Link>,
+      label: <Link to="/projects/allocated-project">Allocated Project</Link>,
     },
     isStudent && {
-      key: "/shortlisted",
+      key: "/projects/shortlisted-projects",
       icon: <FileDoneOutlined />,
-      label: <Link to="/shortlisted">Shortlisted Projects</Link>,
+      label: <Link to="/projects/shortlisted-projects">Shortlisted Projects</Link>,
     },
     isAdmin && {
       icon: <LockOutlined />,
