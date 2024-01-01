@@ -1,6 +1,5 @@
 import { ProjectDetailRead, ProjectDetailTemplateRead, ProjectReadWithDetails } from "@/api";
-import { useMessage } from "@/contexts/MessageContext";
-import { useCreateProject, useProjectDetailTemplates, useUpdateProject } from "@/hooks/projects";
+import { useProjectDetailTemplates } from "@/hooks/projects";
 import { PlusOutlined } from "@ant-design/icons";
 import type { InputRef } from "antd";
 import {
@@ -22,53 +21,19 @@ import {
 } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import * as _ from "underscore";
 
 const { TextArea } = Input;
 const { useForm, useFormInstance } = Form;
 
-export default function ProjectForm({ initProject }: { initProject?: ProjectReadWithDetails }) {
+export default function ProjectForm({
+  initProject,
+  onFinish,
+}: {
+  initProject?: ProjectReadWithDetails;
+  onFinish: (values: any) => void;
+}) {
   const [form] = useForm();
-  const navigate = useNavigate();
-  const { messageError, messageSuccess } = useMessage();
-
-  const createProject = useCreateProject();
-  const updateProject = useUpdateProject(initProject?.id ?? "");
-
-  function extractProjectDetails(values: any) {
-    // Remove the detail- prefix from the form field names
-    // and convert them to an array of details.
-    values.details = [];
-    for (const [key, value] of Object.entries(values)) {
-      if (key.startsWith("detail-")) {
-        values.details.push({ key: key.replace("detail-", ""), value });
-        delete values[key];
-      }
-    }
-  }
-
-  function handleCreateProject(values: any) {
-    extractProjectDetails(values);
-    createProject.mutate(values, {
-      onSuccess: () => {
-        messageSuccess("Successfully created project");
-        navigate(-1);
-      },
-      onError: () => messageError("Failed to create project"),
-    });
-  }
-
-  function handleUpdateProject(values: any) {
-    extractProjectDetails(values);
-    updateProject.mutate(values, {
-      onSuccess: () => {
-        messageSuccess("Successfully updated project");
-        navigate(-1);
-      },
-      onError: () => messageError("Failed to update project"),
-    });
-  }
 
   return (
     <>
@@ -77,7 +42,18 @@ export default function ProjectForm({ initProject }: { initProject?: ProjectRead
         method="post"
         layout="vertical"
         autoComplete="off"
-        onFinish={initProject === undefined ? handleCreateProject : handleUpdateProject}
+        onFinish={(values) => {
+          // Remove the detail- prefix from the form field names
+          // and convert them to an array of details.
+          values.details = [];
+          for (const [key, value] of Object.entries(values)) {
+            if (key.startsWith("detail-")) {
+              values.details.push({ key: key.replace("detail-", ""), value });
+              delete values[key];
+            }
+          }
+          onFinish(values);
+        }}
         className="ml-6 max-w-xl"
       >
         <Form.Item
