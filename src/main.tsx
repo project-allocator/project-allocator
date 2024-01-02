@@ -96,5 +96,5 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         </MessageContextProvider>
       </QueryClientProvider>
     </MsalProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

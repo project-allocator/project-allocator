@@ -129,7 +129,7 @@ function CustomNotifications() {
               onSuccess: () => messageSuccess("Successfully sent notifications."),
               onError: () => messageError("Failed to send notifications."),
               onSettled: () => setIsLoading(false),
-            }
+            },
           );
         }}
       >
