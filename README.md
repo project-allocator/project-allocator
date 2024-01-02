@@ -95,9 +95,9 @@ As a final step, you will need to enable GitHub workflows for each of the forked
 
 ### Using the Setup Script
 
-First, `cd` into the directory of your choice and clone the forked repository by `git clone git@github.com:<REPOSITORY_OWNER>/project-allocator.git`.
+First, `cd` into the directory of your choice and clone the forked repository by `git clone git@github.com:<REPOSITORY>.git`.
 
-> Replace `<REPOSITORY_OWNER>` with the name of your GitHub account/organisation you used in [Prerequisites](#prerequisites).
+> Replace `<REPOSITORY>` with the repository you forked in [Prerequisites](#prerequisites).
 
 Now `cd` into the cloned repository, in which you will find the `setup_dev.sh` script.
 
@@ -120,9 +120,9 @@ Once it runs successfully you're ready to start coding! Make sure to check out `
 
 ### Manual Setup (Not Recommended)
 
-First clone the forked repository by `git clone git@github.com:<REPOSITORY_OWNER>/project-allocator.git`.
+First clone the forked repository by `git clone git@github.com:<REPOSITORY>.git`.
 
-> Replace `<REPOSITORY_OWNER>` with the name of your GitHub account/organisation you used in [Prerequisites](#prerequisites).
+> Replace `<REPOSITORY>` with the repository you forked in [Prerequisites](#prerequisites).
 
 Now you need to build and run the Docker images with `docker compose up --build -d`. This will take a while to complete if you are running it for the first time.
 
