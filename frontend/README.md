@@ -1,12 +1,4 @@
-# Project Allocator v3
-
-Welcome to Project Allocator v3!
-
-This is the repository that contains:
-
-- Backend code for the project allocator.
-- GitHub workflow to build and push the Docker image to GHCR.
-  - Which will be consumed by the `project-allocator-deploy` repository.
+# Project Allocator v3 - Frontend
 
 ## Tech Stack
 
@@ -15,7 +7,8 @@ This is the repository that contains:
 - Yarn for package manager
 - Ant Design for UI components
 - Tailwind CSS for custom styling
-- React Router v6 for routing
+- React Router v6 (without Data API) for routing
+- Tanstack Query/Axios for data fetching
 
 ## Code Structure
 
@@ -28,12 +21,10 @@ This is the repository that contains:
   - `components/`
     - Contains shared UI layouts and components e.g. `ProjectForm`
   - `contexts/`
-    - `ConfigContext.tsx`
-      - React context for loading configuration from the backend's `config.yaml` via API
     - `MessageContext.tsx`
       - React context for showing popup messages at the bottom right of the screen
-    - `UserContext.tsx`
-      - React context for providing information for the currently logged-in user
+    - `SpinContext.tsx`
+      - React context for providing global spinner when signing in and out
   - `pages/`
     - Contains pages
   - `routes/`
@@ -92,10 +83,7 @@ This will auto-generate the API client under `src/api/` by asking the backend se
 In fact, this command is run every minute inside the development container, so things may just work without it.
 And the files under `src/` are synchronised between the local machine and the development container, meaning you will see the changes on your editor immediately.
 
-In case of any failure, you will need to restart the frontend container by:
-
-1. `cd` into `project-allocator-deploy`.
-2. Run `docker-compose restart frontend`.
+In case of any failure, you will need to restart the frontend container by running `docker-compose restart frontend` in the root directory.
 
 Note that the names of the client functions auto-generated are based on the names of Python functions in the backend
 e.g. `read_project()` to `ReadProject`, so you may need to update your client code if you renamed one of them.
