@@ -8,6 +8,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+defaults:
+  run:
+    working-directory: ./frontend
+
 jobs:
   format:
     runs-on: ubuntu-latest
