@@ -1,5 +1,6 @@
+from operator import and_
 from typing import Annotated
-from fastapi import APIRouter, HTTPException, Depends, Security, Body
+from fastapi import APIRouter, HTTPException, Depends, Security
 from sqlmodel import Session, select
 
 
@@ -13,6 +14,7 @@ from ..dependencies import (
 )
 from ..models import (
     User,
+    UserRead,
     UserReadWithAllocation,
     Project,
     ProjectReadWithAllocations,
@@ -20,9 +22,10 @@ from ..models import (
     Shortlist,
     Config,
 )
+from ..logger import LoggerRoute
 
 
-router = APIRouter(tags=["allocation"])
+router = APIRouter(tags=["allocation"], route_class=LoggerRoute)
 
 
 @router.get(
@@ -53,6 +56,16 @@ async def read_allocatees(
         raise HTTPException(status_code=404, detail="Project not found")
 
     return [allocation.allocatee for allocation in project.allocations]
+
+
+@router.get(
+    "/projects/non-allocatees",
+    response_model=list[UserRead],
+    dependencies=[Security(check_admin)],
+)
+async def read_non_allocatees(session: Annotated[Session, Depends(get_session)]):
+    query = select(User).where(and_(User.role == "student", User.allocation == None))
+    return session.exec(query).all()
 
 
 @router.post(

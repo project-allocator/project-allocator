@@ -2,13 +2,16 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Depends, Security
 from sqlmodel import Session, select
 
-from ..utils.projects import parse_project_details, serialize_project_detail
 from ..dependencies import (
     block_on_proposals_shutdown,
     check_admin,
     check_staff,
     get_session,
     get_user,
+)
+from ..utils.projects import (
+    parse_project,
+    serialize_project_detail,
 )
 from ..models import (
     User,
@@ -21,8 +24,9 @@ from ..models import (
     ProjectUpdateWithDetails,
     Proposal,
 )
+from ..logger import LoggerRoute
 
-router = APIRouter(tags=["project"])
+router = APIRouter(tags=["project"], route_class=LoggerRoute)
 
 
 @router.get(
@@ -51,7 +55,7 @@ async def read_approved_projects(
     projects = session.exec(query).all()
     projects.sort(key=lambda project: project.updated_at, reverse=True)
 
-    return [parse_project_details(project) for project in projects]
+    return [parse_project(project) for project in projects]
 
 
 @router.get(
@@ -66,7 +70,7 @@ async def read_disapproved_projects(
     projects = session.exec(query).all()
     projects.sort(key=lambda project: project.updated_at, reverse=True)
 
-    return [parse_project_details(project) for project in projects]
+    return [parse_project(project) for project in projects]
 
 
 @router.get(
@@ -81,7 +85,7 @@ async def read_no_response_projects(
     projects = session.exec(query).all()
     projects.sort(key=lambda project: project.updated_at, reverse=True)
 
-    return [parse_project_details(project) for project in projects]
+    return [parse_project(project) for project in projects]
 
 
 @router.get(
@@ -96,7 +100,7 @@ async def read_project(
     if not project:
         raise HTTPException(status_code=404, detail="Project not found")
 
-    return parse_project_details(project)
+    return parse_project(project)
 
 
 @router.post(
@@ -113,40 +117,38 @@ async def create_project(
     project_data.approved = None
 
     # Remove project details in order to validate the project.
-    project_data_details = project_data.details
+    details_data = project_data.details
     del project_data.details
     project = Project.model_validate(project_data)
+    session.add(project)
 
     # Serialize and validate project details.
-    project_details = []
-    for detail in project_data_details:
+    for detail_data in details_data:
         # Check if the key and type are consistent with the template before commit.
-        template = session.get(ProjectDetailTemplate, detail.key)
+        template = session.get(ProjectDetailTemplate, detail_data.key)
         if not template:
             raise HTTPException(status_code=400, detail="Invalid project detail key")
 
         match template.type:
             case "select" | "radio":
-                if detail.value not in template.options:
+                if detail_data.value not in template.options:
                     raise HTTPException(status_code=400, detail="Invalid project detail value")
             case "checkbox":
-                if not all(option in template.options for option in detail.value):
+                if not all(option in template.options for option in detail_data.value):
                     raise HTTPException(status_code=400, detail="Invalid project detail value")
 
-        serialize_project_detail(template, detail)
-        project_detail = ProjectDetail.model_validate(detail)
-        project_details.append(project_detail)
-    project.details = project_details
+        detail_data = serialize_project_detail(template, detail_data)
+        detail = ProjectDetail.model_validate(detail_data)
+        detail.project = project
+        session.add(detail)
 
     # Create corresponding project proposal.
     proposal = Proposal(proposer=user, proposed_project=project)
-
-    session.add(project)
-    session.add_all(project_details)
     session.add(proposal)
+
     session.commit()
 
-    return parse_project_details(project)
+    return parse_project(project)
 
 
 @router.put(
@@ -171,35 +173,35 @@ async def update_project(
     project_data.approved = project.approved
 
     # Exclude unset fields to perform partial update.
-    for key, value in project_data.model_dump(exclude_unset=True, exclude=["details"]).items():
+    details_data = project_data.details
+    del project_data.details
+    for key, value in project_data.model_dump(exclude_unset=True).items():
         setattr(project, key, value)
+    session.add(project)
 
     # Serialize and update the values of corresponding project details.
-    project_details = []
-    for detail in project_data.details:
+    for detail_data in details_data:
         # Check if the key and type are consistent with the template before commit.
-        template = session.get(ProjectDetailTemplate, detail.key)
+        template = session.get(ProjectDetailTemplate, detail_data.key)
         if not template:
             raise HTTPException(status_code=400, detail="Invalid project detail key")
 
         match template.type:
             case "select" | "radio":
-                if detail.value not in template.options:
+                if detail_data.value not in template.options:
                     raise HTTPException(status_code=400, detail="Invalid project detail value")
             case "checkbox":
-                if not all(option in template.options for option in detail.value):
+                if not all(option in template.options for option in detail_data.value):
                     raise HTTPException(status_code=400, detail="Invalid project detail value")
 
-        serialize_project_detail(template, detail)
-        project_detail = session.get(ProjectDetail, (detail.key, project_id))
-        project_detail.value = detail.value
-        project_details.append(project_detail)
+        detail_data = serialize_project_detail(template, detail_data)
+        detail = session.get(ProjectDetail, (detail_data.key, project_id))
+        detail.value = detail_data.value
+        session.add(detail)
 
-    session.add(project)
-    session.add_all(project_details)
     session.commit()
 
-    return parse_project_details(project)
+    return parse_project(project)
 
 
 @router.delete(

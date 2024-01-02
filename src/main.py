@@ -1,11 +1,7 @@
-import logging
+from fastapi import FastAPI, APIRouter, Security
+from starlette_csrf import CSRFMiddleware
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, APIRouter, Request, Security
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
 
-from .auth import swagger_scheme, azure_scheme
 from .routers import (
     admins,
     users,
@@ -16,6 +12,8 @@ from .routers import (
     notifications,
     configs,
 )
+from .auth import swagger_scheme, azure_scheme
+from .logger import LoggerRoute
 
 
 @asynccontextmanager
@@ -30,6 +28,8 @@ app = FastAPI(
     lifespan=lifespan,
     **swagger_scheme,
 )
+# TODO: Read secret from environment variable.
+app.add_middleware(CSRFMiddleware, secret="secret")
 
 router = APIRouter(
     prefix="/api",
@@ -38,6 +38,7 @@ router = APIRouter(
     # Set the authentication scheme for the entire API.
     # Uses AzureAD to authenticate users.
     dependencies=[Security(azure_scheme)],
+    route_class=LoggerRoute,
 )
 
 # This order is important as path parameters may have collisions
@@ -52,21 +53,10 @@ router.include_router(notifications.router)
 router.include_router(configs.router)
 
 
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    # Log more information on 422 unprocessable entity error.
-    # By default FastAPI does not produce detailed error message.
-    logging.error(exc)
-    return JSONResponse(
-        content={"status_code": 422, "message": str(exc), "data": None},
-        status_code=422,
-    )
-
-
 @router.get("/test/alive")
 async def test_alive():
     return {"ok": True}
 
 
-# Add this router after the above path operations
+# We must add this router after its endpoint have been configured.
 app.include_router(router)

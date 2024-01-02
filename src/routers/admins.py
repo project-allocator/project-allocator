@@ -1,26 +1,35 @@
 from operator import and_
 from typing import Annotated, Any
-from fastapi import APIRouter, Depends, Security
+from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlmodel import Session, select, delete
 import io
 import csv
 import json
 
+from ..dependencies import (
+    check_admin,
+    get_session,
+)
+from ..utils.projects import (
+    parse_project,
+    serialize_project_detail,
+)
 from ..models import (
     User,
     UserRead,
     Project,
     ProjectRead,
     ProjectDetail,
+    ProjectDetailRead,
     ProjectDetailTemplate,
     Proposal,
     Allocation,
     Shortlist,
     Notification,
 )
-from ..dependencies import check_admin, get_session
+from ..logger import LoggerRoute
 
-router = APIRouter(tags=["admin"])
+router = APIRouter(tags=["admin"], route_class=LoggerRoute)
 
 
 @router.post(
@@ -56,37 +65,29 @@ async def read_conflicting_projects(session: Annotated[Session, Depends(get_sess
 
 
 @router.get(
-    "/admins/unallocated-users",
-    response_model=list[UserRead],
-    dependencies=[Security(check_admin)],
-)
-async def read_unallocated_users(session: Annotated[Session, Depends(get_session)]):
-    query = select(User).where(and_(User.role == "student", User.allocation == None))
-    return session.exec(query).all()
-
-
-@router.get(
     "/admins/export/json",
     dependencies=[Security(check_admin)],
 )
 async def export_json(session: Annotated[Session, Depends(get_session)]):
-    output_users = []
-    output_projects = []
+    users_data = []
+    projects_data = []
 
     users = session.exec(select(User)).all()
     projects = session.exec(select(Project)).all()
 
     for user in users:
-        output_users.append(user.model_dump())
-    for project in projects:
-        output_project = project.model_dump()
-        output_project["details"] = [detail.model_dump() for detail in project.details]
-        output_project["proposal"] = project.proposal.model_dump()
-        output_project["allocations"] = [allocation.model_dump() for allocation in project.allocations]
-        output_projects.append(output_project)
+        user_data = UserRead.model_validate(user)
+        users_data.append(user_data.model_dump())
 
-    output = {"users": output_users, "projects": output_projects}
-    # Use default=str to serialize datetime.
+    for project in projects:
+        project_data = parse_project(project)
+        project_data = project_data.model_dump()
+        project_data["proposal"] = project.proposal.model_dump()
+        project_data["allocations"] = [allocation.model_dump() for allocation in project.allocations]
+        projects_data.append(project_data)
+
+    output = {"users": users_data, "projects": projects_data}
+    # Using default=str to serialize datetime.
     return json.dumps(output, default=str)
 
 
@@ -115,15 +116,16 @@ async def export_csv(session: Annotated[Session, Depends(get_session)]):
 
     projects = session.exec(select(Project)).all()
     for project in projects:
+        project_data = parse_project(project)
         names = [allocation.allocatee.name for allocation in project.allocations]
         emails = [allocation.allocatee.email for allocation in project.allocations]
         writer.writerow(
             [
-                project.id,
-                project.title,
-                project.description,
-                project.approved,
-                *[detail.value for detail in project.details],
+                project_data.id,
+                project_data.title,
+                project_data.description,
+                project_data.approved,
+                *[detail.value for detail in project_data.details],
                 project.proposal.proposer.name,
                 project.proposal.proposer.email,
                 ",".join(names),
@@ -146,23 +148,48 @@ async def import_json(
     for user in users:
         user = User.model_validate(user)
         session.add(user)
-        session.commit()
+
     for project in projects:
-        project_details = project["details"]
-        project_allocations = project["allocations"]
-        project_proposal = project["proposal"]
+        details_data = project["details"]
+        proposal_data = project["proposal"]
+        allocations_data = project["allocations"]
         del project["details"]
         del project["allocations"]
         del project["proposal"]
-        project = Project.model_validate(project)
-        project_details = [ProjectDetail.model_validate(detail) for detail in project_details]
-        project_allocations = [Allocation.model_validate(allocation) for allocation in project_allocations]
-        project_proposal = Proposal.model_validate(project_proposal)
+
+        # We need to use ProjectRead/ProjectDetailRead rather than ProjectCreate/ProjectDetailCreate
+        # because we expect IDs to be present.
+        project_data = ProjectRead.model_validate(project)
+        details_data = [ProjectDetailRead.model_validate(detail) for detail in details_data]
+
+        project = Project.model_validate(project_data)
         session.add(project)
-        session.add_all(project_details)
-        session.add(project_proposal)
-        session.add_all(project_allocations)
-        session.commit()
+
+        for detail_data in details_data:
+            template = session.get(ProjectDetailTemplate, detail_data.key)
+            if not template:
+                raise HTTPException(status_code=400, detail="Invalid project detail key")
+
+            match template.type:
+                case "select" | "radio":
+                    if detail_data.value not in template.options:
+                        raise HTTPException(status_code=400, detail="Invalid project detail value")
+                case "checkbox":
+                    if not all(option in template.options for option in detail_data.value):
+                        raise HTTPException(status_code=400, detail="Invalid project detail value")
+
+            detail_data = serialize_project_detail(template, detail_data)
+            detail = ProjectDetail.model_validate(detail_data)
+            detail.project = project
+            session.add(detail)
+
+        proposal = Proposal.model_validate(proposal_data)
+        session.add(proposal)
+
+        allocations = [Allocation.model_validate(allocation) for allocation in allocations_data]
+        session.add_all(allocations)
+
+    session.commit()
     return {"ok": True}
 
 

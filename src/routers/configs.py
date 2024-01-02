@@ -2,11 +2,19 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Depends
 from sqlmodel import Session
 
-from ..utils.configs import parse_config, serialize_config
 from ..dependencies import get_session
-from ..models import Config, ConfigRead, ConfigUpdate
+from ..models import (
+    Config,
+    ConfigRead,
+    ConfigUpdate,
+)
+from ..utils.configs import (
+    parse_config,
+    serialize_config_value,
+)
+from ..logger import LoggerRoute
 
-router = APIRouter(tags=["config"])
+router = APIRouter(tags=["config"], route_class=LoggerRoute)
 
 
 @router.get(
@@ -39,8 +47,7 @@ async def update_config(
     if not config:
         raise HTTPException(status_code=404, detail="Config not found")
 
-    serialize_config(key, config_data)
-    config.value = config_data.value
+    config.value = serialize_config_value(key, config_data.value)
     session.add(config)
     session.commit()
 

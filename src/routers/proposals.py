@@ -13,8 +13,9 @@ from ..models import (
     User,
     UserRead,
 )
+from ..logger import LoggerRoute
 
-router = APIRouter(tags=["proposal"])
+router = APIRouter(tags=["proposal"], route_class=LoggerRoute)
 
 
 @router.get(

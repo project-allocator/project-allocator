@@ -19,8 +19,9 @@ from ..models import (
     NotificationRead,
     NotificationCreate,
 )
+from ..logger import LoggerRoute
 
-router = APIRouter(tags=["notification"])
+router = APIRouter(tags=["notification"], route_class=LoggerRoute)
 
 
 @router.get(

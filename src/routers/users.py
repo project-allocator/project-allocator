@@ -4,7 +4,12 @@ from sqlmodel import Session, select
 import requests
 import json
 
-from ..models import User, UserRead, UserUpdate, Config
+from ..models import (
+    User,
+    UserRead,
+    UserUpdate,
+    Config,
+)
 from ..dependencies import (
     check_admin,
     get_session,
@@ -12,8 +17,9 @@ from ..dependencies import (
     get_user,
     get_user_or_none,
 )
+from ..logger import LoggerRoute
 
-router = APIRouter(tags=["user"])
+router = APIRouter(tags=["user"], route_class=LoggerRoute)
 
 
 @router.get(
