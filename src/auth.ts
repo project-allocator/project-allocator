@@ -1,5 +1,6 @@
 import { LogLevel, PublicClientApplication } from "@azure/msal-browser";
 import axios from "axios";
+import Cookies from "js-cookie";
 
 export const authRequest = {
   scopes: [`api://${import.meta.env.VITE_CLIENT_ID}/user_impersonation`, "User.Read", "Mail.Send"],
@@ -50,6 +51,10 @@ export const msalInstance = new PublicClientApplication({
 // You can avoid using this interceptor by creating a new axios instance.
 axios.interceptors.request.use(async (config) => {
   if (msalInstance.getActiveAccount()) {
+    // Set CSRF token in custom header.
+    config.headers.set("x-csrftoken", Cookies.get("csrftoken"));
+
+    // Set Azure access token in Authorization header.
     const { accessToken: apiToken } = await msalInstance.acquireTokenSilent({
       ...authRequest,
       account: msalInstance.getActiveAccount()!,
@@ -60,12 +65,12 @@ axios.interceptors.request.use(async (config) => {
     // so that it can access the user profile and send emails with that token.
     // See the following discussion for the motivation:
     // https://www.reddit.com/r/webdev/comments/v62e78/authenticate_in_the_frontend_and_send_a_token_to/
+    // Access token for Microsoft Graph API must be obtained per resource
+    // i.e. We cannot acquire a single token instead of the two acquireTokenSilent() calls
     const { accessToken: graphToken } = await msalInstance.acquireTokenSilent({
       scopes: ["User.Read", "Mail.Send"],
       account: msalInstance.getActiveAccount()!,
     });
-    // Access token for Microsoft Graph API must be obtained per resource
-    // i.e. We cannot acquire a single token instead of the two acquireTokenSilent() calls
     config.headers.set("X-Graph-Token", graphToken);
   }
   return config;
