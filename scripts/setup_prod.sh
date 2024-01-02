@@ -97,6 +97,11 @@ echo "Generating and storing the Wayfinder token in GitHub Actions secrets..."
 token="$(wf create wat "$repository_name" -w "$workspace_name" --reset-token --show-token)"
 gh secret set WAYFINDER_TOKEN --repo "$full_repository_name" --body "$token"
 
+# Generate random CSRF secret and store it in GitHub Actions secrets.
+echo "Generating and storing CSRF secret in GitHub Actions secrets..."
+csrf_secret="$(pwgen -cns 32 1)"
+gh secret set CSRF_SECRET --repo "$full_repository_name" --body "$csrf_secret"
+
 # Generate random database credentials and store them in GitHub Actions secrets.
 echo "Generating and storing database credentials in GitHub Actions secrets..."
 # Server name must be lowercase alphanumeric.

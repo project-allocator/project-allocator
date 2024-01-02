@@ -77,11 +77,14 @@ jobs:
         run: |
           # Sed is not found in Appvia's wftoolbox image.
           apk add --no-cache sed
-          
+
+          csrf_secret=${{ secrets.CSRF_SECRET }}
           server_name=${{ secrets.DATABASE_SERVER_NAME }}
           administrator_login=${{ secrets.DATABASE_ADMINISTRATOR_LOGIN }}
           administrator_password=${{ secrets.DATABASE_ADMINISTRATOR_PASSWORD }}
           repository=${{ github.repository }}
+
+          sed -i -e "s/<CSRF_SECRET>/$csrf_secret/g" manifests/backend.yaml
           sed -i -e "s/<SERVER_NAME>/$server_name/g;s/<ADMINISTRATOR_LOGIN>/$administrator_login/g;s/<ADMINISTRATOR_PASSWORD>/$administrator_password/g" manifests/db.yaml
           sed -i -e "s%<REPOSITORY>%$repository%g" manifests/frontend.yaml
           sed -i -e "s%<REPOSITORY>%$repository%g" manifests/backend.yaml

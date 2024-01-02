@@ -7,6 +7,8 @@ spec:
   container:
     containers:
       - env:
+          - name: CSRF_SECRET
+            value: <CSRF_SECRET>
           - fromCloudResourceOutput:
               componentName: db
               output: SERVER_FQDN
