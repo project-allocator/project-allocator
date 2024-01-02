@@ -1,4 +1,5 @@
 import { UserRead } from "@/api";
+import { usePrefetchUser } from "@/hooks/users";
 import { toInitialLetters } from "@/utils";
 import { Avatar, Input, List } from "antd";
 import { useState } from "react";
@@ -8,6 +9,9 @@ const { Search } = Input;
 
 export default function UserList({ users }: { users: UserRead[] }) {
   const [searchText, setSearchText] = useState<string>("");
+
+  // Prefetch user data when hovering over a user item
+  const prefetchUser = usePrefetchUser();
 
   return (
     <>
@@ -24,7 +28,7 @@ export default function UserList({ users }: { users: UserRead[] }) {
           [user.name, user.email, user.role].some((text) => text.toLowerCase().includes(searchText.toLowerCase()))
         )}
         renderItem={(user) => (
-          <List.Item>
+          <List.Item onMouseOver={() => prefetchUser(user.id)}>
             <List.Item.Meta
               avatar={<Avatar>{toInitialLetters(user.name)}</Avatar>}
               title={<Link to={`/users/${user.id}`}>{user.name}</Link>}

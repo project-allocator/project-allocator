@@ -1,21 +1,17 @@
-import { Button, Result } from "antd";
-import { ResultStatusType } from "antd/es/result";
-import { FallbackProps } from "react-error-boundary";
+import { Layout, Result } from "antd";
+import { Content } from "antd/es/layout/layout";
+import { useRouteError } from "react-router-dom";
+import Header from "./Header";
 
-export default function Error({ error, resetErrorBoundary }: FallbackProps) {
-  // Print the error for debugging.
-  console.error(error);
+export default function Error() {
+  const error = useRouteError() as any;
 
   return (
-    <Result
-      status={error.status as ResultStatusType}
-      title={`${error.status} ${error.statusText}`}
-      subTitle={error.body?.detail}
-      extra={
-        <Button type="primary" onClick={() => resetErrorBoundary()}>
-          Try again
-        </Button>
-      }
-    />
+    <Layout className="min-h-screen">
+      <Header />
+      <Content className="grid place-content-center">
+        <Result status={error.status} title={error.status} subTitle={error.statusText} />
+      </Content>
+    </Layout>
   );
 }

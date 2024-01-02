@@ -6,7 +6,7 @@ import { ErrorBoundary } from "react-error-boundary";
 import { Outlet } from "react-router-dom";
 import Breadcrumb from "./Breadcrumb";
 import Drawer from "./Drawer";
-import Error from "./Error";
+import Fallback from "./Fallback";
 import Header from "./Header";
 import Sider from "./Sider";
 
@@ -37,7 +37,7 @@ export default function SiderLayout() {
         <Layout className="px-6 pb-6">
           <Breadcrumb />
           <Content className="p-8 m-0 bg-white">
-            <ErrorBoundary FallbackComponent={Error}>
+            <ErrorBoundary FallbackComponent={Fallback}>
               <Suspense fallback={<Skeleton active />}>
                 <Outlet />
               </Suspense>
