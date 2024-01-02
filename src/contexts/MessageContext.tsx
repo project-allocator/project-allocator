@@ -1,15 +1,13 @@
 import { notification } from "antd";
-import { NotificationInstance } from "antd/es/notification/interface";
 import React, { useContext } from "react";
 
-interface MessageContextType {
-  // TODO: Naming can be confusing here
-  instance: NotificationInstance;
+const MessageContext = React.createContext<{
   messageSuccess: (message: string) => void;
   messageError: (message: string) => void;
-}
-
-const MessageContext = React.createContext<MessageContextType | undefined>(undefined);
+}>({
+  messageSuccess: () => {},
+  messageError: () => {},
+});
 
 export function MessageContextProvider({ children }: { children: React.ReactNode }) {
   const [instance, contextHolder] = notification.useNotification();
@@ -17,7 +15,6 @@ export function MessageContextProvider({ children }: { children: React.ReactNode
   return (
     <MessageContext.Provider
       value={{
-        instance,
         messageSuccess: (message) => {
           instance.info({
             message: "Success",
@@ -25,10 +22,10 @@ export function MessageContextProvider({ children }: { children: React.ReactNode
             placement: "bottomRight",
           });
         },
-        messageError: (error: any) => {
+        messageError: (message) => {
           instance.error({
             message: "Error",
-            description: `${error.status} ${error.statusText}: ${error.body?.detail}`,
+            description: message,
             placement: "bottomRight",
           });
         },

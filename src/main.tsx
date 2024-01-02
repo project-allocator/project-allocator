@@ -7,8 +7,10 @@ import ReactDOM from "react-dom/client";
 import { Navigate, Route, RouterProvider, createBrowserRouter, createRoutesFromElements } from "react-router-dom";
 import { msalInstance } from "./auth";
 import CenterLayout from "./components/layouts/CenterLayout";
+import Error from "./components/layouts/Error";
 import SiderLayout from "./components/layouts/SiderLayout";
 import { MessageContextProvider } from "./contexts/MessageContext";
+import { SpinContextProvider } from "./contexts/SpinContext";
 import SignIn from "./pages/SignIn";
 import ManageAllocations from "./pages/admins/ManageAllocations";
 import ManageData from "./pages/admins/ManageData";
@@ -36,7 +38,7 @@ import StudentRoute from "./routes/StudentRoute";
 // prettier-ignore
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route path="/">
+    <Route path="/" errorElement={<Error />}>
       <Route element={<GuestRoute fallback="/" />}>
         <Route element={<CenterLayout />}>
           <Route path="signin" element={<SignIn />} />
@@ -88,7 +90,9 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <MsalProvider instance={msalInstance}>
       <QueryClientProvider client={queryClient}>
         <MessageContextProvider>
-          <RouterProvider router={router} />
+          <SpinContextProvider>
+            <RouterProvider router={router} />
+          </SpinContextProvider>
         </MessageContextProvider>
       </QueryClientProvider>
     </MsalProvider>
