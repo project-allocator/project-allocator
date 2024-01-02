@@ -3,6 +3,7 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { ProjectReadWithAllocations } from '../models/ProjectReadWithAllocations';
+import type { UserRead } from '../models/UserRead';
 import type { UserReadWithAllocation } from '../models/UserReadWithAllocation';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -66,6 +67,18 @@ export class AllocationService {
             errors: {
                 422: `Validation Error`,
             },
+        });
+    }
+
+    /**
+     * Read Non Allocatees
+     * @returns UserRead Successful Response
+     * @throws ApiError
+     */
+    public static readNonAllocatees(): CancelablePromise<Array<UserRead>> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/projects/non-allocatees',
         });
     }
 

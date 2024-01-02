@@ -4,7 +4,6 @@
 /* eslint-disable */
 import type { Body_import_json } from '../models/Body_import_json';
 import type { ProjectRead } from '../models/ProjectRead';
-import type { UserRead } from '../models/UserRead';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -41,18 +40,6 @@ export class AdminService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/admins/conflicting-projects',
-        });
-    }
-
-    /**
-     * Read Unallocated Users
-     * @returns UserRead Successful Response
-     * @throws ApiError
-     */
-    public static readUnallocatedUsers(): CancelablePromise<Array<UserRead>> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/admins/unallocated-users',
         });
     }
 
