@@ -1,31 +1,35 @@
+from typing import Any
 import json
 
 
 from ..models import (
     Config,
     ConfigRead,
-    ConfigUpdate,
 )
 
 
-def parse_config(config: Config):
+def parse_config(config: Config) -> ConfigRead:
     # Need to convert to read model to allow any types during parsing.
     config = ConfigRead.model_validate(config)
-    match config.key:
-        case "admin_emails":
-            config.value = json.loads(config.value)
-        case "max_shortlists" | "max_allocations":
-            config.value = int(config.value)
-        case "proposals_shutdown" | "shortlists_shutdown":
-            config.value = config.value == "true"
+    config.value = parse_config_value(config.key, config.value)
     return config
 
 
-def serialize_config(key: str, config: ConfigUpdate):
+def parse_config_value(key: str, value: str) -> Any:
     match key:
         case "admin_emails":
-            config.value = json.dumps(config.value)
+            return json.loads(value)
         case "max_shortlists" | "max_allocations":
-            config.value = str(config.value)
+            return int(value)
         case "proposals_shutdown" | "shortlists_shutdown":
-            config.value = "true" if config.value else "false"
+            return value == "true"
+
+
+def serialize_config_value(key: str, value: Any) -> str:
+    match key:
+        case "admin_emails":
+            return json.dumps(value)
+        case "max_shortlists" | "max_allocations":
+            return str(value)
+        case "proposals_shutdown" | "shortlists_shutdown":
+            return "true" if value else "false"
