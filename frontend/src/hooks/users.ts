@@ -15,15 +15,16 @@ export function useAuth() {
     refetchInterval: 10 * 60 * 1000,
   });
 
-  const isGuest = user.data === null;
+  const isLoading = user.isLoading;
+  const isError = user.isError;
+  const isGuest = isError || user.data === null;
   const isAuth = !isGuest;
   const isAdmin = isAuth && user.data?.role === "admin";
   const isStaff = isAuth && user.data?.role === "staff";
   const isStudent = isAuth && user.data?.role === "student";
 
   return {
-    isLoading: user.isLoading,
-    isError: user.isError,
+    isLoading,
     isGuest,
     isAuth,
     isAdmin,
@@ -80,7 +81,7 @@ export function useSignInUser() {
     mutationFn: async () => {
       const { account } = await msalInstance.loginPopup(authRequest);
       msalInstance.setActiveAccount(account);
-      UserService.createUser();
+      await UserService.createUser();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users", "current"] });
