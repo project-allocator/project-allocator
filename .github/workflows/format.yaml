@@ -27,4 +27,4 @@ jobs:
 
       - name: Check format with Black
         run: |
-          poetry run black --check --verbose src/
+          poetry run black --check --verbose --line-length=120 src/

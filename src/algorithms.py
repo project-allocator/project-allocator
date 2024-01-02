@@ -36,7 +36,12 @@ def allocate_projects_random(
     allocatees = [allocation.allocatee for allocation in allocations]
     non_allocatees = [student for student in students if student not in allocatees]
     for non_allocatee in non_allocatees:
-        allocations.append(Allocation(allocatee=non_allocatee, allocated_project=random.choice(approved_projects)))
+        allocations.append(
+            Allocation(
+                allocatee=non_allocatee,
+                allocated_project=random.choice(approved_projects),
+            )
+        )
 
     return allocations
 
@@ -70,7 +75,12 @@ def allocate_projects_shortlist(
     allocatees = [allocation.allocatee for allocation in allocations]
     non_allocatees = [student for student in students if student not in allocatees]
     for non_allocatee in non_allocatees:
-        allocations.append(Allocation(allocatee=non_allocatee, allocated_project=random.choice(approved_projects)))
+        allocations.append(
+            Allocation(
+                allocatee=non_allocatee,
+                allocated_project=random.choice(approved_projects),
+            )
+        )
 
     return allocations
 
