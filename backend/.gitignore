@@ -1,6 +1,11 @@
-.DS_Store
-.vscode/
+# Logs
+logs
+*.log
+
 __pycache__/
 .pytest_cache/
 .venv/
-logs/*.log
+
+# Editor directories and files
+.DS_Store
+.vscode/*
