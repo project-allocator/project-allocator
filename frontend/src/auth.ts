@@ -53,8 +53,10 @@ export const msalInstance = new PublicClientApplication({
 // You can avoid using this interceptor by creating a new axios instance.
 axios.interceptors.request.use(async (config) => {
   if (msalInstance.getActiveAccount()) {
-    // Set CSRF token in custom header.
-    config.headers.set("x-csrftoken", Cookies.get("csrftoken"));
+    // Set CSRF token in custom header if the request method is not safe.
+    if (!["GET", "HEAD", "OPTIONS", "TRACE"].includes(config.method!.toUpperCase())) {
+      config.headers.set("x-csrftoken", Cookies.get("csrftoken"));
+    }
 
     // Set Azure access token in Authorization header.
     const { accessToken: apiToken } = await msalInstance.acquireTokenSilent({
@@ -76,4 +78,13 @@ axios.interceptors.request.use(async (config) => {
     config.headers.set("X-Graph-Token", graphToken);
   }
   return config;
+});
+
+axios.interceptors.response.use(undefined, (error) => {
+  // CSRF token in cookie can be expired if CSRF secret changes in the backend.
+  if (error.response.status === 403 && error.response.data === "CSRF token verification failed") {
+    Cookies.remove("csrftoken");
+    window.location.reload();
+  }
+  return Promise.reject(error);
 });
