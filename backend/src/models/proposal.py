@@ -8,6 +8,9 @@ if TYPE_CHECKING:
     from .project import Project
 
 
+# Although proposal is one-to-many relationship,
+# we use an intermediate table so that it can be easily extended to many-to-many relationship.
+# This also helps prevent the issues of direct circular references between User and Project models.
 class Proposal(TimestampMixin, SQLModel, table=True):
     __tablename__ = "proposal"
 
