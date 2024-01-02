@@ -83,8 +83,8 @@ jobs:
           administrator_password=${{ secrets.DATABASE_ADMINISTRATOR_PASSWORD }}
           repository=${{ github.repository }}
           sed -i -e "s/<SERVER_NAME>/$server_name/g;s/<ADMINISTRATOR_LOGIN>/$administrator_login/g;s/<ADMINISTRATOR_PASSWORD>/$administrator_password/g" manifests/db.yaml
-          sed -i -e "s/<REPOSITORY>/$repository/g" manifests/frontend.yaml
-          sed -i -e "s/<REPOSITORY>/$repository/g" manifests/backend.yaml
+          sed -i -e "s%<REPOSITORY>%$repository%g" manifests/frontend.yaml
+          sed -i -e "s%<REPOSITORY>%$repository%g" manifests/backend.yaml
 
           wf apply -f manifests/app.yaml
           wf apply -f manifests/env.yaml
