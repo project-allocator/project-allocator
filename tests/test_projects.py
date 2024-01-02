@@ -47,12 +47,12 @@ def test_read_approved_projects(
 
 
 def test_read_disapproved_projects(
-    admin_user: User,
+    staff_user: User,
     admin_client: TestClient,
     session: Session,
 ):
     projects = ProjectFactory.build_batch(10)
-    proposals = [Proposal(proposer=admin_user, proposed_project=project) for project in projects]
+    proposals = [Proposal(proposer=staff_user, proposed_project=project) for project in projects]
     session.add_all(projects)
     session.add_all(proposals)
     session.commit()
@@ -69,12 +69,12 @@ def test_read_disapproved_projects(
 
 
 def test_read_no_response_projects(
-    admin_user: User,
+    staff_user: User,
     admin_client: TestClient,
     session: Session,
 ):
     projects = ProjectFactory.build_batch(10)
-    proposals = [Proposal(proposer=admin_user, proposed_project=project) for project in projects]
+    proposals = [Proposal(proposer=staff_user, proposed_project=project) for project in projects]
     session.add_all(projects)
     session.add_all(proposals)
     session.commit()

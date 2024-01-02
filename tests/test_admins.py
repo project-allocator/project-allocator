@@ -41,9 +41,10 @@ def test_check_missing_users(admin_client: TestClient):
     assert data[0] == "david@example.com"
 
 
-def test_read_conflicting_projects(admin_client: TestClient, session: Session):
+def test_read_conflicting_projects(admin_client: TestClient, staff_user: User, session: Session):
     students = UserFactory.build_batch(50, role="student")
     projects = ProjectFactory.build_batch(10, approved=True)
+    proposals = [Proposal(proposer=staff_user, proposed_project=project) for project in projects]
     allocations = [
         Allocation(
             allocatee=student,
@@ -54,6 +55,7 @@ def test_read_conflicting_projects(admin_client: TestClient, session: Session):
     ]
     session.add_all(students)
     session.add_all(projects)
+    session.add_all(proposals)
     session.add_all(allocations)
     session.commit()
 

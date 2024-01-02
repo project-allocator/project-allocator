@@ -2,21 +2,32 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 import random
 
-from src.factories import UserFactory, ProjectFactory
-from src.models import User, Shortlist, Config
+from src.factories import (
+    UserFactory,
+    ProjectFactory,
+)
+from src.models import (
+    User,
+    Proposal,
+    Shortlist,
+    Config,
+)
 
 
 def test_read_shortlisted_projects(
+    staff_user: User,
     student_user: User,
     student_client: TestClient,
     session: Session,
 ):
     projects = ProjectFactory.build_batch(5, approved=True)
+    proposals = [Proposal(proposer=staff_user, proposed_project=project) for project in projects]
     shortlists = [
         Shortlist(shortlister=student_user, shortlisted_project=project, preference=preference)
         for preference, project in enumerate(projects)
     ]
     session.add_all(projects)
+    session.add_all(proposals)
     session.add_all(shortlists)
     session.commit()
 
@@ -31,6 +42,7 @@ def test_read_shortlisted_projects(
 
 
 def test_shortlist_project(
+    staff_user: User,
     student_user: User,
     student_client: TestClient,
     session: Session,
@@ -38,7 +50,9 @@ def test_shortlist_project(
     session.merge(Config(key="max_shortlists", value="1"))  # override config
 
     projects = ProjectFactory.build_batch(2, approved=True)
+    proposals = [Proposal(proposer=staff_user, proposed_project=project) for project in projects]
     session.add_all(projects)
+    session.add_all(proposals)
     session.commit()
 
     response = student_client.post(f"/api/users/me/shortlisted_projects", params={"project_id": projects[0].id})
@@ -60,13 +74,16 @@ def test_shortlist_project(
 
 
 def test_unshortlist_project(
+    staff_user: User,
     student_user: User,
     student_client: TestClient,
     session: Session,
 ):
     project = ProjectFactory.build(approved=True)
+    proposal = Proposal(proposer=staff_user, proposed_project=project)
     shortlist = Shortlist(shortlister=student_user, shortlisted_project=project, preference=0)
     session.add(project)
+    session.add(proposal)
     session.add(shortlist)
     session.commit()
 
@@ -80,16 +97,19 @@ def test_unshortlist_project(
 
 
 def test_reorder_shortlisted_projects(
+    staff_user: User,
     student_user: User,
     student_client: TestClient,
     session: Session,
 ):
     projects = ProjectFactory.build_batch(10, approved=True)
+    proposals = [Proposal(proposer=staff_user, proposed_project=project) for project in projects]
     shortlists = [
         Shortlist(shortlister=student_user, shortlisted_project=project, preference=preference)
         for preference, project in enumerate(projects)
     ]
     session.add_all(projects)
+    session.add_all(proposals)
     session.add_all(shortlists)
     session.commit()
 
@@ -107,17 +127,20 @@ def test_reorder_shortlisted_projects(
 
 
 def test_read_shortlisters(
+    staff_user: User,
     staff_client: TestClient,
     session: Session,
 ):
     students = UserFactory.build_batch(5, role="student")
     project = ProjectFactory.build(approved=True)
+    proposal = Proposal(proposer=staff_user, proposed_project=project)
     shortlists = [
         Shortlist(shortlister=student, shortlisted_project=project, preference=random.randint(0, 4))
         for student in students
     ]
     session.add_all(students)
     session.add(project)
+    session.add(proposal)
     session.add_all(shortlists)
     session.commit()
 

@@ -2,11 +2,12 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session
 import random
 
-from src.models import User, Allocation
+from src.models import User, Proposal, Allocation
 from src.factories import UserFactory, ProjectFactory
 
 
 def test_read_allocated_project(
+    staff_user: User,
     student_user: User,
     student_client: TestClient,
     session: Session,
@@ -16,12 +17,14 @@ def test_read_allocated_project(
     assert response.status_code == 404
 
     project = ProjectFactory.build(approved=True)
+    proposal = Proposal(proposer=staff_user, proposed_project=project)
     allocation = Allocation(
         allocatee=student_user,
         allocated_project=project,
         accepted=random.choice([True, False, None]),
     )
     session.add(project)
+    session.add(proposal)
     session.add(allocation)
     session.commit()
 
@@ -32,11 +35,13 @@ def test_read_allocated_project(
 
 
 def test_read_allocatees(
+    staff_user: User,
     staff_client: TestClient,
     session: Session,
 ):
     students = UserFactory.build_batch(5, role="student")
     project = ProjectFactory.build(approved=True)
+    proposal = Proposal(proposer=staff_user, proposed_project=project)
     allocations = [
         Allocation(
             allocatee=student,
@@ -47,6 +52,7 @@ def test_read_allocatees(
     ]
     session.add_all(students)
     session.add(project)
+    session.add(proposal)
     session.add_all(allocations)
     session.commit()
 
@@ -59,6 +65,7 @@ def test_read_allocatees(
 
 
 def test_read_non_allocatees(
+    staff_user: User,
     student_user: User,
     admin_client: TestClient,
     session: Session,
@@ -66,6 +73,7 @@ def test_read_non_allocatees(
     allocatees = UserFactory.build_batch(50, role="student") + [student_user]
     non_allocatees = UserFactory.build_batch(10, role="student")
     projects = ProjectFactory.build_batch(10, approved=True)
+    proposals = [Proposal(proposer=staff_user, proposed_project=project) for project in projects]
     allocations = [
         Allocation(
             allocatee=allocatee,
@@ -77,6 +85,7 @@ def test_read_non_allocatees(
     session.add_all(allocatees)
     session.add_all(non_allocatees)
     session.add_all(projects)
+    session.add_all(proposals)
     session.add_all(allocations)
     session.commit()
 
@@ -89,13 +98,16 @@ def test_read_non_allocatees(
 
 
 def test_add_allocatees(
+    staff_user: User,
     admin_client: TestClient,
     session: Session,
 ):
     students = UserFactory.build_batch(5, role="student")
     project = ProjectFactory.build(approved=True)
+    proposal = Proposal(proposer=staff_user, proposed_project=project)
     session.add_all(students)
     session.add(project)
+    session.add(proposal)
     session.commit()
 
     response = admin_client.post(
@@ -114,11 +126,13 @@ def test_add_allocatees(
 
 
 def test_remove_allocatee(
+    staff_user: User,
     admin_client: TestClient,
     session: Session,
 ):
     students = UserFactory.build_batch(5, role="student")
     project = ProjectFactory.build(approved=True)
+    proposal = Proposal(proposer=staff_user, proposed_project=project)
     allocations = [Allocation(allocatee=student, allocated_project=project) for student in students]
     session.add_all(students)
     session.add(project)
@@ -134,14 +148,19 @@ def test_remove_allocatee(
     assert len(project.allocations) == len(students) - 1
 
 
-# TODO: Maybe add proposals to each project.
-def test_allocate_projects(admin_client: TestClient, session: Session):
+def test_allocate_projects(
+    staff_user: User,
+    admin_client: TestClient,
+    session: Session,
+):
     students = UserFactory.build_batch(50, role="student")
     staff = UserFactory.build_batch(2, role="admin") + UserFactory.build_batch(10, role="staff")
     projects = ProjectFactory.build_batch(10, approved=True)
+    proposals = [Proposal(proposer=staff_user, proposed_project=project) for project in projects]
     session.add_all(students)
     session.add_all(staff)
     session.add_all(projects)
+    session.add_all(proposals)
     session.commit()
 
     response = admin_client.post("/api/projects/allocate")
@@ -155,16 +174,27 @@ def test_allocate_projects(admin_client: TestClient, session: Session):
         assert student.allocation is not None
 
 
-def test_deallocate_projects(admin_client: TestClient, session: Session):
+def test_deallocate_projects(
+    staff_user: User,
+    admin_client: TestClient,
+    session: Session,
+):
     students = UserFactory.build_batch(50, role="student")
     staff = UserFactory.build_batch(2, role="admin") + UserFactory.build_batch(10, role="staff")
     projects = ProjectFactory.build_batch(10, approved=True)
-    # fmt: off
     approved_projects = [project for project in projects if project.approved]
-    allocations = [Allocation(allocatee=student, allocated_project=random.choice(approved_projects)) for student in students]
+    proposals = [Proposal(proposer=staff_user, proposed_project=project) for project in projects]
+    allocations = [
+        Allocation(
+            allocatee=student,
+            allocated_project=random.choice(approved_projects),
+        )
+        for student in students
+    ]
     session.add_all(students)
     session.add_all(staff)
     session.add_all(projects)
+    session.add_all(proposals)
     session.add_all(allocations)
     session.commit()
 
@@ -180,13 +210,16 @@ def test_deallocate_projects(admin_client: TestClient, session: Session):
 
 
 def test_accept_allocation(
+    staff_user: User,
     student_user: User,
     student_client: TestClient,
     session: Session,
 ):
     project = ProjectFactory.build(approved=True)
+    proposal = Proposal(proposer=staff_user, proposed_project=project)
     allocation = Allocation(allocatee=student_user, allocated_project=project, accepted=None)
     session.add(project)
+    session.add(proposal)
     session.add(allocation)
     session.commit()
 
@@ -199,13 +232,16 @@ def test_accept_allocation(
 
 
 def test_reject_allocation(
+    staff_user: User,
     student_user: User,
     student_client: TestClient,
     session: Session,
 ):
     project = ProjectFactory.build(approved=True)
+    proposal = Proposal(proposer=staff_user, proposed_project=project)
     allocation = Allocation(allocatee=student_user, allocated_project=project, accepted=random.choice([True, False]))
     session.add(project)
+    session.add(proposal)
     session.add(allocation)
     session.commit()
 
@@ -218,14 +254,17 @@ def test_reject_allocation(
 
 
 def test_lock_allocations(
+    staff_user: User,
     admin_client: TestClient,
     session: Session,
 ):
     students = UserFactory.build_batch(50, role="student")
     projects = ProjectFactory.build_batch(10, approved=True)
+    proposals = [Proposal(proposer=staff_user, proposed_project=project) for project in projects]
     allocations = [Allocation(allocatee=student, allocated_project=random.choice(projects)) for student in students]
     session.add_all(students)
     session.add_all(projects)
+    session.add_all(proposals)
     session.add_all(allocations)
     session.commit()
 
@@ -238,14 +277,17 @@ def test_lock_allocations(
 
 
 def test_unlock_allocations(
+    staff_user: User,
     admin_client: TestClient,
     session: Session,
 ):
     students = UserFactory.build_batch(50, role="student")
-    projects = ProjectFactory.build_batch(10, approved=True)
+    projects = ProjectFactory.build_batch(10, approved=True, proposer=staff_user)
+    proposals = [Proposal(proposer=staff_user, proposed_project=project) for project in projects]
     allocations = [Allocation(allocatee=student, allocated_project=random.choice(projects)) for student in students]
     session.add_all(students)
     session.add_all(projects)
+    session.add_all(proposals)
     session.add_all(allocations)
     session.commit()
 
