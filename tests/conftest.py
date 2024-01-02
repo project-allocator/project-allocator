@@ -71,16 +71,16 @@ def session_fixture(admin_user: User, staff_user: User, student_user: User):
 
 @pytest.fixture(name="app")
 def app_fixture(session: Session):
-    app.dependency_overrides[get_env] = lambda: "production"
+    # Remove CSRF middleware before testing.
+    app.user_middleware.clear()
 
+    app.dependency_overrides[get_env] = lambda: "production"
     # We mock FastAPI dependencies by overriding them with our own functions.
     app.dependency_overrides[get_session] = lambda: session
-
     # We only use azure_scheme as dependency to implement get_user_or_none
     # so by overriding get_user_or_none to return a mock user in client fixtures
     # we can override azure_scheme to return None.
     app.dependency_overrides[azure_scheme] = lambda: None
-
     # Bearer token for Microsoft Graph API is not needed for testing.
     app.dependency_overrides[get_token] = lambda: ""
 
