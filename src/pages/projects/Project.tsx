@@ -2,20 +2,19 @@ import ProjectAlert from "@/components/projects/ProjectAlert";
 import ProjectDetails from "@/components/projects/ProjectDetails";
 import ProjectEditDeleteButtons from "@/components/projects/ProjectEditDeleteButtons";
 import ProjectShortlistButton from "@/components/projects/ProjectShortlistButton";
+import EditableUserList from "@/components/users/EditableUserList";
+import UserList from "@/components/users/UserList";
 import { useMessage } from "@/contexts/MessageContext";
-import { useUnallocatedUsers } from "@/hooks/admins";
-import { useAddAllocatees, useAllocatees, useRemoveAllocatee } from "@/hooks/allocations";
+import { useAddAllocatees, useAllocatees, useNonAllocatees, useRemoveAllocatee } from "@/hooks/allocations";
 import { useProject } from "@/hooks/projects";
 import { useProposer } from "@/hooks/proposals";
 import { useShortlisters } from "@/hooks/shortlists";
-import { useAuth } from "@/hooks/users";
-import { toInitialLetters } from "@/utils";
-import { DeleteOutlined, PlusOutlined } from "@ant-design/icons";
-import { Avatar, Button, Divider, List, Select, Skeleton, Space, Tooltip, Typography } from "antd";
-import { Suspense, useState } from "react";
+import { useAuth, usePrefetchUser } from "@/hooks/users";
+import { Divider, Skeleton, Space, Typography } from "antd";
+import { Suspense } from "react";
 import { Link, useParams } from "react-router-dom";
 
-const { Title, Paragraph, Text } = Typography;
+const { Title, Paragraph } = Typography;
 
 export default function Project() {
   const { isAdmin, isStaff, isStudent } = useAuth();
@@ -74,11 +73,14 @@ function Proposer() {
   const { id: projectId } = useParams();
   const proposer = useProposer(projectId!);
 
+  // Prefetch user data when hovering over proposer.
+  const prefetchUser = usePrefetchUser();
+
   return (
     <>
       <Title level={4}>Proposer</Title>
       <Paragraph>
-        <Link to={`/users/${proposer.data!.id}`}>
+        <Link to={`/users/${proposer.data!.id}`} onMouseOver={() => prefetchUser(proposer.data!.id)}>
           {proposer.data!.name} ({proposer.data!.email})
         </Link>
       </Paragraph>
@@ -91,6 +93,8 @@ function AllocateeList() {
   const { messageSuccess, messageError } = useMessage();
 
   const allocatees = useAllocatees(projectId!);
+  const nonAllocatees = useNonAllocatees();
+  const addAllocatees = useAddAllocatees(projectId!);
   const removeAllocatee = useRemoveAllocatee(projectId!);
 
   return (
@@ -99,91 +103,30 @@ function AllocateeList() {
       <Paragraph className="text-slate-500">
         List of students allocated by the administrator will be shown here.
       </Paragraph>
-      <ExtraAllocateeSelect />
-      <List
-        className="mt-4"
-        itemLayout="horizontal"
-        dataSource={allocatees.data!}
-        renderItem={(allocatee) => (
-          <List.Item
-            actions={[
-              <Tooltip title="Delete">
-                <Button
-                  className="border-none"
-                  icon={<DeleteOutlined />}
-                  onClick={() =>
-                    removeAllocatee.mutate(allocatee.id, {
-                      onSuccess: () => messageSuccess("Successfully removed allocated student"),
-                      onError: () => messageError("Failed to remove allocated student"),
-                    })
-                  }
-                />
-              </Tooltip>,
-            ]}
-          >
-            <List.Item.Meta
-              avatar={<Avatar>{toInitialLetters(allocatee.name)}</Avatar>}
-              title={<Link to={`/users/${allocatee.id}`}>{allocatee.name}</Link>}
-              description={allocatee.email}
-            />
-            <Text>
-              {allocatee.allocation?.accepted === null
-                ? "No Response"
-                : allocatee.allocation?.accepted
-                  ? "Accepted"
-                  : "Declined"}
-            </Text>
-          </List.Item>
-        )}
-      />
-    </>
-  );
-}
-
-function ExtraAllocateeSelect() {
-  const { id: projectId } = useParams();
-  const { messageSuccess, messageError } = useMessage();
-
-  const unallocatedUsers = useUnallocatedUsers();
-  const addAllocatees = useAddAllocatees(projectId!);
-
-  const [extraAllocateeIndices, setExtraAllocateeIndices] = useState<number[]>([]);
-
-  return (
-    <div className="flex gap-x-2 mt-6 mr-2">
-      <Select
-        mode="multiple"
-        allowClear
-        className="w-full grow"
-        placeholder="Select students to add"
-        value={extraAllocateeIndices}
-        options={unallocatedUsers.data?.map((student, index) => ({
-          label: `${student.name} (${student.email})`,
-          value: index,
-        }))}
-        filterOption={(inputValue, option) => {
-          if (!unallocatedUsers.data || !option) return false;
-          const target = inputValue.toLowerCase();
-          const student = unallocatedUsers.data[option!.value];
-          return [student.email, student.name].some((item) => item.toLowerCase().includes(target));
+      <EditableUserList
+        selectedUsers={allocatees.data!}
+        selectableUsers={nonAllocatees.data!}
+        children={(allocatee) => {
+          return allocatee.allocation?.accepted === null
+            ? "No Response"
+            : allocatee.allocation?.accepted
+              ? "Accepted"
+              : "Declined";
         }}
-        onChange={(indices) => setExtraAllocateeIndices(indices)}
-      />
-      <Button
-        shape="circle"
-        className="flex-none"
-        icon={<PlusOutlined />}
-        onClick={() => {
-          if (!unallocatedUsers.data) return;
-          const extraAllocatees = extraAllocateeIndices.map((index) => unallocatedUsers.data[index]);
+        onAdd={(extraAllocatees) => {
           addAllocatees.mutate(extraAllocatees, {
             onSuccess: () => messageSuccess("Successfully allocated students"),
             onError: () => messageError("Failed to allocate students"),
           });
-          setExtraAllocateeIndices([]);
+        }}
+        onDelete={(allocatee) => {
+          removeAllocatee.mutate(allocatee.id, {
+            onSuccess: () => messageSuccess("Successfully removed allocated student"),
+            onError: () => messageError("Failed to remove allocated student"),
+          });
         }}
       />
-    </div>
+    </>
   );
 }
 
@@ -197,20 +140,7 @@ function ShortlisterList() {
       <Paragraph className="text-slate-500">
         List of students who shortlisted this projected will be shown in here, in the order of their preference.
       </Paragraph>
-      <List
-        className="mt-4"
-        itemLayout="horizontal"
-        dataSource={shortlisters.data!}
-        renderItem={(shortlister) => (
-          <List.Item>
-            <List.Item.Meta
-              avatar={<Avatar>{toInitialLetters(shortlister.name)}</Avatar>}
-              title={<Link to={`/users/${shortlister.id}`}>{shortlister.name}</Link>}
-              description={shortlister.email}
-            />
-          </List.Item>
-        )}
-      />
+      <UserList users={shortlisters.data!} />
     </>
   );
 }

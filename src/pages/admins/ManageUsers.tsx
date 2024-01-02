@@ -1,6 +1,6 @@
 import { AdminService } from "@/api";
 import UserList from "@/components/users/UserList";
-import { useUnallocatedUsers } from "@/hooks/admins";
+import { useNonAllocatees } from "@/hooks/allocations";
 import { useUsers } from "@/hooks/users";
 import { CheckOutlined, UploadOutlined } from "@ant-design/icons";
 import { Button, Divider, Modal, Skeleton, Space, Typography, Upload, UploadFile } from "antd";
@@ -97,7 +97,7 @@ function MissingUsers() {
 }
 
 function UnallocatedUsers() {
-  const unallocatedUsers = useUnallocatedUsers();
+  const nonAllocatees = useNonAllocatees();
 
   return (
     <>
@@ -105,7 +105,7 @@ function UnallocatedUsers() {
       <Paragraph className="text-slate-500">
         Users who have not been allocated to any project will be shown here.
       </Paragraph>
-      <UserList users={unallocatedUsers.data} />
+      <UserList users={nonAllocatees.data} />
     </>
   );
 }
