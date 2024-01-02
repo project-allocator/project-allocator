@@ -21,20 +21,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Destroy Application
+      - name: Destroy application
         run: |
           wf deploy component project-allocator dev --component frontend --remove --force
           wf deploy component project-allocator dev --component backend --remove --force
           wf deploy component project-allocator dev --component db --remove --force
 
-      - name: Remove Network Policy
+      - name: Remove network policy
         run: |
           wf access env project-allocator dev
           kubectl delete networkpolicy backend-ingress
 
-      - name: Wait for Completion
+      - name: Wait for completion
         run: |
-          wf access env project-allocator dev
           # Bash is not installed in Appvia's wftoolbox image.
           apk add --no-cache bash
+
+          wf access env project-allocator dev
           bash .github/scripts/wait_destroy.sh
