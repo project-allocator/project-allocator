@@ -6,7 +6,8 @@ export function useNotifications() {
   return useQuery({
     queryKey: ["users", "notifications"],
     queryFn: () => NotificationService.readNotifications(),
-    refetchInterval: 60 * 1000, // 1 minute
+    // Using polling every minute to fetch new notifications.
+    refetchInterval: 60 * 1000,
   });
 }
 

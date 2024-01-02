@@ -8,13 +8,6 @@ export function useConflictingProjects() {
   });
 }
 
-export function useUnallocatedUsers() {
-  return useSuspenseQuery({
-    queryKey: ["users", "unallocated-users"],
-    queryFn: () => AdminService.readUnallocatedUsers(),
-  });
-}
-
 export function useExportData() {
   return useMutation({
     mutationFn: (type: string) => {

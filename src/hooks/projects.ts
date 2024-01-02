@@ -1,4 +1,10 @@
-import { ProjectCreateWithDetails, ProjectRead, ProjectService, ProjectUpdateWithDetails } from "@/api";
+import {
+  ProjectCreateWithDetails,
+  ProjectRead,
+  ProjectService,
+  ProjectUpdateWithDetails,
+  ProposalService,
+} from "@/api";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 
 export function useProjectDetailTemplates() {
@@ -101,4 +107,23 @@ export function useDisapproveProject(projectId: string) {
       queryClient.invalidateQueries({ queryKey: ["projects", projectId] });
     },
   });
+}
+
+export function usePrefetchProject() {
+  const queryClient = useQueryClient();
+
+  return (projectId: string) => {
+    queryClient.prefetchQuery({
+      queryKey: ["projects", "details", "templates"],
+      queryFn: () => ProjectService.readProjectDetailTemplates(),
+    });
+    queryClient.prefetchQuery({
+      queryKey: ["projects", projectId],
+      queryFn: () => ProjectService.readProject(projectId),
+    });
+    queryClient.prefetchQuery({
+      queryKey: ["projects", "proposer", projectId],
+      queryFn: () => ProposalService.readProposer(projectId),
+    });
+  };
 }

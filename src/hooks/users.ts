@@ -11,16 +11,19 @@ export function useAuth() {
         if (error.status === 401 || error.status === 404) return Promise.resolve(null);
         return Promise.reject(error);
       }),
+    // Checking login status every 10 minutes.
+    refetchInterval: 10 * 60 * 1000,
   });
 
-  const isSuccess = !user.isLoading && !user.isError;
-  const isGuest = isSuccess && user.data === null;
-  const isAuth = isSuccess && !isGuest;
-  const isAdmin = isSuccess && isAuth && user.data!.role === "admin";
-  const isStaff = isSuccess && isAuth && user.data!.role === "staff";
-  const isStudent = isSuccess && isAuth && user.data!.role === "student";
+  const isGuest = user.data === null;
+  const isAuth = !isGuest;
+  const isAdmin = isAuth && user.data?.role === "admin";
+  const isStaff = isAuth && user.data?.role === "staff";
+  const isStudent = isAuth && user.data?.role === "student";
 
   return {
+    isLoading: user.isLoading,
+    isError: user.isError,
     isGuest,
     isAuth,
     isAdmin,
@@ -69,7 +72,7 @@ export function useDeleteUser(userId: string) {
   });
 }
 
-export function useLoginUser() {
+export function useSignInUser() {
   const queryClient = useQueryClient();
   const { instance: msalInstance } = useMsal();
 
@@ -85,7 +88,7 @@ export function useLoginUser() {
   });
 }
 
-export function useLogoutUser() {
+export function useSignOutUser() {
   const queryClient = useQueryClient();
   const { instance: msalInstance } = useMsal();
 
@@ -95,4 +98,12 @@ export function useLogoutUser() {
       queryClient.invalidateQueries({ queryKey: ["users", "current"] });
     },
   });
+}
+
+export function usePrefetchUser() {
+  const queryClient = useQueryClient();
+
+  return async (userId: string) => {
+    await queryClient.prefetchQuery({ queryKey: ["users", userId], queryFn: () => UserService.readUser(userId) });
+  };
 }

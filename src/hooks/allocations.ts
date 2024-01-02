@@ -19,6 +19,13 @@ export function useAllocatees(projectId: string) {
   });
 }
 
+export function useNonAllocatees() {
+  return useSuspenseQuery({
+    queryKey: ["projects", "non-allocatees"],
+    queryFn: () => AllocationService.readNonAllocatees(),
+  });
+}
+
 export function useAddAllocatees(projectId: string) {
   const queryClient = useQueryClient();
 
@@ -39,6 +46,7 @@ export function useAddAllocatees(projectId: string) {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["projects", "allocatees", projectId] });
+      queryClient.invalidateQueries({ queryKey: ["projects", "non-allocatees"] });
     },
   });
 }
@@ -62,6 +70,7 @@ export function useRemoveAllocatee(projectId: string) {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["projects", "allocatees", projectId] });
+      queryClient.invalidateQueries({ queryKey: ["projects", "non-allocatees"] });
     },
   });
 }
