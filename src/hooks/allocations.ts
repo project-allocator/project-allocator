@@ -33,7 +33,7 @@ export function useAddAllocatees(projectId: string) {
     mutationFn: (users: UserRead[]) =>
       AllocationService.addAllocatees(
         projectId,
-        users.map((user) => user.id)
+        users.map((user) => user.id),
       ),
     onMutate: async (users) => {
       await queryClient.cancelQueries({ queryKey: ["projects", "allocatees", projectId] });
@@ -61,7 +61,7 @@ export function useRemoveAllocatee(projectId: string) {
       const oldAllocatees = queryClient.getQueryData(["projects", "allocatees", projectId]) as UserRead[];
       queryClient.setQueryData(
         ["projects", "allocatees", projectId],
-        oldAllocatees.filter((user: UserRead) => user.id !== userId)
+        oldAllocatees.filter((user: UserRead) => user.id !== userId),
       );
       return { oldAllocatees };
     },
