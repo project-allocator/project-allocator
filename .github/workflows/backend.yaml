@@ -1,0 +1,62 @@
+name: Backend
+
+on:
+  push:
+    paths:
+      - "backend/**"
+      - "!**.md"
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.6.1
+
+      - name: Install dependencies
+        run: |
+          poetry install
+
+      - name: Run Black formatter
+        run: |
+          poetry run black --check --verbose --line-length=120 src/
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 1.6.1
+
+      - name: Install dependencies
+        run: |
+          poetry install
+
+      - name: Run pytest
+        run: |
+          poetry run pytest --verbose tests/

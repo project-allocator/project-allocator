@@ -1,17 +1,65 @@
 name: Deploy Application
 
 on:
-  push:
-    branches:
+  pull_request:
+    branches: 
       - main
-  workflow_dispatch:
+
+concurrency: production
 
 jobs:
+  push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: write
+    outputs:
+      sha-tag: sha-${{ github.sha }}
+
+    strategy:
+      matrix:
+        component: ["frontend", "backend"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Login to registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Build tags
+        uses: docker/metadata-action@v4
+        id: meta
+        with:
+          images: ghcr.io/${{ github.repository }}-${{ matrix.component }}
+          tags: |
+            type=raw,value=${{ github.sha }},prefix=sha-,enable={{is_default_branch}}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Image
+        uses: docker/build-push-action@v4
+        id: docker-digest
+        with:
+          context: ./${{ matrix.component }}
+          file: Dockerfile.production
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: |
+            ghcr.io/${{ github.repository }}-${{ matrix.component }}:latest
+
   deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: read
+    needs:
+      - push
 
     container:
       image: quay.io/appvia-wayfinder/wftoolbox:${{ vars.WAYFINDER_VERSION }}
@@ -27,32 +75,27 @@ jobs:
 
       - name: Apply Wayfinder Configuration
         run: |
-          wf apply -f manifests/app.yaml
-          wf apply -f manifests/env.yaml
-          # Sed is not installed in Appvia's wftoolbox image.
+          # Sed is not found in Appvia's wftoolbox image.
           apk add --no-cache sed
+          
           server_name=${{ secrets.DATABASE_SERVER_NAME }}
           administrator_login=${{ secrets.DATABASE_ADMINISTRATOR_LOGIN }}
           administrator_password=${{ secrets.DATABASE_ADMINISTRATOR_PASSWORD }}
-          repository_owner=${{ github.repository_owner }}
+          repository=${{ github.repository }}
           sed -i -e "s/<SERVER_NAME>/$server_name/g;s/<ADMINISTRATOR_LOGIN>/$administrator_login/g;s/<ADMINISTRATOR_PASSWORD>/$administrator_password/g" manifests/db.yaml
-          sed -i -e "s/<REPOSITORY_OWNER>/$repository_owner/g" manifests/backend.yaml
-          sed -i -e "s/<REPOSITORY_OWNER>/$repository_owner/g" manifests/frontend.yaml
+          sed -i -e "s/<REPOSITORY>/$repository/g" manifests/frontend.yaml
+          sed -i -e "s/<REPOSITORY>/$repository/g" manifests/backend.yaml
+
+          wf apply -f manifests/app.yaml
+          wf apply -f manifests/env.yaml
           wf apply -f manifests/db.yaml
-          wf apply -f manifests/backend.yaml
           wf apply -f manifests/frontend.yaml
+          wf apply -f manifests/backend.yaml
 
       - name: Deploy Application
         run: |
-          owner_type=$(gh api /repos/${{ github.repository }} | jq -r .owner.type)
-          case "$owner_type" in
-            "User") api_prefix="users" ;;
-            "Organization") api_prefix="orgs" ;;
-          esac
-          frontend_tag="$(gh api "$api_prefix"/${{ github.repository_owner }}/packages/container/project-allocator-frontend/versions | jq -r '.[0].metadata.container.tags[0]')"
-          backend_tag="$(gh api "$api_prefix"/${{ github.repository_owner }}/packages/container/project-allocator-backend/versions | jq -r '.[0].metadata.container.tags[0]')"
-          wf deploy component project-allocator dev --component frontend --image-tag "$frontend_tag" --force
-          wf deploy component project-allocator dev --component backend --image-tag "$backend_tag" --force
+          wf deploy component project-allocator dev --component frontend --image-tag ${{ needs.push.outputs.sha-tag }} --force
+          wf deploy component project-allocator dev --component backend --image-tag ${{ needs.push.outputs.sha-tag }} --force
           wf deploy component project-allocator dev --component db --force
 
       - name: Patch Secret
@@ -77,9 +120,10 @@ jobs:
 
       - name: Wait for Completion
         run: |
-          wf access env project-allocator dev
-          # Bash is not installed in Appvia's wftoolbox image.
+          # Bash is not found in Appvia's wftoolbox image.
           apk add --no-cache bash
+
+          wf access env project-allocator dev
           bash .github/scripts/wait_deploy.sh
 
       - name: Print Application URL

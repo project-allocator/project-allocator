@@ -3,9 +3,12 @@ name: Destroy Application
 on:
   workflow_dispatch:
 
+concurrency: destroy
+
 jobs:
   destroy:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
 
     container:
       image: quay.io/appvia-wayfinder/wftoolbox:${{ vars.WAYFINDER_VERSION }}

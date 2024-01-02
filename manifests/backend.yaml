@@ -21,7 +21,7 @@ spec:
             name: DATABASE_PASSWORD
           - name: DATABASE_SSL
             value: "true"
-        image: ghcr.io/<REPOSITORY_OWNER>/project-allocator-backend:refs-heads-main
+        image: ghcr.io/<REPOSITORY>-backend
         name: backend-1
         ports:
           - containerPort: 8000
