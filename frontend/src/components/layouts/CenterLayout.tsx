@@ -1,4 +1,4 @@
-import { Layout, Skeleton } from "antd";
+import { Layout, Spin } from "antd";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 import { Outlet } from "react-router-dom";
@@ -13,7 +13,7 @@ export default function CenterLayout() {
       <Header />
       <Content className="grid place-content-center">
         <ErrorBoundary FallbackComponent={Fallback}>
-          <Suspense fallback={<Skeleton active />}>
+          <Suspense fallback={<Spin fullscreen />}>
             <Outlet />
           </Suspense>
         </ErrorBoundary>
