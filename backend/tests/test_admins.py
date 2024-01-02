@@ -1,5 +1,5 @@
 from fastapi.testclient import TestClient
-from sqlmodel import Session, select
+from sqlmodel import Session, select, delete
 from io import StringIO
 import random
 import json
@@ -183,17 +183,13 @@ def test_import_json(admin_client: TestClient, session: Session):
         project_data["allocations"] = [allocation.model_dump() for allocation in project.allocations]
         projects_data.append(project_data)
 
-    for user in users:
-        session.delete(user)
-    # Keep project detail templates in the session.
-    # for template in templates:
-    #     session.delete(template)
-    for project in projects:
-        session.delete(project)
-    for allocation in allocations:
-        session.delete(allocation)
-    for proposal in proposals:
-        session.delete(proposal)
+    session.exec(delete(User))
+    session.exec(delete(Project))
+    session.exec(delete(ProjectDetail))
+    # Do not delete ProjectDetailTemplate
+    # session.exec(delete(ProjectDetailTemplate))
+    session.exec(delete(Proposal))
+    session.exec(delete(Allocation))
     session.commit()
 
     # Using default=str to serialize datetime.
