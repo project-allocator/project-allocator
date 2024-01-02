@@ -47,4 +47,5 @@ echo "Server host: $domain"
 # Azure PostgreSQL requires the username to be in the format of <login>@<domain>.
 echo "Admin username: $login@$domain"
 echo "Admin password: $password"
+echo "Database name: default"
 echo "Make sure to set SSL mode to 'require' on connection!"
