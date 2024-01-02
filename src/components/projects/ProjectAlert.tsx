@@ -123,7 +123,7 @@ function AllocationAlert() {
   const acceptAllocation = useAcceptAllocation();
   const rejectAllocation = useRejectAllocation();
 
-  const isAllocated = allocatedProject !== null;
+  const isAllocated = allocatedProject.data !== null;
   const isAccepted = allocatedProject.data?.allocations[0]?.accepted; // only the student's allocation is returned
   const isLocked = allocatedProject.data?.allocations[0]?.locked;
 
