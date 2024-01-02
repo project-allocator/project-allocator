@@ -1535,6 +1535,21 @@ anyio = ">=3.4.0,<5"
 full = ["httpx (>=0.22.0)", "itsdangerous", "jinja2", "python-multipart", "pyyaml"]
 
 [[package]]
+name = "starlette-csrf"
+version = "3.0.0"
+description = "Starlette middleware implementing Double Submit Cookie technique to mitigate CSRF"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "starlette_csrf-3.0.0-py3-none-any.whl", hash = "sha256:aac29b366e83621d3fc56be690866e16f3c56df91ab5e184b77950540a4e2761"},
+    {file = "starlette_csrf-3.0.0.tar.gz", hash = "sha256:7afaca8c72cc3c726e5942778af53454607ca3e653fd86cd75ee35d8cd1cfa77"},
+]
+
+[package.dependencies]
+itsdangerous = ">=2.0.1,<3.0.0"
+starlette = ">=0.14.2"
+
+[[package]]
 name = "typer"
 version = "0.9.0"
 description = "Typer, build great CLIs. Easy to code. Based on Python type hints."
@@ -1910,4 +1925,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "9feb87af064a4da9d992dfa086874ca567d8f88b6dd0c4207fefea26bbea988c"
+content-hash = "eed5407a36aedca518fd8855fb14626ceae713a7d42dc04a6282de76a638b4d3"
