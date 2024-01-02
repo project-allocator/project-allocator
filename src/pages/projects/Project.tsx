@@ -27,7 +27,7 @@ export default function Project() {
       <Suspense>
         <ProjectAlert />
       </Suspense>
-      <Space className="flex items-center justify-between my-8">
+      <Space className="flex items-center justify-between my-6">
         <Title level={3} className="my-0">
           Project Overview
         </Title>

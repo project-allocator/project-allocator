@@ -9,8 +9,10 @@ import { useParams } from "react-router-dom";
 export default function ProjectAlert() {
   const { isAdmin, isStaff, isStudent } = useAuth();
 
+  // We use Fragment instead of Ant Design's Space component
+  // so that this ProjectAlert component does not interfere with styling when there is no alert to show.
   return (
-    <Space direction="vertical" className="w-full">
+    <>
       {isAdmin && (
         <Suspense>
           <ApprovalAlert />
@@ -26,7 +28,7 @@ export default function ProjectAlert() {
           <AllocationAlert />
         </Suspense>
       )}
-    </Space>
+    </>
   );
 }
 
@@ -42,6 +44,8 @@ function ApprovalAlert() {
 
   return (
     <Alert
+      showIcon
+      className="mb-4"
       type={isApproved === null ? "warning" : isApproved ? "success" : "error"}
       message={
         isApproved === null
@@ -57,7 +61,6 @@ function ApprovalAlert() {
             ? "You can alternatively disapprove this project proposal by clicking the button."
             : "You can alternatively approve this project proposal by clicking the button."
       }
-      showIcon
       action={
         <Space direction="vertical">
           <Button
@@ -105,6 +108,7 @@ function ConflictAlert() {
   return (
     <Alert
       showIcon
+      className="mb-4"
       type={hasConflict ? "error" : "success"}
       message={hasConflict ? "This project has some conflicts." : "This project has no conflict."}
       description={
@@ -131,8 +135,9 @@ function AllocationAlert() {
 
   return (
     <Alert
-      type={isAccepted === null ? "info" : isAccepted ? "success" : "error"}
       showIcon
+      className="mb-4"
+      type={isAccepted === null ? "info" : isAccepted ? "success" : "error"}
       message={
         isLocked
           ? "This project allocation has been locked."
