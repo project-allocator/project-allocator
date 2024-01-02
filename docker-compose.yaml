@@ -1,21 +1,21 @@
 services:
   frontend:
     build:
-      context: ../project-allocator-frontend
+      context: ./frontend
       dockerfile: Dockerfile
     volumes:
-      - ../project-allocator-frontend/src:/app/src
+      - ./frontend/src:/app/src
       - node_modules:/app/node_modules
     ports:
       - 3000:3000
   backend:
     build:
-      context: ../project-allocator-backend
+      context: ./backend
       dockerfile: Dockerfile
     volumes:
-      - ../project-allocator-backend/src:/app/src
-      - ../project-allocator-backend/migrations:/app/migrations
-      - ../project-allocator-backend/logs:/app/logs
+      - ./backend/src:/app/src
+      - ./backend/migrations:/app/migrations
+      - ./backend/logs:/app/logs
     ports:
       - 8000:8000
     depends_on:
