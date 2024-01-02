@@ -33,7 +33,7 @@ export function useAddAllocatees(projectId: string) {
     mutationFn: (users: UserRead[]) =>
       AllocationService.addAllocatees(
         projectId,
-        users.map((user) => user.id),
+        users.map((user) => user.id)
       ),
     onMutate: async (users) => {
       await queryClient.cancelQueries({ queryKey: ["projects", "allocatees", projectId] });
@@ -41,7 +41,7 @@ export function useAddAllocatees(projectId: string) {
       queryClient.setQueryData(["projects", "allocatees", projectId], oldAllocatees.concat(users));
       return { oldAllocatees };
     },
-    onError: (error, variables, context) => {
+    onError: (_error, _variables, context) => {
       queryClient.setQueryData(["projects", "allocatees", projectId], context?.oldAllocatees);
     },
     onSettled: () => {
@@ -61,11 +61,11 @@ export function useRemoveAllocatee(projectId: string) {
       const oldAllocatees = queryClient.getQueryData(["projects", "allocatees", projectId]) as UserRead[];
       queryClient.setQueryData(
         ["projects", "allocatees", projectId],
-        oldAllocatees.filter((user: UserRead) => user.id !== userId),
+        oldAllocatees.filter((user: UserRead) => user.id !== userId)
       );
       return { oldAllocatees };
     },
-    onError: (error, variables, context) => {
+    onError: (_error, _variables, context) => {
       queryClient.setQueryData(["projects", "allocatees", projectId], context?.oldAllocatees);
     },
     onSettled: () => {
@@ -111,7 +111,7 @@ export function useAcceptAllocation() {
       });
       return { oldProject };
     },
-    onError: (error, variables, context) => {
+    onError: (_error, _variables, context) => {
       queryClient.setQueryData(["projects", "allocated-project"], context?.oldProject);
     },
     onSettled: () => {
@@ -135,7 +135,7 @@ export function useRejectAllocation() {
       });
       return { oldProject };
     },
-    onError: (error, variables, context) => {
+    onError: (_error, _variables, context) => {
       queryClient.setQueryData(["projects", "allocated-project"], context?.oldProject);
     },
     onSettled: () => {

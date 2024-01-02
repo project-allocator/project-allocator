@@ -36,11 +36,11 @@ export function useMarkReadNotifications() {
         oldNotifications.map((notification) => {
           if (!ids.includes(notification.id)) return notification;
           return { ...notification, read: true };
-        }),
+        })
       );
       return { oldNotifications };
     },
-    onError: (error, variables, context) => {
+    onError: (_error, _variables, context) => {
       queryClient.setQueryData(["users", "notifications"], context?.oldNotifications);
     },
     onSettled: () => {
@@ -59,11 +59,11 @@ export function useDeleteNotification() {
       const oldNotifications = queryClient.getQueryData(["users", "notifications"]) as NotificationRead[];
       queryClient.setQueryData(
         ["users", "notifications"],
-        oldNotifications.filter((notification) => notification.id !== id),
+        oldNotifications.filter((notification) => notification.id !== id)
       );
       return { oldNotifications };
     },
-    onError: (error, variables, context) => {
+    onError: (_error, _variables, context) => {
       queryClient.setQueryData(["users", "notifications"], context?.oldNotifications);
     },
     onSettled: () => {

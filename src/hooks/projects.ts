@@ -80,7 +80,7 @@ export function useApproveProject(projectId: string) {
       queryClient.setQueryData(["projects", projectId], { ...oldProject, approved: true });
       return { oldProject };
     },
-    onError: (error, variables, context) => {
+    onError: (_error, _variables, context) => {
       queryClient.setQueryData(["projects", projectId], context?.oldProject);
     },
     onSettled: () => {
@@ -100,7 +100,7 @@ export function useDisapproveProject(projectId: string) {
       queryClient.setQueryData(["projects", projectId], { ...oldProject, approved: false });
       return { oldProject };
     },
-    onError: (error, variables, context) => {
+    onError: (_error, _variables, context) => {
       queryClient.setQueryData(["projects", projectId], context?.oldProject);
     },
     onSettled: () => {

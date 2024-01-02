@@ -27,7 +27,7 @@ export function useShortlistProject() {
       queryClient.setQueryData(["projects", "shortlisted-projects"], oldShortlistedProjects.concat(project));
       return { oldShortlistedProjects };
     },
-    onError: (error, variables, context) => {
+    onError: (_error, _variables, context) => {
       queryClient.setQueryData(["projects", "shortlisted-projects"], context?.oldShortlistedProjects);
     },
     onSettled: () => {
@@ -47,11 +47,11 @@ export function useUnshortlistProject() {
       const oldShortlistedProjects = queryClient.getQueryData(["projects", "shortlisted-projects"]) as ProjectRead[];
       queryClient.setQueryData(
         ["projects", "shortlisted-projects"],
-        oldShortlistedProjects.filter((project) => project.id !== projectId),
+        oldShortlistedProjects.filter((project) => project.id !== projectId)
       );
       return { oldShortlistedProjects };
     },
-    onError: (error, variables, context) => {
+    onError: (_error, _variables, context) => {
       queryClient.setQueryData(["projects", "shortlisted-projects"], context?.oldShortlistedProjects);
     },
     onSettled: () => {
@@ -71,11 +71,11 @@ export function useReorderShortlistedProjects() {
       const oldShortlistedProjects = queryClient.getQueryData(["projects", "shortlisted-projects"]) as ProjectRead[];
       queryClient.setQueryData(
         ["projects", "shortlisted-projects"],
-        _.sortBy(oldShortlistedProjects, (project) => projectIds.indexOf(project.id)),
+        _.sortBy(oldShortlistedProjects, (project) => projectIds.indexOf(project.id))
       );
       return { oldShortlistedProjects };
     },
-    onError: (error, variables, context) => {
+    onError: (_error, _variables, context) => {
       queryClient.setQueryData(["projects", "shortlisted-projects"], context?.oldShortlistedProjects);
     },
     onSettled: () => {
