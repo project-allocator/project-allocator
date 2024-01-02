@@ -58,6 +58,36 @@ def test_read_allocatees(
     assert set([student["id"] for student in data]) == set([student.id for student in students])
 
 
+def test_read_non_allocatees(
+    student_user: User,
+    admin_client: TestClient,
+    session: Session,
+):
+    allocatees = UserFactory.build_batch(50, role="student") + [student_user]
+    non_allocatees = UserFactory.build_batch(10, role="student")
+    projects = ProjectFactory.build_batch(10, approved=True)
+    allocations = [
+        Allocation(
+            allocatee=allocatee,
+            allocated_project=random.choice(projects),
+            accepted=random.choice([True, False, None]),
+        )
+        for allocatee in allocatees
+    ]
+    session.add_all(allocatees)
+    session.add_all(non_allocatees)
+    session.add_all(projects)
+    session.add_all(allocations)
+    session.commit()
+
+    response = admin_client.get("/api/projects/non-allocatees")
+    data = response.json()
+    assert response.status_code == 200
+
+    assert len(data) == len(non_allocatees)
+    assert set([student["id"] for student in data]) == set([non_allocatee.id for non_allocatee in non_allocatees])
+
+
 def test_add_allocatees(
     admin_client: TestClient,
     session: Session,

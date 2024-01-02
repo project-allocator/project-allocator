@@ -3,7 +3,7 @@ from sqlmodel import Session
 
 from src.models import User, Project, Proposal
 from src.factories import ProjectFactory, ProjectDetailTemplateFactory
-from src.utils.projects import parse_project_details
+from src.utils.projects import parse_project
 
 
 def test_read_project_detail_templates(
@@ -122,7 +122,7 @@ def test_create_project(
     session.commit()
 
     project = ProjectFactory.build(details__templates=templates)
-    project = parse_project_details(project)
+    project = parse_project(project)
 
     response = staff_client.post(
         "/api/projects",
@@ -163,7 +163,7 @@ def test_update_project(
     session.commit()
 
     new_project = ProjectFactory.build(details__templates=templates)
-    new_project = parse_project_details(new_project)
+    new_project = parse_project(new_project)
 
     response = staff_client.put(
         f"/api/projects/{project.id}",

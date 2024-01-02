@@ -1,9 +1,9 @@
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
+from io import StringIO
 import random
 import json
 import csv
-from io import StringIO
 
 from src.models import (
     User,
@@ -22,6 +22,7 @@ from src.factories import (
     ProjectDetailTemplateFactory,
     NotificationFactory,
 )
+from src.utils.projects import parse_project
 
 
 def test_check_missing_users(admin_client: TestClient):
@@ -70,37 +71,7 @@ def test_read_conflicting_projects(admin_client: TestClient, session: Session):
     assert set([project["id"] for project in data]) == set([project.id for project in conflicting_projects])
 
 
-def test_read_unallocated_users(
-    student_user: User,
-    admin_client: TestClient,
-    session: Session,
-):
-    allocatees = UserFactory.build_batch(50, role="student") + [student_user]
-    non_allocatees = UserFactory.build_batch(10, role="student")
-    projects = ProjectFactory.build_batch(10, approved=True)
-    allocations = [
-        Allocation(
-            allocatee=allocatee,
-            allocated_project=random.choice(projects),
-            accepted=random.choice([True, False, None]),
-        )
-        for allocatee in allocatees
-    ]
-    session.add_all(allocatees)
-    session.add_all(non_allocatees)
-    session.add_all(projects)
-    session.add_all(allocations)
-    session.commit()
-
-    response = admin_client.get("/api/admins/unallocated-users")
-    data = response.json()
-    assert response.status_code == 200
-
-    assert len(data) == len(non_allocatees)
-    assert set([student["id"] for student in data]) == set([non_allocatee.id for non_allocatee in non_allocatees])
-
-
-def test_export_json_and_csv(admin_client: TestClient, session: Session):
+def test_export_json_csv(admin_client: TestClient, session: Session):
     students = UserFactory.build_batch(50, role="student")
     staff = UserFactory.build_batch(2, role="admin") + UserFactory.build_batch(10, role="staff")
     templates = ProjectDetailTemplateFactory.build_batch(10)
@@ -143,16 +114,12 @@ def test_export_json_and_csv(admin_client: TestClient, session: Session):
         "email",
         "name",
         "role",
-        "created_at",
-        "updated_at",
     ]
     project_fields = [
         "id",
         "title",
         "description",
         "approved",
-        "created_at",
-        "updated_at",
         "details",
         "proposal",
         "allocations",
@@ -178,52 +145,66 @@ def test_import_json(admin_client: TestClient, session: Session):
     students = UserFactory.build_batch(50, role="student")
     staff = UserFactory.build_batch(2, role="admin") + UserFactory.build_batch(10, role="staff")
     templates = ProjectDetailTemplateFactory.build_batch(10)
-    projects = ProjectFactory.build_batch(10, details__templates=templates)
-    # We construct proposals and allocations manually instead of using SQLModel models
-    # because the foreign keys are not updated until we commit the session.
-    approved_projects = [project for project in projects if project.approved]
+    projects = ProjectFactory.build_batch(10, approved=True, details__templates=templates)
     allocations = [
-        {
-            "allocatee_id": student.id,
-            "allocated_project_id": random.choice(approved_projects).id,
-        }
+        Allocation(
+            allocatee=student,
+            allocated_project=random.choice(projects),
+            accepted=random.choice([True, False, None]),
+        )
         for student in students
     ]
     proposals = [
-        {
-            "proposer_id": random.choice(staff).id,
-            "proposed_project_id": project.id,
-        }
+        Proposal(
+            proposer=random.choice(staff),
+            proposed_project=project,
+        )
         for project in projects
     ]
 
-    user_fields = ["id", "email", "name", "role"]
-    project_fields = ["id", "title", "description", "approved"]
-    project_detail_fields = ["key", "type", "value", "project_id"]
-    users_data = [user.model_dump(include=user_fields) for user in students + staff]
+    session.add_all(students)
+    session.add_all(staff)
+    session.add_all(templates)
+    session.add_all(projects)
+    session.add_all(allocations)
+    session.add_all(proposals)
+    session.commit()
+
+    users = session.exec(select(User)).all()
+    projects = session.exec(select(Project)).all()
+    users_data = [user.model_dump() for user in users]
     projects_data = []
     for project in projects:
-        project_data = project.model_dump(include=project_fields)
-        project_data["details"] = [detail.model_dump(include=project_detail_fields) for detail in project.details]
-        project_data["proposal"] = next(
-            proposal for proposal in proposals if proposal["proposed_project_id"] == project.id
-        )
-        project_data["allocations"] = [
-            allocation for allocation in allocations if allocation["allocated_project_id"] == project.id
-        ]
+        project_data = parse_project(project)
+        project_data = project_data.model_dump()
+        project_data["proposal"] = project.proposal.model_dump()
+        project_data["allocations"] = [allocation.model_dump() for allocation in project.allocations]
         projects_data.append(project_data)
 
-    response = admin_client.post(
-        "/api/admins/import/json",
-        json={"users": users_data, "projects": projects_data},
-    )
+    for user in users:
+        session.delete(user)
+    # Keep project detail templates in the session.
+    # for template in templates:
+    #     session.delete(template)
+    for project in projects:
+        session.delete(project)
+    for allocation in allocations:
+        session.delete(allocation)
+    for proposal in proposals:
+        session.delete(proposal)
+    session.commit()
+
+    # Using default=str to serialize datetime.
+    data = {"users": users_data, "projects": projects_data}
+    data = json.loads(json.dumps(data, default=str))
+    response = admin_client.post("/api/admins/import/json", json=data)
     data = response.json()
     assert response.status_code == 200
     assert data["ok"] is True
 
     users = session.exec(select(User)).all()
     projects = session.exec(select(Project)).all()
-    assert len(users) == len(users_data) + 3  # 3 existing users
+    assert len(users) == len(users_data)
     assert len(projects) == len(projects_data)
     assert all(len(project.details) == len(templates) for project in projects)
     assert all(project.proposal is not None for project in projects)
