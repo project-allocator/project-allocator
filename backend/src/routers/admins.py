@@ -1,4 +1,3 @@
-from operator import and_
 from typing import Annotated, Any
 from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlmodel import Session, select, delete
