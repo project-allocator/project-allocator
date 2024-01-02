@@ -237,7 +237,7 @@ To check if the application has been deployed successfully, go to the deployment
 1. Click **Actions**
 2. Select the latest workflow run
    1. You may see some failed workflow runs, but you can ignore them as long as the latest workflow run is successful.
-3. Select `deploy`, and click **Print Application URL**
+3. Select `deploy`, and click **Print application URL**
 4. Click the displayed application URL
 
 You should now see the Project Allocator up and running!
@@ -246,7 +246,7 @@ You should now see the Project Allocator up and running!
 >
 > 1. From organisation top-page, click **Packages**
 > 2. Select the package with the failing GitHub action
-> 3. Go to **Package settings** > **Manage Actions access**, and click **Add Repository**
+> 3. Go to **Package settings** > **Manage Actions Access**, and click **Add Repository**
 > 4. Select the corresponding repository
 > 5. Click **Add repositories**
 > 6. Under **Role** dropdown, select **Write**
