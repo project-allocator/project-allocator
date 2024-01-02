@@ -1,2 +1,5 @@
+# Editor directories and files
 .DS_Store
 .vscode/
+
+.pytest_cache/
