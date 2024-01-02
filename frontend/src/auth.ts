@@ -2,14 +2,16 @@ import { LogLevel, PublicClientApplication } from "@azure/msal-browser";
 import axios from "axios";
 import Cookies from "js-cookie";
 
+import { CLIENT_ID, TENANT_ID } from "./env";
+
 export const authRequest = {
-  scopes: [`api://${import.meta.env.VITE_CLIENT_ID}/user_impersonation`, "User.Read", "Mail.Send"],
+  scopes: [`api://${CLIENT_ID}/user_impersonation`, "User.Read", "Mail.Send"],
 };
 
 export const msalInstance = new PublicClientApplication({
   auth: {
-    clientId: import.meta.env.VITE_CLIENT_ID,
-    authority: `https://login.microsoftonline.com/${import.meta.env.VITE_TENANT_ID}`,
+    clientId: CLIENT_ID,
+    authority: `https://login.microsoftonline.com/${TENANT_ID}`,
     redirectUri: "/",
     postLogoutRedirectUri: "/signin",
   },

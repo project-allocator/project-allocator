@@ -13,6 +13,7 @@ from .routers import (
     configs,
 )
 from .auth import swagger_scheme, azure_scheme
+from .env import CSRF_SECRET
 from .logger import LoggerRoute
 
 
@@ -28,8 +29,7 @@ app = FastAPI(
     lifespan=lifespan,
     **swagger_scheme,
 )
-# TODO: Read secret from environment variable.
-app.add_middleware(CSRFMiddleware, secret="secret")
+app.add_middleware(CSRFMiddleware, secret=CSRF_SECRET)
 
 router = APIRouter(
     prefix="/api",

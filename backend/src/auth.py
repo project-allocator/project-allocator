@@ -1,11 +1,11 @@
-import os
-from dotenv import load_dotenv
 from fastapi_azure_auth import SingleTenantAzureAuthorizationCodeBearer
 
-load_dotenv()
-TENANT_ID = os.environ.get("TENANT_ID")
-APP_CLIENT_ID = os.environ.get("APP_CLIENT_ID")
-OPENAPI_CLIENT_ID = os.environ.get("OPENAPI_CLIENT_ID")
+from .env import (
+    APP_CLIENT_ID,
+    OPENAPI_CLIENT_ID,
+    TENANT_ID,
+)
+
 
 azure_scheme = SingleTenantAzureAuthorizationCodeBearer(
     app_client_id=APP_CLIENT_ID,

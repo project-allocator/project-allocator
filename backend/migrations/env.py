@@ -6,9 +6,6 @@ from sqlmodel import SQLModel
 
 from alembic import context
 
-import os
-from dotenv import load_dotenv
-
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -19,7 +16,7 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Load database url
+# Load database URL to setup SQLAlchemy
 from src.db import DATABASE_URL
 
 config.set_main_option("sqlalchemy.url", DATABASE_URL)
@@ -29,7 +26,7 @@ config.set_main_option("sqlalchemy.url", DATABASE_URL)
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 
-# Must be imported before to setup SQLMode.metadata
+# Must be imported beforehand to setup SQLModel.metadata
 from src import models
 
 target_metadata = SQLModel.metadata
