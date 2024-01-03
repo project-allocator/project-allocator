@@ -170,7 +170,7 @@ done
 # Run migrations in the backend pod.
 echo "Running migrations in the backend pod..."
 # Get access to the kuberenetes namespace now that Wayfinder application has been created.
-wf access env "$workspace_name" dev --role namespace.admin
+wf access env project-allocator dev --role namespace.admin
 # Get the name of the backend pod and run migrations.
 pod_name="$(kubectl get pods --selector=app.kubernetes.io/component=backend --output json | jq -r '.items[0].metadata.name')"
 kubectl exec "$pod_name" -- poetry run alembic upgrade head
