@@ -128,6 +128,7 @@ jobs:
       
       - name: Run migrations
         run: |
+          wf access env project-allocator dev
           pod_name="$(kubectl get pods --selector=app.kubernetes.io/component=backend --output json | jq -r '.items[0].metadata.name')"
           kubectl exec "$pod_name" -- poetry run alembic upgrade head
 
