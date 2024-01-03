@@ -94,7 +94,7 @@ gh variable set WAYFINDER_WORKSPACE --repo "$full_repository_name" --body "$work
 
 # Generate a Wayfinder token and store it in GitHub Action secrets.
 echo "Generating and storing the Wayfinder token in GitHub Actions secrets..."
-token="$(wf create wat "$repository_name" -w "$workspace_name" --reset-token --show-token)"
+token="$(wf create wat "$repository_name" --workspace "$workspace_name" --reset-token --show-token)"
 gh secret set WAYFINDER_TOKEN --repo "$full_repository_name" --body "$token"
 
 # Generate random CSRF secret and store it in GitHub Actions secrets.
@@ -153,5 +153,26 @@ echo "Triggering the workflows..."
 gh workflow run "frontend.yaml" --repo "$full_repository_name"
 gh workflow run "backend.yaml" --repo "$full_repository_name"
 gh workflow run "deploy.yaml" --repo "$full_repository_name"
+
+# Wait for the workflows to complete.
+echo "Waiting for the workflows to complete..."
+while true; do
+  echo "Attempting checks in 10 seconds..."
+  sleep 10
+  if gh run list --json status --repo "$full_repository_name" | jq 'all(.status == "completed")' | grep -q "false"; then
+    echo "Workflows still running."
+    continue
+  fi
+  echo "Workflows complete."
+  break
+done
+
+# Run migrations in the backend pod.
+echo "Running migrations in the backend pod..."
+# Get access to the kuberenetes namespace now that Wayfinder application has been created.
+wf access env "$workspace_name" dev --role namespace.admin
+# Get the name of the backend pod and run migrations.
+pod_name="$(kubectl get pods --selector=app.kubernetes.io/component=backend --output json | jq -r '.items[0].metadata.name')"
+kubectl exec "$pod_name" -- poetry run alembic upgrade head
 
 echo "Production environment setup complete!"
