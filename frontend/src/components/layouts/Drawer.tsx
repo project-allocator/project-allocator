@@ -6,7 +6,7 @@ import { Button, Card, Empty, Space, Tooltip, Typography } from "antd";
 
 const { Text } = Typography;
 
-export default function Drawer({ open, setOpen }: { open: boolean; setOpen: (open: boolean) => void }) {
+export default function Drawer({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (open: boolean) => void }) {
   const notifications = useNotifications();
   const markReadNotifications = useMarkReadNotifications();
 
@@ -14,9 +14,10 @@ export default function Drawer({ open, setOpen }: { open: boolean; setOpen: (ope
     <antd.Drawer
       title="Notifications"
       placement="right"
-      open={open}
+      width={300}
+      open={isOpen}
       onClose={() => {
-        setOpen(false);
+        setIsOpen(false);
         markReadNotifications.mutate(notifications.data?.map((notification) => notification.id) || []);
       }}
     >

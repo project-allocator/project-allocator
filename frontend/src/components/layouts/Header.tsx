@@ -10,8 +10,8 @@ export default function Header({ button }: { button?: React.ReactNode }) {
   const { isAuth } = useAuth();
 
   return (
-    <Layout.Header className="flex items-center justify-between bg-black">
-      <h1 className="text-xl text-white">Project Allocator</h1>
+    <Layout.Header className="flex items-center justify-between px-8 md:px-16 bg-black">
+      <h1 className="text-lg md:text-xl text-white">Project Allocator</h1>
       <Space>
         {isAuth && (
           <Suspense>

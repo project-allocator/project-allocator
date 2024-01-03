@@ -14,6 +14,7 @@ const { Content } = Layout;
 
 export default function SiderLayout() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isSiderCollapsed, setIsSiderCollapsed] = useState(true);
 
   const notifications = useNotifications(); // does not throw error
   const notificationCount = notifications.data?.filter((notification) => !notification.read_at).length || 0;
@@ -31,19 +32,21 @@ export default function SiderLayout() {
           </Badge>
         }
       />
-      <Drawer open={isDrawerOpen} setOpen={setIsDrawerOpen} />
+      <Drawer isOpen={isDrawerOpen} setIsOpen={setIsDrawerOpen} />
       <Layout>
-        <Sider />
-        <Layout className="px-6 pb-6">
-          <Breadcrumb />
-          <Content className="p-8 m-0 bg-white">
-            <ErrorBoundary FallbackComponent={Fallback}>
-              <Suspense fallback={<Skeleton active />}>
-                <Outlet />
-              </Suspense>
-            </ErrorBoundary>
-          </Content>
-        </Layout>
+        <Sider isCollapsed={isSiderCollapsed} setIsCollapsed={setIsSiderCollapsed} />
+        {isSiderCollapsed && (
+          <Layout className="pt-0 p-2 md:p-6">
+            <Breadcrumb />
+            <Content className="m-0 p-4 md:p-8 bg-white">
+              <ErrorBoundary FallbackComponent={Fallback}>
+                <Suspense fallback={<Skeleton active />}>
+                  <Outlet />
+                </Suspense>
+              </ErrorBoundary>
+            </Content>
+          </Layout>
+        )}
       </Layout>
     </Layout>
   );

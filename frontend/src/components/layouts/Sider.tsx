@@ -1,9 +1,22 @@
 import { useAuth } from "@/hooks/users";
-import { FileAddOutlined, FileDoneOutlined, FileTextOutlined, LockOutlined } from "@ant-design/icons";
-import { Layout, Menu } from "antd";
+import {
+  FileAddOutlined,
+  FileDoneOutlined,
+  FileTextOutlined,
+  LockOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+} from "@ant-design/icons";
+import { Button, Layout, Menu } from "antd";
 import { Link, useLocation } from "react-router-dom";
 
-export default function Sider() {
+export default function Sider({
+  isCollapsed,
+  setIsCollapsed,
+}: {
+  isCollapsed: boolean;
+  setIsCollapsed: (collapsed: boolean) => void;
+}) {
   const { isAdmin, isStaff, isStudent } = useAuth();
   const { pathname } = useLocation();
 
@@ -62,13 +75,26 @@ export default function Sider() {
   ];
 
   return (
-    // TODO: Can width be specified by CSS?
-    <Layout.Sider width={300} className="min-h-screen">
+    <Layout.Sider
+      width={300}
+      collapsedWidth={0}
+      breakpoint="md"
+      className="min-h-screen"
+      collapsed={isCollapsed}
+      onCollapse={setIsCollapsed}
+      trigger={
+        <Button
+          icon={isCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+          className="w-full h-full border-none bg-black text-white"
+        />
+      }
+    >
       <Menu
         mode="inline"
+        className="h-full"
         items={items.filter((item) => item) as any[]}
         defaultSelectedKeys={[pathname]}
-        className="h-full"
+        onClick={() => setIsCollapsed(true)}
       />
     </Layout.Sider>
   );
