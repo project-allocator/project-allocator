@@ -1,13 +1,6 @@
 import { useAuth } from "@/hooks/users";
-import {
-  FileAddOutlined,
-  FileDoneOutlined,
-  FileTextOutlined,
-  LockOutlined,
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-} from "@ant-design/icons";
-import { Button, Layout, Menu } from "antd";
+import { FileAddOutlined, FileDoneOutlined, FileTextOutlined, LockOutlined } from "@ant-design/icons";
+import { Layout, Menu } from "antd";
 import { Link, useLocation } from "react-router-dom";
 
 export default function Sider({
@@ -17,6 +10,7 @@ export default function Sider({
   isCollapsed: boolean;
   setIsCollapsed: (collapsed: boolean) => void;
 }) {
+  const isMobile = window.innerWidth < 768;
   const { isAdmin, isStaff, isStudent } = useAuth();
   const { pathname } = useLocation();
 
@@ -80,20 +74,14 @@ export default function Sider({
       collapsedWidth={0}
       breakpoint="md"
       className="min-h-screen"
-      collapsed={isCollapsed}
+      collapsed={isMobile && isCollapsed}
       onCollapse={setIsCollapsed}
-      trigger={
-        <Button
-          icon={isCollapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-          className="w-full h-full border-none bg-black text-white"
-        />
-      }
     >
       <Menu
         mode="inline"
         className="h-full"
-        items={items.filter((item) => item) as any[]}
         defaultSelectedKeys={[pathname]}
+        items={items.filter((item) => item) as any[]}
         onClick={() => setIsCollapsed(true)}
       />
     </Layout.Sider>
