@@ -3,7 +3,7 @@ name: Destroy Application
 on:
   workflow_dispatch:
 
-concurrency: destroy
+concurrency: production
 
 jobs:
   destroy:
