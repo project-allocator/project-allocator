@@ -10,7 +10,7 @@ This is the repository that contains:
 
 ## Demo
 
-Live at: [https://frontend-dev-projectall.to1azure.imperialapp.io/](https://frontend-dev-projectall.to1azure.imperialapp.io/)
+Live at: [https://frontend-dev-projecyqxf.to1azure.imperialapp.io/projects](https://frontend-dev-projecyqxf.to1azure.imperialapp.io/projects)
 
 ## Main Features
 
