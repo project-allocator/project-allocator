@@ -20,8 +20,8 @@ while true; do
     echo "No backend pods running."
     continue
   fi
-  if [ "$(count_pods.sh db status.phase!=Succeeded "$start")" -gt 0 ]; then
-    echo "Not all DB pods have succeeded."
+  if [ "$(count_pods.sh db status.phase==Running "$start")" -gt 0 ]; then
+    echo "Some db pods still running."
     continue
   fi
   echo "Deployment successeful."
