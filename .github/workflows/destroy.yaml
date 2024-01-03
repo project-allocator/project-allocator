@@ -25,10 +25,13 @@ jobs:
         run: |
           # These are not found in Appvia's wftoolbox image.
           apk add --no-cache bash sed
-        
-      - name: Clean pods
+
+      - name: Get Kubernetes access
         run: |
           wf access env project-allocator dev
+
+      - name: Clean pods
+        run: |
           bash .github/scripts/clean_pods.sh '' status.phase!=Running,status.phase!=Pending
 
       - name: Destroy application
@@ -39,10 +42,8 @@ jobs:
 
       - name: Remove network policy
         run: |
-          wf access env project-allocator dev
           kubectl delete networkpolicy backend-ingress
 
       - name: Wait for completion
         run: |
-          wf access env project-allocator dev
           bash .github/scripts/wait_destroy.sh
