@@ -12,11 +12,11 @@ while true; do
     exit 1
   fi
   if [ "$(count_pods.sh '' status.phase=Running)" -gt 0 ]; then
-    echo "Some pods still running"
+    echo "Some pods still running."
     continue
   fi
   if [ "$(count_pods.sh '' status.phase=Pending)" -gt 0 ]; then
-    echo "Some pods still pendingl"
+    echo "Some pods still pending."
     continue
   fi
   echo "All pods have terminated."
