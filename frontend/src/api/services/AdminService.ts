@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ProjectRead } from '../models/ProjectRead';
+import type { ProjectReadWithProposal } from '../models/ProjectReadWithProposal';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
@@ -32,10 +32,10 @@ export class AdminService {
 
     /**
      * Read Conflicting Projects
-     * @returns ProjectRead Successful Response
+     * @returns ProjectReadWithProposal Successful Response
      * @throws ApiError
      */
-    public static readConflictingProjects(): CancelablePromise<Array<ProjectRead>> {
+    public static readConflictingProjects(): CancelablePromise<Array<ProjectReadWithProposal>> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/admins/conflicting-projects',
