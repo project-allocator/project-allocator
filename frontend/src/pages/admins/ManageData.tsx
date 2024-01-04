@@ -207,7 +207,10 @@ function ResetDatabase() {
                 resetDatabase.mutate(undefined, {
                   onSuccess: () => messageSuccess("Successfully reset database."),
                   onError: () => messageError("Failed to reset database."),
-                  onSettled: () => setIsModalOpen(false),
+                  onSettled: () => {
+                    setConfirmString("");
+                    setIsModalOpen(false);
+                  },
                 });
               }}
             >
