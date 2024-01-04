@@ -27,7 +27,7 @@ def upgrade() -> None:
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.Column("id", sqlmodel.sql.sqltypes.AutoString(length=26), nullable=False),
         sa.Column("user_id", sqlmodel.sql.sqltypes.AutoString(length=26), nullable=True),
-        sa.ForeignKeyConstraint(["user_id"], ["user.id"]),
+        sa.ForeignKeyConstraint(["user_id"], ["user.id"], ondelete="CASCADE", onupdate="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
     )
 

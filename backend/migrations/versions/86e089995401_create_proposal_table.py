@@ -24,8 +24,8 @@ def upgrade() -> None:
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.Column("proposer_id", sqlmodel.sql.sqltypes.AutoString(length=26), nullable=False),
         sa.Column("proposed_project_id", sqlmodel.sql.sqltypes.AutoString(length=26), nullable=False),
-        sa.ForeignKeyConstraint(["proposed_project_id"], ["project.id"]),
-        sa.ForeignKeyConstraint(["proposer_id"], ["user.id"]),
+        sa.ForeignKeyConstraint(["proposed_project_id"], ["project.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        sa.ForeignKeyConstraint(["proposer_id"], ["user.id"], ondelete="CASCADE", onupdate="CASCADE"),
         sa.PrimaryKeyConstraint("proposed_project_id"),
     )
 

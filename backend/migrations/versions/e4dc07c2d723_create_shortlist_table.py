@@ -25,8 +25,8 @@ def upgrade() -> None:
         sa.Column("preference", sa.Integer(), nullable=False),
         sa.Column("shortlister_id", sqlmodel.sql.sqltypes.AutoString(length=26), nullable=False),
         sa.Column("shortlisted_project_id", sqlmodel.sql.sqltypes.AutoString(length=26), nullable=False),
-        sa.ForeignKeyConstraint(["shortlisted_project_id"], ["project.id"]),
-        sa.ForeignKeyConstraint(["shortlister_id"], ["user.id"]),
+        sa.ForeignKeyConstraint(["shortlisted_project_id"], ["project.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        sa.ForeignKeyConstraint(["shortlister_id"], ["user.id"], ondelete="CASCADE", onupdate="CASCADE"),
         sa.PrimaryKeyConstraint("shortlister_id", "shortlisted_project_id"),
         sa.UniqueConstraint("preference", "shortlister_id"),
     )

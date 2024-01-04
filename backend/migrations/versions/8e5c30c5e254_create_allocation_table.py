@@ -26,8 +26,8 @@ def upgrade() -> None:
         sa.Column("locked", sa.Boolean(), nullable=False),
         sa.Column("allocatee_id", sqlmodel.sql.sqltypes.AutoString(length=26), nullable=False),
         sa.Column("allocated_project_id", sqlmodel.sql.sqltypes.AutoString(length=26), nullable=False),
-        sa.ForeignKeyConstraint(["allocated_project_id"], ["project.id"]),
-        sa.ForeignKeyConstraint(["allocatee_id"], ["user.id"]),
+        sa.ForeignKeyConstraint(["allocated_project_id"], ["project.id"], ondelete="CASCADE", onupdate="CASCADE"),
+        sa.ForeignKeyConstraint(["allocatee_id"], ["user.id"], ondelete="CASCADE", onupdate="CASCADE"),
         sa.PrimaryKeyConstraint("allocatee_id"),
     )
 
