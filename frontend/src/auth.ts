@@ -1,8 +1,11 @@
 import { LogLevel, PublicClientApplication } from "@azure/msal-browser";
+import { QueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import Cookies from "js-cookie";
 
 import { CLIENT_ID, TENANT_ID } from "./env";
+
+export const queryClient = new QueryClient();
 
 export const authRequest = {
   scopes: [`api://${CLIENT_ID}/user_impersonation`, "User.Read", "Mail.Send"],
@@ -52,7 +55,8 @@ export const msalInstance = new PublicClientApplication({
 // This automatically sets the access token in the request header if the user is logged in.
 // You can avoid using this interceptor by creating a new axios instance.
 axios.interceptors.request.use(async (config) => {
-  if (msalInstance.getActiveAccount()) {
+  const account = msalInstance.getAllAccounts()[0];
+  if (account !== undefined) {
     // Set CSRF token in custom header if the request method is not safe.
     if (!["GET", "HEAD", "OPTIONS", "TRACE"].includes(config.method!.toUpperCase())) {
       config.headers.set("x-csrftoken", Cookies.get("csrftoken"));
@@ -61,7 +65,7 @@ axios.interceptors.request.use(async (config) => {
     // Set Azure access token in Authorization header.
     const { accessToken: apiToken } = await msalInstance.acquireTokenSilent({
       ...authRequest,
-      account: msalInstance.getActiveAccount()!,
+      account,
     });
     config.headers.set("Authorization", `Bearer ${apiToken}`);
 
@@ -73,7 +77,7 @@ axios.interceptors.request.use(async (config) => {
     // i.e. We cannot acquire a single token instead of the two acquireTokenSilent() calls
     const { accessToken: graphToken } = await msalInstance.acquireTokenSilent({
       scopes: ["User.Read", "Mail.Send"],
-      account: msalInstance.getActiveAccount()!,
+      account,
     });
     config.headers.set("X-Graph-Token", graphToken);
   }

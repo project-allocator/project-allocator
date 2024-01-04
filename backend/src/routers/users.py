@@ -70,9 +70,8 @@ async def create_user(
     user: Annotated[Optional[User], Depends(get_user_or_none)],
     session: Annotated[Session, Depends(get_session)],
 ):
-    # Return the user if the user exists in the database.
     if user:
-        return user
+        raise HTTPException(status_code=400, detail="User already exists")
 
     # If logging in for the first time,
     # retrieve user data via Microsoft Graph API and create user in the database.

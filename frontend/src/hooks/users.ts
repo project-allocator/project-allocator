@@ -1,6 +1,4 @@
 import { UserService, UserUpdate } from "@/api";
-import { authRequest } from "@/auth";
-import { useMsal } from "@azure/msal-react";
 import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 
 export function useAuth() {
@@ -51,6 +49,21 @@ export function useCurrentUser() {
   });
 }
 
+export function useCreateUser() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () =>
+      UserService.createUser().catch((error) => {
+        if (error.status === 400) return Promise.resolve(null);
+        return Promise.reject(error);
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+}
+
 export function useUpdateUser(userId: string) {
   const queryClient = useQueryClient();
 
@@ -69,34 +82,6 @@ export function useDeleteUser(userId: string) {
     mutationFn: () => UserService.deleteUser(userId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users"] });
-    },
-  });
-}
-
-export function useSignInUser() {
-  const queryClient = useQueryClient();
-  const { instance: msalInstance } = useMsal();
-
-  return useMutation({
-    mutationFn: async () => {
-      const { account } = await msalInstance.loginPopup(authRequest);
-      msalInstance.setActiveAccount(account);
-      await UserService.createUser();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users", "current"] });
-    },
-  });
-}
-
-export function useSignOutUser() {
-  const queryClient = useQueryClient();
-  const { instance: msalInstance } = useMsal();
-
-  return useMutation({
-    mutationFn: () => msalInstance.logoutPopup(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users", "current"] });
     },
   });
 }

@@ -1,16 +1,18 @@
 import "./index.css";
 
-import { MsalProvider } from "@azure/msal-react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { MsalProvider, useMsal } from "@azure/msal-react";
+import { QueryClientProvider } from "@tanstack/react-query";
 import * as React from "react";
+import { useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import { Navigate, Route, RouterProvider, createBrowserRouter, createRoutesFromElements } from "react-router-dom";
-import { msalInstance } from "./auth";
+import { msalInstance, queryClient } from "./auth";
 import CenterLayout from "./components/layouts/CenterLayout";
 import Error from "./components/layouts/Error";
 import SiderLayout from "./components/layouts/SiderLayout";
 import { MessageContextProvider } from "./contexts/MessageContext";
-import { SpinContextProvider } from "./contexts/SpinContext";
+import { SpinContextProvider, useSpin } from "./contexts/SpinContext";
+import { useCreateUser } from "./hooks/users";
 import SignIn from "./pages/SignIn";
 import ManageAllocations from "./pages/admins/ManageAllocations";
 import ManageData from "./pages/admins/ManageData";
@@ -83,18 +85,35 @@ const router = createBrowserRouter(
   )
 );
 
-const queryClient = new QueryClient();
+function App() {
+  const createUser = useCreateUser();
+  const { instance: msalInstance } = useMsal();
+  const { setIsSpinning } = useSpin();
+
+  useEffect(() => {
+    setIsSpinning(true);
+    msalInstance.handleRedirectPromise().then((response) => {
+      if (response === null) {
+        setIsSpinning(false);
+        return;
+      }
+      createUser.mutate(undefined, { onSettled: () => setIsSpinning(false) });
+    });
+  }, []);
+
+  return <RouterProvider router={router} />;
+}
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <MsalProvider instance={msalInstance}>
-      <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient}>
+      <MsalProvider instance={msalInstance}>
         <MessageContextProvider>
           <SpinContextProvider>
-            <RouterProvider router={router} />
+            <App />
           </SpinContextProvider>
         </MessageContextProvider>
-      </QueryClientProvider>
-    </MsalProvider>
+      </MsalProvider>
+    </QueryClientProvider>
   </React.StrictMode>,
 );
