@@ -3,7 +3,6 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { ProjectCreateWithDetails } from '../models/ProjectCreateWithDetails';
-import type { ProjectDetailTemplateRead } from '../models/ProjectDetailTemplateRead';
 import type { ProjectReadWithDetails } from '../models/ProjectReadWithDetails';
 import type { ProjectReadWithProposal } from '../models/ProjectReadWithProposal';
 import type { ProjectUpdateWithDetails } from '../models/ProjectUpdateWithDetails';
@@ -13,18 +12,6 @@ import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
 
 export class ProjectService {
-
-    /**
-     * Read Project Detail Templates
-     * @returns ProjectDetailTemplateRead Successful Response
-     * @throws ApiError
-     */
-    public static readProjectDetailTemplates(): CancelablePromise<Array<ProjectDetailTemplateRead>> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/projects/details/templates',
-        });
-    }
 
     /**
      * Read Approved Projects

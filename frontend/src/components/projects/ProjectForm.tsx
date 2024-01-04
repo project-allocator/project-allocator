@@ -1,4 +1,4 @@
-import { ProjectDetailRead, ProjectDetailTemplateRead, ProjectReadWithDetails } from "@/api";
+import { ProjectDetailReadWithTemplate, ProjectDetailTemplateRead, ProjectReadWithDetails } from "@/api";
 import { useProjectDetailTemplates } from "@/hooks/projects";
 import { PlusOutlined } from "@ant-design/icons";
 import type { InputRef } from "antd";
@@ -6,13 +6,11 @@ import {
   Button,
   Checkbox,
   DatePicker,
-  Empty,
   Form,
   Input,
   InputNumber,
   Radio,
   Select,
-  Skeleton,
   Slider,
   Space,
   Switch,
@@ -21,7 +19,6 @@ import {
 } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useRef, useState } from "react";
-import * as _ from "underscore";
 
 const { TextArea } = Input;
 const { useForm, useFormInstance } = Form;
@@ -77,7 +74,7 @@ export default function ProjectForm({
         >
           <TextArea rows={5} maxLength={10000} showCount />
         </Form.Item>
-        <ProjectDetailsForm initProject={initProject} />
+        <ProjectDetailItems initProject={initProject} />
         <Form.Item>
           <Button type="primary" htmlType="submit">
             Submit
@@ -88,17 +85,24 @@ export default function ProjectForm({
   );
 }
 
-function ProjectDetailsForm({ initProject }: { initProject?: ProjectReadWithDetails }) {
+function ProjectDetailItems({ initProject }: { initProject?: ProjectReadWithDetails }) {
   const templates = useProjectDetailTemplates();
 
-  if (templates.isLoading) return <Skeleton active />;
-  if (templates.isError) return <Empty description="Failed to load project detail templates" />;
+  return initProject
+    ? initProject.details?.map((detail) => (
+        <ProjectDetailItem key={detail.template.key} detail={detail} template={detail.template} />
+      ))
+    : templates.data.map((template) => <ProjectDetailItem key={template.key} template={template} />);
+}
 
-  const sortedTemplates = _.sortBy(templates.data!, "key");
-  const sortedDetails = _.sortBy(initProject?.details || [], "key");
-  const detailsWithTemplates = _.zip(sortedDetails, sortedTemplates); // zip does not truncate to the shorter array
-
-  return detailsWithTemplates.map(([detail, template]) => (
+function ProjectDetailItem({
+  detail,
+  template,
+}: {
+  detail?: ProjectDetailReadWithTemplate;
+  template: ProjectDetailTemplateRead;
+}) {
+  return (
     <Form.Item
       key={template.key}
       name={`detail-${template.key}`}
@@ -107,7 +111,7 @@ function ProjectDetailsForm({ initProject }: { initProject?: ProjectReadWithDeta
       rules={[{ required: template.required, message: template.message }]}
       initialValue={(() => {
         // No initial value if creating new project
-        if (initProject === undefined) return undefined;
+        if (detail === undefined) return undefined;
         switch (template.type) {
           case "date":
           case "time":
@@ -156,10 +160,16 @@ function ProjectDetailsForm({ initProject }: { initProject?: ProjectReadWithDeta
         }
       })()}
     </Form.Item>
-  ));
+  );
 }
 
-function CategoriesField({ detail, template }: { detail?: ProjectDetailRead; template: ProjectDetailTemplateRead }) {
+function CategoriesField({
+  detail,
+  template,
+}: {
+  detail?: ProjectDetailReadWithTemplate;
+  template: ProjectDetailTemplateRead;
+}) {
   // Propagate change up to the parent form component
   const form = useFormInstance();
   function setCategoriesWithForm(categories: string[]) {

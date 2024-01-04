@@ -10,6 +10,6 @@ export type ProjectReadWithAllocations = {
     description: string;
     approved?: (boolean | null);
     id: string;
-    allocations: Array<AllocationRead>;
+    allocations?: Array<AllocationRead>;
 };
 

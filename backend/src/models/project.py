@@ -48,16 +48,24 @@ class ProjectRead(ProjectBase):
     id: str
 
 
+class ProjectReadWithDetails(ProjectRead):
+    details: list["ProjectDetailReadWithTemplate"] = []  # include template
+
+
 class ProjectReadWithProposal(ProjectRead):
     proposal: "ProposalRead"
 
 
 class ProjectReadWithAllocations(ProjectRead):
-    allocations: list["AllocationRead"]
+    allocations: list["AllocationRead"] = []
 
 
 class ProjectCreate(ProjectBase):
     pass
+
+
+class ProjectCreateWithDetails(ProjectCreate):
+    details: list["ProjectDetailCreate"] = []
 
 
 class ProjectUpdate(SQLModel):
@@ -68,14 +76,6 @@ class ProjectUpdate(SQLModel):
     # True if admin has approved proposal.
     # None means admin has not made any response yet.
     approved: Optional[bool] = None
-
-
-class ProjectReadWithDetails(ProjectRead):
-    details: list["ProjectDetailRead"] = []
-
-
-class ProjectCreateWithDetails(ProjectCreate):
-    details: list["ProjectDetailCreate"] = []
 
 
 class ProjectUpdateWithDetails(ProjectUpdate):
@@ -108,6 +108,10 @@ class ProjectDetail(TimestampMixin, ProjectDetailBase, table=True):
 
 class ProjectDetailRead(ProjectDetailBase):
     pass
+
+
+class ProjectDetailReadWithTemplate(ProjectDetailRead):
+    template: "ProjectDetailTemplateRead"
 
 
 class ProjectDetailCreate(ProjectDetailBase):

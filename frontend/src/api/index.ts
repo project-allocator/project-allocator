@@ -16,7 +16,7 @@ export type { NotificationCreate } from './models/NotificationCreate';
 export type { NotificationRead } from './models/NotificationRead';
 export type { ProjectCreateWithDetails } from './models/ProjectCreateWithDetails';
 export type { ProjectDetailCreate } from './models/ProjectDetailCreate';
-export type { ProjectDetailRead } from './models/ProjectDetailRead';
+export type { ProjectDetailReadWithTemplate } from './models/ProjectDetailReadWithTemplate';
 export type { ProjectDetailTemplateRead } from './models/ProjectDetailTemplateRead';
 export type { ProjectDetailUpdate } from './models/ProjectDetailUpdate';
 export type { ProjectRead } from './models/ProjectRead';

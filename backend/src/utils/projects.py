@@ -11,13 +11,11 @@ from ..models import (
 
 
 def parse_project(project: Project) -> ProjectReadWithDetails:
-    # Need to keep copy of templates as they are lost in read models.
-    templates = [detail.template for detail in project.details]
     # Need to convert to read model to allow any types during parsing.
     project = ProjectReadWithDetails.model_validate(project)
     project_details = []
-    for template, detail in zip(templates, project.details):
-        detail = parse_project_detail(template, detail)
+    for detail in project.details:
+        detail = parse_project_detail(detail.template, detail)
         project_details.append(detail)
     project.details = project_details
     return project

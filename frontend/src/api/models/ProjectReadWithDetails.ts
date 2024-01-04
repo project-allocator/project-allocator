@@ -3,13 +3,13 @@
 /* tslint:disable */
 /* eslint-disable */
 
-import type { ProjectDetailRead } from './ProjectDetailRead';
+import type { ProjectDetailReadWithTemplate } from './ProjectDetailReadWithTemplate';
 
 export type ProjectReadWithDetails = {
     title: string;
     description: string;
     approved?: (boolean | null);
     id: string;
-    details?: Array<ProjectDetailRead>;
+    details?: Array<ProjectDetailReadWithTemplate>;
 };
 

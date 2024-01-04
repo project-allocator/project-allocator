@@ -3,8 +3,11 @@
 /* tslint:disable */
 /* eslint-disable */
 
-export type ProjectDetailRead = {
+import type { ProjectDetailTemplateRead } from './ProjectDetailTemplateRead';
+
+export type ProjectDetailReadWithTemplate = {
     key: string;
     value: any;
+    template: ProjectDetailTemplateRead;
 };
 
