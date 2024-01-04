@@ -22,11 +22,26 @@ from ..models import (
     ProjectUpdateWithDetails,
     ProjectDetail,
     ProjectDetailTemplate,
+    ProjectDetailTemplateRead,
     Proposal,
 )
 from ..logger import LoggerRoute
 
 router = APIRouter(tags=["project"], route_class=LoggerRoute)
+
+
+@router.get(
+    "/projects/details/templates",
+    response_model=list[ProjectDetailTemplateRead],
+)
+async def read_project_detail_templates(
+    session: Annotated[Session, Depends(get_session)],
+):
+    # Sort the templates so that the details are displayed in order of creation.
+    templates = session.exec(select(ProjectDetailTemplate)).all()
+    templates.sort(key=lambda template: template.created_at)
+
+    return templates
 
 
 @router.get(

@@ -6,6 +6,24 @@ from src.factories import ProjectFactory, ProjectDetailTemplateFactory
 from src.utils.projects import parse_project
 
 
+def test_read_project_detail_templates(
+    admin_client: TestClient,
+    session: Session,
+):
+    templates = ProjectDetailTemplateFactory.build_batch(10)
+    session.add_all(templates)
+    session.commit()
+
+    response = admin_client.get("/api/projects/details/templates")
+    data = response.json()
+    assert response.status_code == 200
+
+    assert len(data) == len(templates)
+    # fmt: off
+    assert set([template["key"] for template in data]) \
+        == set([template.key for template in templates])
+
+
 def test_read_approved_projects(
     staff_user: User,
     admin_client: TestClient,
