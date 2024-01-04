@@ -64,7 +64,7 @@ export function ProjectTable({ projects }: { projects: ProjectReadWithProposal[]
           .filter((project) =>
             (project.title + project.description + project.proposal.proposer.name)
               .toLowerCase()
-              .includes(searchText.toLowerCase())
+              .includes(searchText.toLowerCase()),
           )
           .map((project: ProjectRead) => ({ key: project.id, ...project }))}
       />
