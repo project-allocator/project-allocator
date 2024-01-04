@@ -2,13 +2,7 @@ from typing import Optional
 from sqlmodel import Field, Relationship, SQLModel
 import ulid
 
-
 from ..mixins.timestamp import TimestampMixin
-
-from .allocation import Allocation, AllocationRead
-from .proposal import Proposal
-from .shortlist import Shortlist
-from .notification import Notification
 
 
 class UserBase(SQLModel):
@@ -58,3 +52,11 @@ class UserReadWithAllocation(UserRead):
 # The field is left optional to preserve the semantics of partial updates.
 class UserUpdate(SQLModel):
     role: Optional[str] = None
+
+
+# Import dependant Pydantic models at the end of the module
+# to prevent circular import errors.
+from .allocation import Allocation, AllocationRead
+from .proposal import Proposal
+from .shortlist import Shortlist
+from .notification import Notification

@@ -5,10 +5,6 @@ import ulid
 
 from ..mixins.timestamp import TimestampMixin
 
-from .allocation import Allocation, AllocationRead
-from .proposal import Proposal
-from .shortlist import Shortlist
-
 
 class ProjectBase(SQLModel):
     title: str
@@ -52,6 +48,10 @@ class ProjectRead(ProjectBase):
     id: str
 
 
+class ProjectReadWithProposal(ProjectRead):
+    proposal: "ProposalRead"
+
+
 class ProjectReadWithAllocations(ProjectRead):
     allocations: list["AllocationRead"]
 
@@ -70,24 +70,16 @@ class ProjectUpdate(SQLModel):
     approved: Optional[bool] = None
 
 
-class ProjectDetailTemplateBase(SQLModel):
-    key: str = Field(primary_key=True)
-    type: str
-    required: bool
-    options: list[str] = Field(sa_column=Column(JSON), default=[])
-
-    # Used by the frontend to describe the detail.
-    title: str
-    description: str
-    message: str  # error message
+class ProjectReadWithDetails(ProjectRead):
+    details: list["ProjectDetailRead"] = []
 
 
-class ProjectDetailTemplate(TimestampMixin, ProjectDetailTemplateBase, table=True):
-    __tablename__ = "project_detail_template"
+class ProjectCreateWithDetails(ProjectCreate):
+    details: list["ProjectDetailCreate"] = []
 
 
-class ProjectDetailTemplateRead(ProjectDetailTemplateBase):
-    pass
+class ProjectUpdateWithDetails(ProjectUpdate):
+    details: list["ProjectDetailUpdate"] = []
 
 
 class ProjectDetailBase(SQLModel):
@@ -126,13 +118,26 @@ class ProjectDetailUpdate(ProjectDetailBase):
     pass
 
 
-class ProjectReadWithDetails(ProjectRead):
-    details: list["ProjectDetailRead"] = []
+class ProjectDetailTemplateBase(SQLModel):
+    key: str = Field(primary_key=True)
+    type: str
+    required: bool
+    options: list[str] = Field(sa_column=Column(JSON), default=[])
+
+    # Used by the frontend to describe the detail.
+    title: str
+    description: str
+    message: str  # error message
 
 
-class ProjectCreateWithDetails(ProjectCreate):
-    details: list["ProjectDetailCreate"] = []
+class ProjectDetailTemplate(TimestampMixin, ProjectDetailTemplateBase, table=True):
+    __tablename__ = "project_detail_template"
 
 
-class ProjectUpdateWithDetails(ProjectUpdate):
-    details: list["ProjectDetailUpdate"] = []
+class ProjectDetailTemplateRead(ProjectDetailTemplateBase):
+    pass
+
+
+from .proposal import Proposal, ProposalRead
+from .allocation import Allocation, AllocationRead
+from .shortlist import Shortlist

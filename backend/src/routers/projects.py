@@ -16,12 +16,13 @@ from ..utils.projects import (
 from ..models import (
     User,
     Project,
-    ProjectDetail,
-    ProjectDetailTemplate,
-    ProjectDetailTemplateRead,
+    ProjectReadWithProposal,
     ProjectReadWithDetails,
     ProjectCreateWithDetails,
     ProjectUpdateWithDetails,
+    ProjectDetail,
+    ProjectDetailTemplate,
+    ProjectDetailTemplateRead,
     Proposal,
 )
 from ..logger import LoggerRoute
@@ -45,7 +46,7 @@ async def read_project_detail_templates(
 
 @router.get(
     "/projects/approved",
-    response_model=list[ProjectReadWithDetails],
+    response_model=list[ProjectReadWithProposal],
 )
 async def read_approved_projects(
     session: Annotated[Session, Depends(get_session)],
@@ -55,12 +56,12 @@ async def read_approved_projects(
     projects = session.exec(query).all()
     projects.sort(key=lambda project: project.updated_at, reverse=True)
 
-    return [parse_project(project) for project in projects]
+    return projects
 
 
 @router.get(
     "/projects/disapproved",
-    response_model=list[ProjectReadWithDetails],
+    response_model=list[ProjectReadWithProposal],
     dependencies=[Security(check_admin)],  # only admins
 )
 async def read_disapproved_projects(
@@ -70,12 +71,12 @@ async def read_disapproved_projects(
     projects = session.exec(query).all()
     projects.sort(key=lambda project: project.updated_at, reverse=True)
 
-    return [parse_project(project) for project in projects]
+    return projects
 
 
 @router.get(
     "/projects/no-response",
-    response_model=list[ProjectReadWithDetails],
+    response_model=list[ProjectReadWithProposal],
     dependencies=[Security(check_admin)],  # only admins
 )
 async def read_no_response_projects(
@@ -85,7 +86,7 @@ async def read_no_response_projects(
     projects = session.exec(query).all()
     projects.sort(key=lambda project: project.updated_at, reverse=True)
 
-    return [parse_project(project) for project in projects]
+    return projects
 
 
 @router.get(

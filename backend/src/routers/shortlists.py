@@ -13,7 +13,7 @@ from ..models import (
     User,
     UserRead,
     Project,
-    ProjectRead,
+    ProjectReadWithProposal,
     Shortlist,
     Config,
 )
@@ -24,7 +24,7 @@ router = APIRouter(tags=["shortlist"], route_class=LoggerRoute)
 
 @router.get(
     "/users/me/shortlisted_projects",
-    response_model=list[ProjectRead],
+    response_model=list[ProjectReadWithProposal],
     dependencies=[Security(check_student)],
 )
 async def read_shortlisted_projects(

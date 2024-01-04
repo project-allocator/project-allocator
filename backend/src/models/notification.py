@@ -1,12 +1,9 @@
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 from sqlmodel import Field, Relationship, SQLModel
 from datetime import datetime
 import ulid
 
 from ..mixins.timestamp import TimestampMixin
-
-if TYPE_CHECKING:
-    from .user import User
 
 
 class NotificationBase(SQLModel):
@@ -39,3 +36,6 @@ class NotificationRead(NotificationBase):
 
 class NotificationCreate(NotificationBase):
     pass
+
+
+from .user import User

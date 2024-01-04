@@ -9,7 +9,7 @@ from ..dependencies import (
 )
 from ..models import (
     Project,
-    ProjectRead,
+    ProjectReadWithProposal,
     User,
     UserRead,
 )
@@ -20,7 +20,7 @@ router = APIRouter(tags=["proposal"], route_class=LoggerRoute)
 
 @router.get(
     "/users/me/proposed_projects",
-    response_model=list[ProjectRead],
+    response_model=list[ProjectReadWithProposal],
     dependencies=[Security(check_staff)],
 )
 async def read_proposed_projects(

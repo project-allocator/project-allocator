@@ -1,17 +1,16 @@
-from typing import TYPE_CHECKING
 from sqlmodel import Field, Relationship, SQLModel
 
 from ..mixins.timestamp import TimestampMixin
 
-if TYPE_CHECKING:
-    from .user import User
-    from .project import Project
+
+class ProposalBase(SQLModel):
+    pass
 
 
 # Although proposal is one-to-many relationship,
 # we use an intermediate table so that it can be easily extended to many-to-many relationship.
 # This also helps prevent the issues of direct circular references between User and Project models.
-class Proposal(TimestampMixin, SQLModel, table=True):
+class Proposal(TimestampMixin, ProposalBase, table=True):
     __tablename__ = "proposal"
 
     proposer_id: str = Field(
@@ -25,3 +24,12 @@ class Proposal(TimestampMixin, SQLModel, table=True):
     )
     proposer: "User" = Relationship(back_populates="proposals")
     proposed_project: "Project" = Relationship(back_populates="proposal")
+
+
+class ProposalRead(ProposalBase):
+    proposer: "UserRead"
+    proposed_project: "ProjectRead"
+
+
+from .user import User, UserRead
+from .project import Project, ProjectRead

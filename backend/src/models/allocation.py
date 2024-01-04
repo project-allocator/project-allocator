@@ -1,11 +1,7 @@
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 from sqlmodel import Field, Relationship, SQLModel
 
 from ..mixins.timestamp import TimestampMixin
-
-if TYPE_CHECKING:
-    from .user import User
-    from .project import Project
 
 
 class AllocationBase(SQLModel):
@@ -38,4 +34,10 @@ class Allocation(TimestampMixin, AllocationBase, table=True):
 
 
 class AllocationRead(AllocationBase):
+    allocatee: "UserRead"
+    allocated_project: "ProjectRead"
     pass
+
+
+from .user import User, UserRead
+from .project import Project, ProjectRead
