@@ -9,6 +9,6 @@ export type ProjectCreateWithDetails = {
     title: string;
     description: string;
     approved?: (boolean | null);
-    details?: Array<ProjectDetailCreate>;
+    details: Array<ProjectDetailCreate>;
 };
 

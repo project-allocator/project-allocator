@@ -4,6 +4,6 @@
 /* eslint-disable */
 
 export type ConfigUpdate = {
-    value: any;
+    value?: any;
 };
 

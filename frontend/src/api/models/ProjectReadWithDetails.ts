@@ -10,6 +10,6 @@ export type ProjectReadWithDetails = {
     description: string;
     approved?: (boolean | null);
     id: string;
-    details?: Array<ProjectDetailReadWithTemplate>;
+    details: Array<ProjectDetailReadWithTemplate>;
 };
 

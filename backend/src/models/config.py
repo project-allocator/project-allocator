@@ -21,4 +21,4 @@ class ConfigRead(ConfigBase):
 
 
 class ConfigUpdate(SQLModel):
-    value: Any  # any type to allow input to be parsed
+    value: Any = None  # any type to allow input to be parsed

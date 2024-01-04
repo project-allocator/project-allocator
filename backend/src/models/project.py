@@ -49,7 +49,7 @@ class ProjectRead(ProjectBase):
 
 
 class ProjectReadWithDetails(ProjectRead):
-    details: list["ProjectDetailReadWithTemplate"] = []  # include template
+    details: list["ProjectDetailReadWithTemplate"]  # include template
 
 
 class ProjectReadWithProposal(ProjectRead):
@@ -57,7 +57,7 @@ class ProjectReadWithProposal(ProjectRead):
 
 
 class ProjectReadWithAllocations(ProjectRead):
-    allocations: list["AllocationRead"] = []
+    allocations: list["AllocationRead"]
 
 
 class ProjectCreate(ProjectBase):
@@ -65,7 +65,7 @@ class ProjectCreate(ProjectBase):
 
 
 class ProjectCreateWithDetails(ProjectCreate):
-    details: list["ProjectDetailCreate"] = []
+    details: list["ProjectDetailCreate"]
 
 
 class ProjectUpdate(SQLModel):
