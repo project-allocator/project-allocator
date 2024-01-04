@@ -1,13 +1,7 @@
 import { useMessage } from "@/contexts/MessageContext";
 import { useExportData, useImportData, useResetDatabase } from "@/hooks/admins";
-import {
-  CheckOutlined,
-  DownloadOutlined,
-  ExclamationCircleOutlined,
-  InfoCircleOutlined,
-  UploadOutlined,
-} from "@ant-design/icons";
-import { Button, Divider, Input, Modal, Popover, Select, Space, Typography, Upload, UploadFile } from "antd";
+import { CheckOutlined, DownloadOutlined, ExclamationCircleOutlined, UploadOutlined } from "@ant-design/icons";
+import { Button, Divider, Input, Modal, Select, Space, Typography, Upload, UploadFile } from "antd";
 import { RcFile } from "antd/es/upload";
 import { useState } from "react";
 
@@ -34,58 +28,12 @@ function ImportData() {
   const [fileList, setFileList] = useState<UploadFile[]>([]);
   const importData = useImportData();
 
-  // TODO: Store this in separate json file.
-  const sampleImportData = {
-    users: [
-      {
-        id: "01HJJM36Y7C7BTCJFD1Z4Y74CQ",
-        email: "jesse83@example.org",
-        name: "Luke Glover",
-        role: "staff",
-      },
-    ],
-    projects: [
-      {
-        id: "01HJJM36Y7VHSA06C09QFMBVSQ",
-        title: "Born already analysis allow alone author.",
-        description: "International wrong admit society community Democrat. Themselves part window world.",
-        approved: true,
-        details: [
-          {
-            project_id: "01HJJM36Y7VHSA06C09QFMBVSQ",
-            key: "ability-commercial",
-            type: "radio",
-            value: "discuss",
-          },
-        ],
-        allocations: [
-          {
-            allocatee_id: "01HJJM371KGTC0AH4S5D37G0JE",
-            allocated_project_id: "01HJJM36Z20YDY2PV0N9H5WRYF",
-            accepted: null,
-          },
-        ],
-      },
-    ],
-  };
-
   return (
     <>
       <Title level={4}>Import Data</Title>
       <Paragraph className="text-slate-500">Import data from the JSON format.</Paragraph>
       <Paragraph className="text-slate-500">
-        The format of the JSON file should be exactly identical to the file exported by the section below. &nbsp;
-        <Popover
-          trigger="hover"
-          title="Example of JSON Content"
-          content={
-            <pre className="max-w-lg max-h-60 whitespace-pre-wrap overflow-y-scroll">
-              {JSON.stringify(sampleImportData, null, 2)}
-            </pre>
-          }
-        >
-          <InfoCircleOutlined />
-        </Popover>
+        The format of the JSON file should be exactly identical to the file exported by the section below.
       </Paragraph>
       <Space direction="vertical">
         <Upload
@@ -120,7 +68,7 @@ function ImportData() {
             reader.readAsText(fileList[0] as RcFile);
           }}
         >
-          Check
+          Import
         </Button>
       </Space>
     </>

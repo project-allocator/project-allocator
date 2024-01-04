@@ -1,5 +1,6 @@
 from typing import Annotated, Any
-from fastapi import APIRouter, HTTPException, Depends, Security
+from fastapi import APIRouter, Depends, Security
+from sqlalchemy.inspection import inspect
 from sqlmodel import Session, select, delete
 import io
 import csv
@@ -164,24 +165,36 @@ async def import_json(
     data: dict[str, Any],
     session: Annotated[Session, Depends(get_session)],
 ):
-    for user in data["users"]:
-        session.add(User.model_validate(user))
-    for project in data["projects"]:
-        session.add(Project.model_validate(project))
-    for project_detail in data["project_details"]:
-        session.add(ProjectDetail.model_validate(project_detail))
-    for project_detail_template in data["project_detail_templates"]:
-        session.add(ProjectDetailTemplate.model_validate(project_detail_template))
-    for proposal in data["proposals"]:
-        session.add(Proposal.model_validate(proposal))
-    for allocation in data["allocations"]:
-        session.add(Allocation.model_validate(allocation))
-    for shortlist in data["shortlists"]:
-        session.add(Shortlist.model_validate(shortlist))
-    for notification in data["notifications"]:
-        session.add(Notification.model_validate(notification))
-    for config in data["configs"]:
-        session.add(Config.model_validate(config))
+    def add_or_merge(model, data):
+        ids = [data[key.name] for key in inspect(model).primary_key]
+        instance = model.model_validate(data)
+        if session.get(model, ids):
+            session.merge(instance)
+            return
+        session.add(instance)
+
+    for user_data in data["users"]:
+        # Skip users with existing emails but with different IDs
+        # because we won't be able to know which ID to use.
+        if session.exec(select(User).where(User.email == user_data["email"])).one_or_none():
+            continue
+        add_or_merge(User, user_data)
+    for project_data in data["projects"]:
+        add_or_merge(Project, project_data)
+    for project_detail_data in data["project_details"]:
+        add_or_merge(ProjectDetail, project_detail_data)
+    for project_detail_template_data in data["project_detail_templates"]:
+        add_or_merge(ProjectDetailTemplate, project_detail_template_data)
+    for proposal_data in data["proposals"]:
+        add_or_merge(Proposal, proposal_data)
+    for allocation_data in data["allocations"]:
+        add_or_merge(Allocation, allocation_data)
+    for shortlist_data in data["shortlists"]:
+        add_or_merge(Shortlist, shortlist_data)
+    for notification_data in data["notifications"]:
+        add_or_merge(Notification, notification_data)
+    for config_data in data["configs"]:
+        add_or_merge(Config, config_data)
 
     session.commit()
     return {"ok": True}
