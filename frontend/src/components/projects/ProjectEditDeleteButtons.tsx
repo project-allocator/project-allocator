@@ -15,22 +15,37 @@ export default function EditDeleteButtons() {
   const proposedProjects = useProposedProjects();
   const deleteUser = useDeleteProject(projectId!);
 
-  if (proposalsShutdown.data!.value) return null;
-
+  const isShutdown = proposalsShutdown.data!.value;
   const isProposed = proposedProjects.data!.some((project) => project.id === projectId);
-  if (!isProposed) return null;
 
   return (
     <Space>
-      <Tooltip title="Edit">
+      <Tooltip
+        title={
+          isShutdown
+            ? "Project proposals are currently shutdown"
+            : isProposed
+              ? "Edit this project"
+              : "Can only edit proposed projects"
+        }
+      >
         <Link to="./edit">
-          <Button shape="circle" icon={<EditOutlined />} />
+          <Button shape="circle" icon={<EditOutlined />} disabled={!isProposed || isShutdown} />
         </Link>
       </Tooltip>
-      <Tooltip title="Delete">
+      <Tooltip
+        title={
+          isShutdown
+            ? "Project proposals are currently shutdown"
+            : isProposed
+              ? "Delete this project"
+              : "Can only delete proposed projects"
+        }
+      >
         <Button
           shape="circle"
           icon={<DeleteOutlined />}
+          disabled={!isProposed || isShutdown}
           onClick={() => {
             deleteUser.mutate(undefined, {
               onSuccess: () => {

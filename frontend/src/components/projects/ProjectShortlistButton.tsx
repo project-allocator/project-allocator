@@ -18,16 +18,26 @@ export default function ProjectShortlistButton() {
   const shortlistProject = useShortlistProject();
   const unshortlistProject = useUnshortlistProject();
 
-  if (shortlistShutdown.data!.value) return null;
-
+  const isShutdown = shortlistShutdown.data!.value;
+  const isMaxReached = shortlistedProjects.data!.length >= maxShortlists.data!.value;
   const isShortlisted = shortlistedProjects.data!.some((project) => project.id === projectId);
 
   return (
-    <Tooltip title="Shortlist">
+    <Tooltip
+      title={
+        isShutdown
+          ? "Shortlists are currently shutdown"
+          : isMaxReached
+            ? "You cannot shortlist any more projects"
+            : isShortlisted
+              ? "Unshortlist this project"
+              : "Shortlist this project"
+      }
+    >
       <Button
         shape="circle"
         icon={<HeartOutlined />}
-        disabled={shortlistedProjects.data!.length >= maxShortlists.data!.value}
+        disabled={isShutdown || isMaxReached}
         type={isShortlisted ? "primary" : "default"}
         onClick={() =>
           isShortlisted
