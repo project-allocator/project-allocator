@@ -6,10 +6,8 @@
 import type { ProjectRead } from './ProjectRead';
 import type { UserRead } from './UserRead';
 
-export type AllocationRead = {
-    accepted?: (boolean | null);
-    locked?: boolean;
-    allocatee: UserRead;
-    allocated_project: ProjectRead;
+export type ProposalRead = {
+    proposer: UserRead;
+    proposed_project: ProjectRead;
 };
 

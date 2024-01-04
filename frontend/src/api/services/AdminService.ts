@@ -2,7 +2,6 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { Body_import_json } from '../models/Body_import_json';
 import type { ProjectRead } from '../models/ProjectRead';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -44,18 +43,6 @@ export class AdminService {
     }
 
     /**
-     * Export Json
-     * @returns any Successful Response
-     * @throws ApiError
-     */
-    public static exportJson(): CancelablePromise<any> {
-        return __request(OpenAPI, {
-            method: 'GET',
-            url: '/api/admins/export/json',
-        });
-    }
-
-    /**
      * Export Csv
      * @returns any Successful Response
      * @throws ApiError
@@ -68,13 +55,25 @@ export class AdminService {
     }
 
     /**
+     * Export Json
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static exportJson(): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/admins/export/json',
+        });
+    }
+
+    /**
      * Import Json
      * @param requestBody
      * @returns any Successful Response
      * @throws ApiError
      */
     public static importJson(
-        requestBody: Body_import_json,
+        requestBody: Record<string, any>,
     ): CancelablePromise<any> {
         return __request(OpenAPI, {
             method: 'POST',

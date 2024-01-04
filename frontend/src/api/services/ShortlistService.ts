@@ -2,7 +2,7 @@
 /* istanbul ignore file */
 /* tslint:disable */
 /* eslint-disable */
-import type { ProjectRead } from '../models/ProjectRead';
+import type { ProjectReadWithProposal } from '../models/ProjectReadWithProposal';
 import type { UserRead } from '../models/UserRead';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -13,10 +13,10 @@ export class ShortlistService {
 
     /**
      * Read Shortlisted Projects
-     * @returns ProjectRead Successful Response
+     * @returns ProjectReadWithProposal Successful Response
      * @throws ApiError
      */
-    public static readShortlistedProjects(): CancelablePromise<Array<ProjectRead>> {
+    public static readShortlistedProjects(): CancelablePromise<Array<ProjectReadWithProposal>> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/users/me/shortlisted_projects',

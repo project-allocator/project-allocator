@@ -5,6 +5,7 @@
 import type { ProjectCreateWithDetails } from '../models/ProjectCreateWithDetails';
 import type { ProjectDetailTemplateRead } from '../models/ProjectDetailTemplateRead';
 import type { ProjectReadWithDetails } from '../models/ProjectReadWithDetails';
+import type { ProjectReadWithProposal } from '../models/ProjectReadWithProposal';
 import type { ProjectUpdateWithDetails } from '../models/ProjectUpdateWithDetails';
 
 import type { CancelablePromise } from '../core/CancelablePromise';
@@ -27,10 +28,10 @@ export class ProjectService {
 
     /**
      * Read Approved Projects
-     * @returns ProjectReadWithDetails Successful Response
+     * @returns ProjectReadWithProposal Successful Response
      * @throws ApiError
      */
-    public static readApprovedProjects(): CancelablePromise<Array<ProjectReadWithDetails>> {
+    public static readApprovedProjects(): CancelablePromise<Array<ProjectReadWithProposal>> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/projects/approved',
@@ -39,10 +40,10 @@ export class ProjectService {
 
     /**
      * Read Disapproved Projects
-     * @returns ProjectReadWithDetails Successful Response
+     * @returns ProjectReadWithProposal Successful Response
      * @throws ApiError
      */
-    public static readDisapprovedProjects(): CancelablePromise<Array<ProjectReadWithDetails>> {
+    public static readDisapprovedProjects(): CancelablePromise<Array<ProjectReadWithProposal>> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/projects/disapproved',
@@ -51,10 +52,10 @@ export class ProjectService {
 
     /**
      * Read No Response Projects
-     * @returns ProjectReadWithDetails Successful Response
+     * @returns ProjectReadWithProposal Successful Response
      * @throws ApiError
      */
-    public static readNoResponseProjects(): CancelablePromise<Array<ProjectReadWithDetails>> {
+    public static readNoResponseProjects(): CancelablePromise<Array<ProjectReadWithProposal>> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/projects/no-response',
