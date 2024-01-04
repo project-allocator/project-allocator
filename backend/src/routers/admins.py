@@ -15,7 +15,7 @@ from ..utils.projects import (
 from ..models import (
     User,
     Project,
-    ProjectRead,
+    ProjectReadWithProposal,
     ProjectDetail,
     ProjectDetailTemplate,
     Proposal,
@@ -49,7 +49,7 @@ async def check_missing_users(
 
 @router.get(
     "/admins/conflicting-projects",
-    response_model=list[ProjectRead],
+    response_model=list[ProjectReadWithProposal],
     dependencies=[Security(check_admin)],
 )
 async def read_conflicting_projects(session: Annotated[Session, Depends(get_session)]):
