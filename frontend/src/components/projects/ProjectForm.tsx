@@ -19,6 +19,7 @@ import {
 } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useRef, useState } from "react";
+import * as _ from "underscore";
 
 const { TextArea } = Input;
 const { useForm, useFormInstance } = Form;
@@ -87,12 +88,14 @@ export default function ProjectForm({
 
 function ProjectDetailItems({ initProject }: { initProject?: ProjectReadWithDetails }) {
   const templates = useProjectDetailTemplates();
+  const sortedTemplates = _.sortBy(templates.data, (template) => template.key);
+  const sortedDetails = initProject && _.sortBy(initProject.details, (detail) => detail.template.key);
 
   return initProject
-    ? initProject.details?.map((detail) => (
+    ? sortedDetails!.map((detail) => (
         <ProjectDetailItem key={detail.template.key} detail={detail} template={detail.template} />
       ))
-    : templates.data.map((template) => <ProjectDetailItem key={template.key} template={template} />);
+    : sortedTemplates.map((template) => <ProjectDetailItem key={template.key} template={template} />);
 }
 
 function ProjectDetailItem({

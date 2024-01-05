@@ -1,11 +1,14 @@
 import { ProjectReadWithDetails } from "@/api";
 import { Space, Tag, Typography } from "antd";
 import dayjs from "dayjs";
+import * as _ from "underscore";
 
 const { Title, Paragraph } = Typography;
 
 export default function ProjectDetails({ project }: { project: ProjectReadWithDetails }) {
-  return project.details?.map((detail) => (
+  const sortedDetails = _.sortBy(project.details, (detail) => detail.template.key);
+
+  return sortedDetails.map((detail) => (
     <div key={detail.template.key}>
       <Title level={4}>{detail.template.title}</Title>
       <Paragraph className="text-slate-500">{detail.template.description}</Paragraph>
