@@ -10,7 +10,7 @@ import { msalInstance, queryClient } from "./auth";
 import CenterLayout from "./components/layouts/CenterLayout";
 import Error from "./components/layouts/Error";
 import SiderLayout from "./components/layouts/SiderLayout";
-import { MessageContextProvider } from "./contexts/MessageContext";
+import { MessageContextProvider, useMessage } from "./contexts/MessageContext";
 import { SpinContextProvider, useSpin } from "./contexts/SpinContext";
 import { useCreateUser } from "./hooks/users";
 import SignIn from "./pages/SignIn";
@@ -88,6 +88,7 @@ const router = createBrowserRouter(
 function App() {
   const createUser = useCreateUser();
   const { instance: msalInstance } = useMsal();
+  const { messageSuccess, messageError } = useMessage();
   const { setIsSpinning } = useSpin();
 
   useEffect(() => {
@@ -97,7 +98,11 @@ function App() {
         setIsSpinning(false);
         return;
       }
-      createUser.mutate(undefined, { onSettled: () => setIsSpinning(false) });
+      createUser.mutate(undefined, {
+        onSuccess: () => messageSuccess("Successfully signed in"),
+        onError: () => messageError("Failed to sign in"),
+        onSettled: () => setIsSpinning(false),
+      });
     });
   }, []);
 
