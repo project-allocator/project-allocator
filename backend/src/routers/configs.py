@@ -46,6 +46,8 @@ async def update_config(
     config = session.get(Config, key)
     if not config:
         raise HTTPException(status_code=404, detail="Config not found")
+    if config_data.value is None:
+        raise HTTPException(status_code=400, detail="Config value cannot be empty")
 
     config.value = serialize_config_value(key, config_data.value)
     session.add(config)
