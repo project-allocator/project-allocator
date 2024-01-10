@@ -3,7 +3,9 @@
 /* tslint:disable */
 /* eslint-disable */
 import type { ProjectCreateWithDetails } from '../models/ProjectCreateWithDetails';
+import type { ProjectDetailTemplateCreate } from '../models/ProjectDetailTemplateCreate';
 import type { ProjectDetailTemplateRead } from '../models/ProjectDetailTemplateRead';
+import type { ProjectDetailTemplateUpdate } from '../models/ProjectDetailTemplateUpdate';
 import type { ProjectReadWithDetails } from '../models/ProjectReadWithDetails';
 import type { ProjectReadWithProposal } from '../models/ProjectReadWithProposal';
 import type { ProjectUpdateWithDetails } from '../models/ProjectUpdateWithDetails';
@@ -23,6 +25,72 @@ export class ProjectService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/projects/details/templates',
+        });
+    }
+
+    /**
+     * Create Project Detail Template
+     * @param requestBody
+     * @returns ProjectDetailTemplateRead Successful Response
+     * @throws ApiError
+     */
+    public static createProjectDetailTemplate(
+        requestBody: ProjectDetailTemplateCreate,
+    ): CancelablePromise<ProjectDetailTemplateRead> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/projects/details/templates',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Update Project Detail Template
+     * @param key
+     * @param requestBody
+     * @returns ProjectDetailTemplateRead Successful Response
+     * @throws ApiError
+     */
+    public static updateProjectDetailTemplate(
+        key: string,
+        requestBody: ProjectDetailTemplateUpdate,
+    ): CancelablePromise<ProjectDetailTemplateRead> {
+        return __request(OpenAPI, {
+            method: 'PUT',
+            url: '/api/projects/details/templates/{key}',
+            path: {
+                'key': key,
+            },
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                422: `Validation Error`,
+            },
+        });
+    }
+
+    /**
+     * Delete Project Detail Template
+     * @param key
+     * @returns any Successful Response
+     * @throws ApiError
+     */
+    public static deleteProjectDetailTemplate(
+        key: string,
+    ): CancelablePromise<any> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
+            url: '/api/projects/details/templates/{key}',
+            path: {
+                'key': key,
+            },
+            errors: {
+                422: `Validation Error`,
+            },
         });
     }
 
