@@ -7,7 +7,7 @@ import {
 } from "@/hooks/allocations";
 import { useConfig, useUpdateConfig } from "@/hooks/configs";
 import { CheckOutlined, CloseOutlined, LockOutlined, UnlockOutlined } from "@ant-design/icons";
-import { Button, Divider, Skeleton, Switch, Typography } from "antd";
+import { Button, Divider, InputNumber, Skeleton, Switch, Typography } from "antd";
 import { Suspense, useState } from "react";
 
 const { Title, Paragraph } = Typography;
@@ -16,6 +16,13 @@ export default function ManageAllocations() {
   return (
     <>
       <Title level={3}>Manage Allocations</Title>
+      <Divider />
+      <Suspense fallback={<Skeleton active />}>
+        <MaxAllocations />
+      </Suspense>
+      <Suspense fallback={<Skeleton active />}>
+        <MaxShortlists />
+      </Suspense>
       <Divider />
       <Suspense fallback={<Skeleton active />}>
         <ShutdownProposals />
@@ -29,6 +36,53 @@ export default function ManageAllocations() {
       <UnlockAllocations />
       <AllocateProjects />
       <DeallocateProjects />
+    </>
+  );
+}
+
+function MaxAllocations() {
+  const { messageSuccess, messageError } = useMessage();
+  const maxAllocations = useConfig("max_allocations");
+  const updateMaxAllocations = useUpdateConfig("max_allocations");
+
+  return (
+    <>
+      <Title level={4}>Max Number of Allocations</Title>
+      <Paragraph className="text-slate-500">
+        Set the maximum number of students allocated to a project. This value may be ignored depending on the
+        implementation of the automatic allocation algorithm.
+      </Paragraph>
+      <InputNumber
+        defaultValue={maxAllocations.data.value}
+        onBlur={(event) =>
+          updateMaxAllocations.mutate(event.target.value, {
+            onSuccess: () => messageSuccess("Successfully updated max allocations"),
+            onError: () => messageError("Failed to update max allocations"),
+          })
+        }
+      />
+    </>
+  );
+}
+
+function MaxShortlists() {
+  const { messageSuccess, messageError } = useMessage();
+  const maxShortlists = useConfig("max_shortlists");
+  const updateMaxShortlists = useUpdateConfig("max_shortlists");
+
+  return (
+    <>
+      <Title level={4}>Max Number of Shortlists</Title>
+      <Paragraph className="text-slate-500">Set the maximum number of projects a student can shortlist.</Paragraph>
+      <InputNumber
+        defaultValue={maxShortlists.data.value}
+        onBlur={(event) =>
+          updateMaxShortlists.mutate(event.target.value, {
+            onSuccess: () => messageSuccess("Successfully updated max shortlists"),
+            onError: () => messageError("Failed to update max shortlists"),
+          })
+        }
+      />
     </>
   );
 }
