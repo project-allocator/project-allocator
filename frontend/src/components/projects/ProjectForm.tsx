@@ -37,6 +37,7 @@ export default function ProjectForm({
         method="post"
         layout="vertical"
         autoComplete="off"
+        className="max-w-xl"
         onFinish={(values) => {
           // Remove the detail- prefix from the form field names
           // and convert them to an array of details.
@@ -49,7 +50,6 @@ export default function ProjectForm({
           }
           onFinish(values);
         }}
-        className="ml-6 max-w-xl"
       >
         <Form.Item
           label="Title"

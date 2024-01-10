@@ -48,11 +48,7 @@ function AdminEmails() {
         automatically assigned the admin role.
       </Paragraph>
       <Space direction="vertical" className="w-full">
-        <EditableEmails
-          emails={adminEmails}
-          onAdd={(email) => setAdminEmails([...adminEmails, email])}
-          onDelete={(email) => setAdminEmails(adminEmails.filter((e) => e !== email))}
-        />
+        <EditableEmails emails={adminEmails} onUpdate={setAdminEmails} />
         <Button
           icon={<CheckOutlined />}
           onClick={() =>

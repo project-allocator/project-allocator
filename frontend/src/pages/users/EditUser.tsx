@@ -21,7 +21,7 @@ export default function EditUser() {
         method="post"
         layout="vertical"
         autoComplete="off"
-        className="ml-6 max-w-xl"
+        className="max-w-xl"
         onFinish={(values) =>
           updateUser.mutate(values, {
             onSuccess: () => {
