@@ -7,7 +7,7 @@ import {
 } from "@/hooks/allocations";
 import { useConfig, useUpdateConfig } from "@/hooks/configs";
 import { CheckOutlined, CloseOutlined, LockOutlined, UnlockOutlined } from "@ant-design/icons";
-import { Button, Divider, InputNumber, Skeleton, Switch, Typography } from "antd";
+import { Button, Divider, InputNumber, Skeleton, Space, Switch, Typography } from "antd";
 import { Suspense, useState } from "react";
 
 const { Title, Paragraph } = Typography;
@@ -42,8 +42,10 @@ export default function ManageAllocations() {
 
 function MaxAllocations() {
   const { messageSuccess, messageError } = useMessage();
-  const maxAllocations = useConfig("max_allocations");
+
   const updateMaxAllocations = useUpdateConfig("max_allocations");
+  const initMaxAllocations = useConfig("max_allocations");
+  const [maxAllocations, setMaxAllocations] = useState(initMaxAllocations.data.value);
 
   return (
     <>
@@ -52,37 +54,49 @@ function MaxAllocations() {
         Set the maximum number of students allocated to a project. This value may be ignored depending on the
         implementation of the automatic allocation algorithm.
       </Paragraph>
-      <InputNumber
-        defaultValue={maxAllocations.data.value}
-        onBlur={(event) =>
-          updateMaxAllocations.mutate(event.target.value, {
-            onSuccess: () => messageSuccess("Successfully updated max allocations"),
-            onError: () => messageError("Failed to update max allocations"),
-          })
-        }
-      />
+      <Space direction="vertical">
+        <InputNumber value={maxAllocations} onChange={setMaxAllocations} />
+        <Button
+          icon={<CheckOutlined />}
+          onClick={() => {
+            updateMaxAllocations.mutate(maxAllocations, {
+              onSuccess: () => messageSuccess("Successfully updated max allocations"),
+              onError: () => messageError("Failed to update max allocations"),
+            });
+          }}
+        >
+          Update
+        </Button>
+      </Space>
     </>
   );
 }
 
 function MaxShortlists() {
   const { messageSuccess, messageError } = useMessage();
-  const maxShortlists = useConfig("max_shortlists");
+
   const updateMaxShortlists = useUpdateConfig("max_shortlists");
+  const initMaxShortlists = useConfig("max_shortlists");
+  const [maxShortlists, setMaxShortlists] = useState(initMaxShortlists.data.value);
 
   return (
     <>
       <Title level={4}>Max Number of Shortlists</Title>
       <Paragraph className="text-slate-500">Set the maximum number of projects a student can shortlist.</Paragraph>
-      <InputNumber
-        defaultValue={maxShortlists.data.value}
-        onBlur={(event) =>
-          updateMaxShortlists.mutate(event.target.value, {
-            onSuccess: () => messageSuccess("Successfully updated max shortlists"),
-            onError: () => messageError("Failed to update max shortlists"),
-          })
-        }
-      />
+      <Space direction="vertical">
+        <InputNumber value={maxShortlists} onChange={setMaxShortlists} />
+        <Button
+          icon={<CheckOutlined />}
+          onClick={() =>
+            updateMaxShortlists.mutate(maxShortlists, {
+              onSuccess: () => messageSuccess("Successfully updated max shortlists"),
+              onError: () => messageError("Failed to update max shortlists"),
+            })
+          }
+        >
+          Update
+        </Button>
+      </Space>
     </>
   );
 }
