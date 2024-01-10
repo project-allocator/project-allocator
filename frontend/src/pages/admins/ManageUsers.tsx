@@ -1,6 +1,9 @@
 import { AdminService } from "@/api";
+import EditableEmails from "@/components/common/EditableEmails";
 import UserList from "@/components/users/UserList";
+import { useMessage } from "@/contexts/MessageContext";
 import { useNonAllocatees } from "@/hooks/allocations";
+import { useConfig, useUpdateConfig } from "@/hooks/configs";
 import { useUsers } from "@/hooks/users";
 import { CheckOutlined, UploadOutlined } from "@ant-design/icons";
 import { Button, Divider, Modal, Skeleton, Space, Typography, Upload, UploadFile } from "antd";
@@ -14,6 +17,10 @@ export default function ManageUsers() {
     <>
       <Title level={3}>Manage Users</Title>
       <Divider />
+      <Suspense fallback={<Skeleton active />}>
+        <AdminEmails />
+      </Suspense>
+      <Divider />
       <MissingUsers />
       <Divider />
       <Suspense fallback={<Skeleton active />}>
@@ -23,6 +30,41 @@ export default function ManageUsers() {
       <Suspense fallback={<Skeleton active />}>
         <AllUsers />
       </Suspense>
+    </>
+  );
+}
+
+function AdminEmails() {
+  const { messageSuccess, messageError } = useMessage();
+  const updateAdminEmails = useUpdateConfig("admin_emails");
+  const initAdminEmails = useConfig("admin_emails");
+  const [adminEmails, setAdminEmails] = useState<string[]>(initAdminEmails.data.value);
+
+  return (
+    <>
+      <Title level={4}>Admin Emails</Title>
+      <Paragraph className="text-slate-500">
+        Register the emails of default admins for the Project Allocation. Users who sign up with these emails will be
+        automatically assigned the admin role.
+      </Paragraph>
+      <Space direction="vertical" className="w-full">
+        <EditableEmails
+          emails={adminEmails}
+          onAdd={(email) => setAdminEmails([...adminEmails, email])}
+          onDelete={(email) => setAdminEmails(adminEmails.filter((e) => e !== email))}
+        />
+        <Button
+          icon={<CheckOutlined />}
+          onClick={() =>
+            updateAdminEmails.mutate(adminEmails, {
+              onSuccess: () => messageSuccess("Successfully updated admin emails"),
+              onError: () => messageError("Failed to update admin emails"),
+            })
+          }
+        >
+          Update
+        </Button>
+      </Space>
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { ConfigService } from "@/api";
+import { ConfigRead, ConfigService } from "@/api";
 import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
 
 export function useConfig(key: string) {
@@ -12,12 +12,12 @@ export function useUpdateConfig(key: string) {
     mutationFn: (value: any) => ConfigService.updateConfig(key, { value }),
     onMutate: async (value: any) => {
       await queryClient.cancelQueries({ queryKey: ["config", key] });
-      const oldConfig = queryClient.getQueryData(["config", key]);
+      const oldConfig = queryClient.getQueryData(["config", key]) as ConfigRead;
       queryClient.setQueryData(["config", key], value);
       return { oldConfig };
     },
     onError: (_error, _variables, context) => {
-      queryClient.setQueryData(["config", key], context?.oldConfig);
+      queryClient.setQueryData(["config", key], context?.oldConfig.value);
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["config", key] });
