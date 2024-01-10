@@ -1,5 +1,7 @@
 import {
   ProjectCreateWithDetails,
+  ProjectDetailTemplateCreate,
+  ProjectDetailTemplateRead,
   ProjectRead,
   ProjectService,
   ProjectUpdateWithDetails,
@@ -11,6 +13,40 @@ export function useProjectDetailTemplates() {
   return useSuspenseQuery({
     queryKey: ["projects", "details", "templates"],
     queryFn: () => ProjectService.readProjectDetailTemplates(),
+  });
+}
+
+export function useCreateProjectDetailTemplate() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (template: ProjectDetailTemplateCreate) => ProjectService.createProjectDetailTemplate(template),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects", "details", "templates"] });
+    },
+  });
+}
+
+export function useUpdateProjectDetailTemplate() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ key, template }: { key: string; template: ProjectDetailTemplateRead }) =>
+      ProjectService.updateProjectDetailTemplate(key, template),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects", "details", "templates"] });
+    },
+  });
+}
+
+export function useDeleteProjectDetailTemplate() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (key: string) => ProjectService.deleteProjectDetailTemplate(key),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects", "details", "templates"] });
+    },
   });
 }
 

@@ -50,6 +50,11 @@ export default function Sider({
           label: <Link to="/admins/projects">Manage Projects</Link>,
         },
         {
+          key: "/admins/templates",
+          icon: <LockOutlined />,
+          label: <Link to="/admins/templates">Manage Templates</Link>,
+        },
+        {
           key: "/admins/allocations",
           icon: <LockOutlined />,
           label: <Link to="/admins/allocations">Manage Allocations</Link>,

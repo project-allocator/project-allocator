@@ -18,6 +18,7 @@ import ManageAllocations from "./pages/admins/ManageAllocations";
 import ManageData from "./pages/admins/ManageData";
 import ManageNotifications from "./pages/admins/ManageNotifications";
 import ManageProjects from "./pages/admins/ManageProjects";
+import ManageTemplates from "./pages/admins/ManageTemplates";
 import ManageUsers from "./pages/admins/ManageUsers";
 import AllocatedProject from "./pages/allocations/AllocatedProject";
 import AddProject from "./pages/projects/AddProject";
@@ -68,6 +69,7 @@ const router = createBrowserRouter(
             <Route index element={<Navigate to="/admins/users" />} />
             <Route path="users" element={<ManageUsers />} handle={{ crumb: "Manage Users" }} />
             <Route path="projects" element={<ManageProjects />} handle={{ crumb: "Manage Projects" }} />
+            <Route path="templates" element={<ManageTemplates />} handle={{ crumb: "Manage Templates" }} />
             <Route path="allocations" element={<ManageAllocations />} handle={{ crumb: "Manage Allocations" }} />
             <Route path="notifications" element={<ManageNotifications />} handle={{ crumb: "Manage Notifications" }} />
             <Route path="data" element={<ManageData />} handle={{ crumb: "Manage Data" }} />
