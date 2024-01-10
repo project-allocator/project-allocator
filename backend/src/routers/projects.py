@@ -23,6 +23,8 @@ from ..models import (
     ProjectDetail,
     ProjectDetailTemplate,
     ProjectDetailTemplateRead,
+    ProjectDetailTemplateCreate,
+    ProjectDetailTemplateUpdate,
     Proposal,
 )
 from ..logger import LoggerRoute
@@ -42,6 +44,59 @@ async def read_project_detail_templates(
     templates.sort(key=lambda template: template.created_at)
 
     return templates
+
+
+@router.post(
+    "/projects/details/templates",
+    response_model=ProjectDetailTemplateRead,
+)
+async def create_project_detail_template(
+    template_data: ProjectDetailTemplateCreate,
+    session: Annotated[Session, Depends(get_session)],
+):
+    template = ProjectDetailTemplate.model_validate(template_data)
+    session.add(template)
+    session.commit()
+
+    return template
+
+
+@router.put(
+    "/projects/details/templates/{key}",
+    response_model=ProjectDetailTemplateRead,
+)
+async def update_project_detail_template(
+    key: str,
+    template_data: ProjectDetailTemplateUpdate,
+    session: Annotated[Session, Depends(get_session)],
+):
+    template = session.get(ProjectDetailTemplate, key)
+    if not template:
+        raise HTTPException(status_code=404, detail="Project detail template not found")
+
+    # Exclude unset fields to perform partial update.
+    for key, value in template_data.model_dump(exclude_unset=True).items():
+        setattr(template, key, value)
+    session.add(template)
+    session.commit()
+
+    return template
+
+
+@router.delete(
+    "/projects/details/templates/{key}",
+)
+async def delete_project_detail_template(
+    key: str,
+    session: Annotated[Session, Depends(get_session)],
+):
+    template = session.get(ProjectDetailTemplate, key)
+    if not template:
+        raise HTTPException(status_code=404, detail="Project detail template not found")
+
+    session.delete(template)
+    session.commit()
+    return {"ok": True}
 
 
 @router.get(

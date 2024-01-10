@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 from sqlmodel import Session
 
-from src.models import User, Project, Proposal
+from src.models import User, Project, ProjectDetailTemplate, Proposal
 from src.factories import ProjectFactory, ProjectDetailTemplateFactory
 from src.utils.projects import parse_project
 
@@ -22,6 +22,58 @@ def test_read_project_detail_templates(
     # fmt: off
     assert set([template["key"] for template in data]) \
         == set([template.key for template in templates])
+
+
+def test_create_project_detail_template(
+    admin_client: TestClient,
+    session: Session,
+):
+    template = ProjectDetailTemplateFactory.build()
+
+    response = admin_client.post(
+        "/api/projects/details/templates",
+        json=template.model_dump(include=["key", "type", "required", "options", "title", "description", "message"]),
+    )
+    data = response.json()
+    assert response.status_code == 200
+
+    assert data["key"] == template.key
+    assert data["type"] == template.type
+    assert data["required"] == template.required
+
+    template = session.get(ProjectDetailTemplate, data["key"])
+
+    assert template.key == data["key"]
+    assert template.type == data["type"]
+    assert template.required == data["required"]
+
+
+def test_update_project_detail_template(
+    admin_client: TestClient,
+    session: Session,
+):
+    template = ProjectDetailTemplateFactory.build()
+    session.add(template)
+    session.commit()
+
+    new_template = ProjectDetailTemplateFactory.build()
+
+    response = admin_client.put(
+        f"/api/projects/details/templates/{template.key}",
+        json=new_template.model_dump(include=["key", "type", "required", "options", "title", "description", "message"]),
+    )
+    data = response.json()
+    assert response.status_code == 200
+
+    assert data["key"] == new_template.key
+    assert data["type"] == new_template.type
+    assert data["required"] == new_template.required
+
+    session.refresh(template)
+
+    assert template.key == data["key"]
+    assert template.type == data["type"]
+    assert template.required == data["required"]
 
 
 def test_read_approved_projects(

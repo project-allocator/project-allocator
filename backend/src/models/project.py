@@ -142,6 +142,21 @@ class ProjectDetailTemplateRead(ProjectDetailTemplateBase):
     pass
 
 
+class ProjectDetailTemplateCreate(ProjectDetailTemplateBase):
+    pass
+
+
+class ProjectDetailTemplateUpdate(ProjectDetailTemplateBase):
+    key: Optional[str] = None
+    type: Optional[str] = None
+    required: Optional[bool] = None
+    options: Optional[list[str]] = None
+
+    title: Optional[str] = None
+    description: Optional[str] = None
+    message: Optional[str] = None
+
+
 from .proposal import Proposal, ProposalRead
 from .allocation import Allocation, AllocationRead
 from .shortlist import Shortlist
