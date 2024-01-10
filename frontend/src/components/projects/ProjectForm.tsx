@@ -1,7 +1,5 @@
 import { ProjectDetailReadWithTemplate, ProjectDetailTemplateRead, ProjectReadWithDetails } from "@/api";
 import { useProjectDetailTemplates } from "@/hooks/projects";
-import { PlusOutlined } from "@ant-design/icons";
-import type { InputRef } from "antd";
 import {
   Button,
   Checkbox,
@@ -12,14 +10,13 @@ import {
   Radio,
   Select,
   Slider,
-  Space,
   Switch,
-  Tag,
   TimePicker,
 } from "antd";
 import dayjs from "dayjs";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import * as _ from "underscore";
+import EditableTags from "../common/EditableTags";
 
 const { TextArea } = Input;
 const { useForm, useFormInstance } = Form;
@@ -173,6 +170,7 @@ function CategoriesField({
   detail?: ProjectDetailReadWithTemplate;
   template: ProjectDetailTemplateRead;
 }) {
+  const [categories, setCategories] = useState<string[]>(detail?.value || []);
   // Propagate change up to the parent form component
   const form = useFormInstance();
   function setCategoriesWithForm(categories: string[]) {
@@ -180,108 +178,5 @@ function CategoriesField({
     setCategories(categories);
   }
 
-  const [categories, setCategories] = useState<string[]>(detail?.value || []);
-  const [addInputVisible, setAddInputVisible] = useState(false);
-  const [addInputValue, setAddInputValue] = useState("");
-  const [editInputIndex, setEditInputIndex] = useState(-1);
-  const [editInputValue, setEditInputValue] = useState("");
-  const addInputRef = useRef<InputRef>(null);
-  const editInputRef = useRef<InputRef>(null);
-
-  useEffect(() => {
-    if (addInputVisible) {
-      addInputRef.current?.focus();
-    }
-  }, [addInputVisible]);
-
-  useEffect(() => {
-    editInputRef.current?.focus();
-  }, [addInputValue]);
-
-  function handleClose(removedTag: string) {
-    setCategoriesWithForm(categories.filter((tag) => tag !== removedTag));
-  }
-
-  function showAddInput() {
-    setAddInputVisible(true);
-  }
-
-  function handleAddInputChange(event: React.ChangeEvent<HTMLInputElement>) {
-    setAddInputValue(event.target.value);
-  }
-
-  function handleAddInputConfirm() {
-    if (addInputValue && categories.indexOf(addInputValue) === -1) {
-      setCategoriesWithForm([...categories, addInputValue]);
-    }
-    setAddInputVisible(false);
-    setAddInputValue("");
-  }
-
-  function handleEditInputChange(event: React.ChangeEvent<HTMLInputElement>) {
-    setEditInputValue(event.target.value);
-  }
-
-  function handleEditInputConfirm() {
-    const newCategories = [...categories];
-    newCategories[editInputIndex] = editInputValue;
-    setCategoriesWithForm(newCategories);
-    setEditInputIndex(-1);
-    setAddInputValue("");
-  }
-
-  return (
-    <Space size="small" wrap>
-      {/* Edit the existing categories */}
-      <Space size="small" wrap>
-        {categories.map((category, index) => (
-          <div key={category} className="w-32">
-            {editInputIndex === index ? (
-              <Input
-                ref={editInputRef}
-                size="small"
-                value={editInputValue}
-                onChange={handleEditInputChange}
-                onBlur={handleEditInputConfirm}
-                onPressEnter={handleEditInputConfirm}
-                className="w-full"
-              />
-            ) : (
-              <Tag
-                closable
-                onDoubleClick={(event) => {
-                  setEditInputIndex(index);
-                  setEditInputValue(category);
-                  event.preventDefault();
-                }}
-                onClose={() => handleClose(category)}
-                className="w-full flex justify-between items-center"
-              >
-                {category}
-              </Tag>
-            )}
-          </div>
-        ))}
-      </Space>
-      {/* Add a new category */}
-      <div className="w-32">
-        {addInputVisible ? (
-          <Input
-            ref={addInputRef}
-            type="text"
-            size="small"
-            value={addInputValue}
-            onChange={handleAddInputChange}
-            onBlur={handleAddInputConfirm}
-            onPressEnter={handleAddInputConfirm}
-            className="w-full"
-          />
-        ) : (
-          <Tag onClick={showAddInput} className="w-full border-dashed text-center">
-            <PlusOutlined /> New Category
-          </Tag>
-        )}
-      </div>
-    </Space>
-  );
+  return <EditableTags tags={categories} onUpdate={setCategoriesWithForm} />;
 }
