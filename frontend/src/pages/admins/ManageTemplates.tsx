@@ -11,6 +11,7 @@ import { toCapitalCase } from "@/utils";
 import { PlusOutlined } from "@ant-design/icons";
 import { Button, Divider, Form, Input, Select, Space, Switch, Typography } from "antd";
 import { useState } from "react";
+import * as _ from "underscore";
 import { v4 as uuidv4 } from "uuid";
 
 const { Title } = Typography;
@@ -19,7 +20,8 @@ const { useForm } = Form;
 
 export default function ManageTemplates() {
   const { messageSuccess, messageError } = useMessage();
-  const projectDetailTemplates = useProjectDetailTemplates();
+  const templates = useProjectDetailTemplates();
+  const sortedTemplates = _.sortBy(templates.data, (template) => template.key);
   const [extraTemplateIds, setExtraTemplateIds] = useState<string[]>([]);
 
   const createProjectDetailTemplate = useCreateProjectDetailTemplate();
@@ -31,7 +33,7 @@ export default function ManageTemplates() {
       <Title level={3}>Manage Templates</Title>
       <Divider />
       <div className="flex flex-wrap place-items-start gap-4">
-        {projectDetailTemplates.data.map((template) => (
+        {sortedTemplates.map((template) => (
           <TemplateItem
             key={template.key}
             template={template}
