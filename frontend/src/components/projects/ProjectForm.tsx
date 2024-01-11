@@ -15,7 +15,6 @@ import {
 } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
-import * as _ from "underscore";
 import EditableTags from "../common/EditableTags";
 
 const { TextArea } = Input;
@@ -30,27 +29,22 @@ export default function ProjectForm({
 }) {
   const [form] = useForm();
 
+  function handleFinish(values: any) {
+    // Remove the detail- prefix from the form field names
+    // and convert them to an array of details.
+    values.details = [];
+    for (const [key, value] of Object.entries(values)) {
+      if (key.startsWith("detail-")) {
+        values.details.push({ key: key.replace("detail-", ""), value });
+        delete values[key];
+      }
+    }
+    onFinish(values);
+  }
+
   return (
     <>
-      <Form
-        form={form}
-        method="post"
-        layout="vertical"
-        autoComplete="off"
-        className="max-w-xl"
-        onFinish={(values) => {
-          // Remove the detail- prefix from the form field names
-          // and convert them to an array of details.
-          values.details = [];
-          for (const [key, value] of Object.entries(values)) {
-            if (key.startsWith("detail-")) {
-              values.details.push({ key: key.replace("detail-", ""), value });
-              delete values[key];
-            }
-          }
-          onFinish(values);
-        }}
-      >
+      <Form form={form} method="post" layout="vertical" autoComplete="off" className="max-w-xl" onFinish={handleFinish}>
         <Form.Item
           label="Title"
           name="title"
@@ -62,12 +56,7 @@ export default function ProjectForm({
         <Form.Item
           label="Description"
           name="description"
-          rules={[
-            {
-              required: true,
-              message: "Please enter your project description!",
-            },
-          ]}
+          rules={[{ required: true, message: "Please enter your project description!" }]}
           initialValue={initProject?.description}
         >
           <TextArea rows={5} maxLength={10000} showCount />
@@ -104,6 +93,58 @@ function ProjectDetailItem({
   detail?: ProjectDetailReadWithTemplate;
   template: ProjectDetailTemplateRead;
 }) {
+  function getInitialValue() {
+    // No initial value if creating new project
+    if (detail === undefined) return undefined;
+    switch (template.type) {
+      case "date":
+      case "time":
+        return dayjs(detail.value as string);
+      default:
+        return detail.value;
+    }
+  }
+
+  function getValuePropName() {
+    switch (template.type) {
+      case "switch":
+        return "checked";
+      default:
+        return undefined;
+    }
+  }
+
+  function showFormInput() {
+    const options = template.options?.map((option) => ({
+      value: option,
+      label: option,
+    }));
+    switch (template.type) {
+      case "textfield":
+        return <Input />;
+      case "textarea":
+        return <TextArea rows={5} maxLength={10000} showCount />;
+      case "number":
+        return <InputNumber className="w-48" />;
+      case "slider":
+        return <Slider />;
+      case "date":
+        return <DatePicker className="w-48" />;
+      case "time":
+        return <TimePicker className="w-48" />;
+      case "switch":
+        return <Switch />;
+      case "select":
+        return <Select className="w-48" options={options} />;
+      case "checkbox":
+        return <Checkbox.Group options={options} />;
+      case "radio":
+        return <Radio.Group options={options} />;
+      case "categories":
+        return <CategoriesField detail={detail} template={template} />;
+    }
+  }
+
   return (
     <Form.Item
       key={template.key}
@@ -111,56 +152,10 @@ function ProjectDetailItem({
       label={template.title}
       tooltip={template.description}
       rules={[{ required: template.required, message: template.message }]}
-      initialValue={(() => {
-        // No initial value if creating new project
-        if (detail === undefined) return undefined;
-        switch (template.type) {
-          case "date":
-          case "time":
-            return dayjs(detail.value as string);
-          default:
-            return detail.value;
-        }
-      })()}
-      valuePropName={(() => {
-        switch (template.type) {
-          case "switch":
-            return "checked";
-          default:
-            return undefined;
-        }
-      })()}
+      initialValue={getInitialValue()}
+      valuePropName={getValuePropName()}
     >
-      {(() => {
-        const options = template.options?.map((option) => ({
-          value: option,
-          label: option,
-        }));
-        switch (template.type) {
-          case "textfield":
-            return <Input />;
-          case "textarea":
-            return <TextArea rows={5} maxLength={10000} showCount />;
-          case "number":
-            return <InputNumber className="w-48" />;
-          case "slider":
-            return <Slider />;
-          case "date":
-            return <DatePicker className="w-48" />;
-          case "time":
-            return <TimePicker className="w-48" />;
-          case "switch":
-            return <Switch />;
-          case "select":
-            return <Select className="w-48" options={options} />;
-          case "checkbox":
-            return <Checkbox.Group options={options} />;
-          case "radio":
-            return <Radio.Group options={options} />;
-          case "categories":
-            return <CategoriesField detail={detail} template={template} />;
-        }
-      })()}
+      {showFormInput()}
     </Form.Item>
   );
 }
@@ -173,6 +168,7 @@ function CategoriesField({
   template: ProjectDetailTemplateRead;
 }) {
   const [categories, setCategories] = useState<string[]>(detail?.value || []);
+
   // Propagate change up to the parent form component
   const form = useFormInstance();
   function setCategoriesWithForm(categories: string[]) {
