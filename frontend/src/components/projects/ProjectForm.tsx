@@ -85,9 +85,8 @@ export default function ProjectForm({
 
 function ProjectDetailItems({ initProject }: { initProject?: ProjectReadWithDetails }) {
   const templates = useProjectDetailTemplates();
-  const sortedTemplates = _.sortBy(templates.data, (template) => template.key);
 
-  return sortedTemplates.map((template) => {
+  return templates.data.map((template) => {
     return (
       <ProjectDetailItem
         key={template.key}

@@ -2,13 +2,11 @@ import { ProjectDetailTemplateRead, ProjectReadWithDetails } from "@/api";
 import { useProjectDetailTemplates } from "@/hooks/projects";
 import { Space, Tag, Typography } from "antd";
 import dayjs from "dayjs";
-import * as _ from "underscore";
 
 const { Title, Paragraph } = Typography;
 
 export default function ProjectDetails({ project }: { project: ProjectReadWithDetails }) {
   const templates = useProjectDetailTemplates();
-  const sortedTemplates = _.sortBy(templates.data, (template) => template.key);
 
   function showDetailValue(template: ProjectDetailTemplateRead) {
     const detail = project.details.find((detail) => detail.template.key === template.key);
@@ -35,7 +33,7 @@ export default function ProjectDetails({ project }: { project: ProjectReadWithDe
     }
   }
 
-  return sortedTemplates.map((template) => {
+  return templates.data.map((template) => {
     return (
       <div key={template.key}>
         <Title level={4}>{template.title}</Title>
