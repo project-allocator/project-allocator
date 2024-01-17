@@ -8,8 +8,8 @@ import type { ProjectDetailReadWithTemplate } from './ProjectDetailReadWithTempl
 export type ProjectReadWithDetails = {
     title: string;
     description: string;
-    approved?: (boolean | null);
     id: string;
+    approved: (boolean | null);
     details: Array<ProjectDetailReadWithTemplate>;
 };
 

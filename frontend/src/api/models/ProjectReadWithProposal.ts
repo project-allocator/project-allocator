@@ -8,8 +8,8 @@ import type { ProposalRead } from './ProposalRead';
 export type ProjectReadWithProposal = {
     title: string;
     description: string;
-    approved?: (boolean | null);
     id: string;
+    approved: (boolean | null);
     proposal: ProposalRead;
 };
 

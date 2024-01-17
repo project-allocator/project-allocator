@@ -4,7 +4,6 @@
 /* eslint-disable */
 
 export type ProjectDetailCreate = {
-    key: string;
     value: any;
 };
 

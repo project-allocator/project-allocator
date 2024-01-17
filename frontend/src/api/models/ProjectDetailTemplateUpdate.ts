@@ -4,7 +4,6 @@
 /* eslint-disable */
 
 export type ProjectDetailTemplateUpdate = {
-    key?: (string | null);
     type?: (string | null);
     required?: (boolean | null);
     options?: (Array<string> | null);

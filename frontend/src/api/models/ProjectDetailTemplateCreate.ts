@@ -4,7 +4,6 @@
 /* eslint-disable */
 
 export type ProjectDetailTemplateCreate = {
-    key: string;
     type: string;
     required: boolean;
     options?: Array<string>;

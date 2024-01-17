@@ -4,7 +4,6 @@
 /* eslint-disable */
 
 export type ProjectDetailUpdate = {
-    key: string;
     value: any;
 };
 

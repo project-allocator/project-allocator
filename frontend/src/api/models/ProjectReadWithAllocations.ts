@@ -8,8 +8,8 @@ import type { AllocationRead } from './AllocationRead';
 export type ProjectReadWithAllocations = {
     title: string;
     description: string;
-    approved?: (boolean | null);
     id: string;
+    approved: (boolean | null);
     allocations: Array<AllocationRead>;
 };
 

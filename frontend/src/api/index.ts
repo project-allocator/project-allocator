@@ -8,7 +8,9 @@ export { OpenAPI } from './core/OpenAPI';
 export type { OpenAPIConfig } from './core/OpenAPI';
 
 export type { AllocationRead } from './models/AllocationRead';
+export type { Body_create_project } from './models/Body_create_project';
 export type { Body_send_notifications } from './models/Body_send_notifications';
+export type { Body_update_project } from './models/Body_update_project';
 export type { ConfigRead } from './models/ConfigRead';
 export type { ConfigUpdate } from './models/ConfigUpdate';
 export type { HTTPValidationError } from './models/HTTPValidationError';

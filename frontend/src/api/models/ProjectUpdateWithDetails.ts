@@ -9,6 +9,5 @@ export type ProjectUpdateWithDetails = {
     title?: (string | null);
     description?: (string | null);
     details?: Array<ProjectDetailUpdate>;
-    approved?: (boolean | null);
 };
 

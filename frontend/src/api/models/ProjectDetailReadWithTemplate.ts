@@ -6,7 +6,6 @@
 import type { ProjectDetailTemplateRead } from './ProjectDetailTemplateRead';
 
 export type ProjectDetailReadWithTemplate = {
-    key: string;
     value: any;
     template: ProjectDetailTemplateRead;
 };

@@ -6,7 +6,7 @@
 export type ProjectRead = {
     title: string;
     description: string;
-    approved?: (boolean | null);
     id: string;
+    approved: (boolean | null);
 };
 
