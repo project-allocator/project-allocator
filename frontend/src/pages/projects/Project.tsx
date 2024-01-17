@@ -44,11 +44,11 @@ export default function Project() {
       </Space>
       <Divider />
       <Title level={4}>{project.data!.title}</Title>
-      <Paragraph>{project.data!.description}</Paragraph>
       <Divider />
       <Suspense fallback={<Skeleton active />}>
         <Proposer />
       </Suspense>
+      <Paragraph>{project.data!.description}</Paragraph>
       <Divider />
       <Suspense fallback={<Skeleton active />}>
         <ProjectDetails project={project.data!} />
