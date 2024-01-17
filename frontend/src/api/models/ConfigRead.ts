@@ -5,6 +5,7 @@
 
 export type ConfigRead = {
     key: string;
+    type: string;
     value: any;
 };
 

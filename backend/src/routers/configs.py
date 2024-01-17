@@ -1,18 +1,12 @@
 from typing import Annotated
-from fastapi import APIRouter, HTTPException, Depends
+
+from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session
 
 from ..dependencies import get_session
-from ..models import (
-    Config,
-    ConfigRead,
-    ConfigUpdate,
-)
-from ..utils.configs import (
-    parse_config,
-    serialize_config_value,
-)
 from ..logger import LoggerRoute
+from ..models import Config, ConfigRead, ConfigUpdate
+from ..utils.configs import parse_config, serialize_config_value
 
 router = APIRouter(tags=["config"], route_class=LoggerRoute)
 
@@ -49,7 +43,7 @@ async def update_config(
     if config_data.value is None:
         raise HTTPException(status_code=400, detail="Config value cannot be empty")
 
-    config.value = serialize_config_value(key, config_data.value)
+    config.value = serialize_config_value(config.type, config_data.value)
     session.add(config)
     session.commit()
 

@@ -1,6 +1,7 @@
 from typing import Optional
-from sqlmodel import Field, Relationship, SQLModel
+
 import ulid
+from sqlmodel import Field, Relationship, SQLModel
 
 from ..mixins.timestamp import TimestampMixin
 
@@ -49,7 +50,7 @@ class UserReadWithAllocation(UserRead):
 
 
 # We can only update user role.
-# The field is left optional to preserve the semantics of partial updates.
+# This field is left optional to preserve the semantics of partial updates.
 class UserUpdate(SQLModel):
     role: Optional[str] = None
 
@@ -57,6 +58,6 @@ class UserUpdate(SQLModel):
 # Import dependant Pydantic models at the end of the module
 # to prevent circular import errors.
 from .allocation import Allocation, AllocationRead
+from .notification import Notification
 from .proposal import Proposal
 from .shortlist import Shortlist
-from .notification import Notification

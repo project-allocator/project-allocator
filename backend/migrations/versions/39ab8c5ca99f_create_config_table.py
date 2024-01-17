@@ -24,6 +24,7 @@ def upgrade() -> None:
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
         sa.Column("key", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("type", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("value", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.PrimaryKeyConstraint("key"),
     )
@@ -38,6 +39,7 @@ def upgrade() -> None:
             {
                 "key": "admin_emails",
                 "value": '["rbc@ic.ac.uk"]',
+                "type": "json",
                 "created_at": timestamp,
                 "updated_at": timestamp,
             },
@@ -45,13 +47,7 @@ def upgrade() -> None:
             {
                 "key": "max_allocations",
                 "value": "5",
-                "created_at": timestamp,
-                "updated_at": timestamp,
-            },
-            # Whether proposals are automatically approved.
-            {
-                "key": "default_approved",
-                "value": False,
+                "type": "number",
                 "created_at": timestamp,
                 "updated_at": timestamp,
             },
@@ -59,18 +55,31 @@ def upgrade() -> None:
             {
                 "key": "max_shortlists",
                 "value": "5",
+                "type": "number",
                 "created_at": timestamp,
                 "updated_at": timestamp,
             },
+            # Whether proposals are automatically approved.
+            {
+                "key": "default_approved",
+                "value": False,
+                "type": "boolean",
+                "created_at": timestamp,
+                "updated_at": timestamp,
+            },
+            # Whether new proposals are shutdown.
             {
                 "key": "proposals_shutdown",
                 "value": "false",
+                "type": "boolean",
                 "created_at": timestamp,
                 "updated_at": timestamp,
             },
+            # Whether new shortlists are shutdown.
             {
                 "key": "shortlists_shutdown",
                 "value": "false",
+                "type": "boolean",
                 "created_at": timestamp,
                 "updated_at": timestamp,
             },
