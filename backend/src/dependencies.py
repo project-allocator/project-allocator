@@ -1,12 +1,13 @@
+import os
 from typing import Optional
-from fastapi import Depends, HTTPException, Header
+
+from fastapi import Depends, Header, HTTPException
 from fastapi_azure_auth.user import User as AzureUser
 from sqlmodel import Session, select
-import os
 
-from .models import Config, User
-from .db import engine
 from .auth import azure_scheme
+from .db import engine
+from .models import Config, User
 
 
 def get_env():

@@ -1,7 +1,8 @@
-from typing import Optional
-from sqlmodel import Field, Relationship, SQLModel
 from datetime import datetime
+from typing import Optional
+
 import ulid
+from sqlmodel import Field, Relationship, SQLModel
 
 from ..mixins.timestamp import TimestampMixin
 

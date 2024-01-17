@@ -1,31 +1,27 @@
+import csv
+import io
+import json
 from typing import Annotated, Any
+
 from fastapi import APIRouter, Depends, Security
 from sqlalchemy.inspection import inspect
-from sqlmodel import Session, select, delete
-import io
-import csv
-import json
+from sqlmodel import Session, delete, select
 
-from ..dependencies import (
-    check_admin,
-    get_session,
-)
-from ..utils.projects import (
-    parse_project,
-)
+from ..dependencies import check_admin, get_session
+from ..logger import LoggerRoute
 from ..models import (
-    User,
+    Allocation,
+    Config,
+    Notification,
     Project,
-    ProjectReadWithProposal,
     ProjectDetail,
     ProjectDetailTemplate,
+    ProjectReadWithProposal,
     Proposal,
-    Allocation,
     Shortlist,
-    Notification,
-    Config,
+    User,
 )
-from ..logger import LoggerRoute
+from ..utils.projects import parse_project
 
 router = APIRouter(tags=["admin"], route_class=LoggerRoute)
 

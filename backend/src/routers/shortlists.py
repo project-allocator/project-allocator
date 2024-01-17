@@ -1,23 +1,11 @@
 from typing import Annotated
-from fastapi import APIRouter, HTTPException, Depends, Security
+
+from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlmodel import Session, select
 
-from ..dependencies import (
-    block_on_shortlists_shutdown,
-    check_staff,
-    check_student,
-    get_session,
-    get_user,
-)
-from ..models import (
-    User,
-    UserRead,
-    Project,
-    ProjectReadWithProposal,
-    Shortlist,
-    Config,
-)
+from ..dependencies import block_on_shortlists_shutdown, check_staff, check_student, get_session, get_user
 from ..logger import LoggerRoute
+from ..models import Config, Project, ProjectReadWithProposal, Shortlist, User, UserRead
 
 router = APIRouter(tags=["shortlist"], route_class=LoggerRoute)
 

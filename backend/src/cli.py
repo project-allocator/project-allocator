@@ -1,23 +1,14 @@
+import random
 from typing import Annotated
+
 import typer
 from rich import print
 from rich.progress import track
 from sqlmodel import Session
-import random
 
 from .db import engine
-from .models import (
-    Shortlist,
-    Allocation,
-    Proposal,
-)
-from .factories import (
-    UserFactory,
-    ProjectFactory,
-    ProjectDetailTemplateFactory,
-    NotificationFactory,
-)
-
+from .factories import NotificationFactory, ProjectDetailTemplateFactory, ProjectFactory, UserFactory
+from .models import Allocation, Proposal, Shortlist
 
 app = typer.Typer()
 

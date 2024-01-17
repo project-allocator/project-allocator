@@ -1,26 +1,21 @@
-from fastapi.testclient import TestClient
-from sqlmodel import Session, select, delete
-from io import StringIO
-import random
-import json
 import csv
+import json
+import random
+from io import StringIO
 
+from fastapi.testclient import TestClient
+from sqlmodel import Session, delete, select
+from src.factories import NotificationFactory, ProjectDetailTemplateFactory, ProjectFactory, UserFactory
 from src.models import (
-    User,
+    Allocation,
+    Config,
+    Notification,
     Project,
     ProjectDetail,
     ProjectDetailTemplate,
     Proposal,
-    Allocation,
     Shortlist,
-    Notification,
-    Config,
-)
-from src.factories import (
-    UserFactory,
-    ProjectFactory,
-    ProjectDetailTemplateFactory,
-    NotificationFactory,
+    User,
 )
 
 
@@ -142,7 +137,7 @@ def test_export_import_json(admin_client: TestClient, session: Session):
     ]
     notifications = [NotificationFactory.build_batch(5, user=user) for user in students + staff]
     notifications = sum(notifications, [])  # flatten list of lists
-    configs = [Config(key="min-allocations", type="number", value="1")] # new config
+    configs = [Config(key="min-allocations", type="number", value="1")]  # new config
 
     session.add_all(students)
     session.add_all(staff)

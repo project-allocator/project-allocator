@@ -1,9 +1,9 @@
-from fastapi.testclient import TestClient
-from sqlmodel import Session
 import random
 
-from src.models import User, Proposal, Allocation
-from src.factories import UserFactory, ProjectFactory
+from fastapi.testclient import TestClient
+from sqlmodel import Session
+from src.factories import ProjectFactory, UserFactory
+from src.models import Allocation, Proposal, User
 
 
 def test_read_allocated_project(

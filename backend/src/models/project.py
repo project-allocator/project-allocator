@@ -1,7 +1,8 @@
-from typing import Optional, Any
-from sqlalchemy import Column, JSON
-from sqlmodel import Field, Relationship, SQLModel
+from typing import Any, Optional
+
 import ulid
+from sqlalchemy import JSON, Column
+from sqlmodel import Field, Relationship, SQLModel
 
 from ..mixins.timestamp import TimestampMixin
 
@@ -162,6 +163,6 @@ class ProjectDetailTemplateUpdate(ProjectDetailTemplateBase):
     message: Optional[str] = None
 
 
-from .proposal import Proposal, ProposalRead
 from .allocation import Allocation, AllocationRead
+from .proposal import Proposal, ProposalRead
 from .shortlist import Shortlist

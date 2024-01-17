@@ -1,7 +1,6 @@
 from fastapi.testclient import TestClient
-from sqlmodel import Session
 from requests_mock import Mocker
-
+from sqlmodel import Session
 from src.models import User
 
 

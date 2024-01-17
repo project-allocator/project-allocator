@@ -30,5 +30,5 @@ class Shortlist(TimestampMixin, ShortlistBase, table=True):
     shortlisted_project: "Project" = Relationship(back_populates="shortlists")
 
 
-from .user import User
 from .project import Project
+from .user import User

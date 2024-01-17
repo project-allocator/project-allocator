@@ -1,23 +1,15 @@
 import logging
-from fastapi import FastAPI, APIRouter, Request, Security
+from contextlib import asynccontextmanager
+
+from fastapi import APIRouter, FastAPI, Request, Security
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette_csrf import CSRFMiddleware
-from contextlib import asynccontextmanager
 
-from .routers import (
-    admins,
-    users,
-    projects,
-    proposals,
-    allocations,
-    shortlists,
-    notifications,
-    configs,
-)
-from .auth import swagger_scheme, azure_scheme
+from .auth import azure_scheme, swagger_scheme
 from .env import CSRF_SECRET
 from .logger import LoggerRoute
+from .routers import admins, allocations, configs, notifications, projects, proposals, shortlists, users
 
 
 @asynccontextmanager

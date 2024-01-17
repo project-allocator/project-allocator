@@ -1,12 +1,13 @@
-from logging import getLogger, DEBUG
-from logging.handlers import RotatingFileHandler
-from typing import Callable
-from fastapi import Request, Response
-from fastapi.routing import APIRoute
-from os.path import dirname, abspath
-import time
 import datetime
 import json
+import time
+from logging import DEBUG, getLogger
+from logging.handlers import RotatingFileHandler
+from os.path import abspath, dirname
+from typing import Callable
+
+from fastapi import Request, Response
+from fastapi.routing import APIRoute
 
 base_path = dirname(dirname(abspath(__file__)))
 handler = RotatingFileHandler(f"{base_path}/logs/app.log", maxBytes=16 * 1024**2, backupCount=10)

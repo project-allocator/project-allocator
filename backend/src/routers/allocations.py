@@ -1,29 +1,22 @@
 from operator import and_
 from typing import Annotated
-from fastapi import APIRouter, HTTPException, Depends, Security
+
+from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlmodel import Session, select
 
-
 from .. import algorithms
-from ..dependencies import (
-    check_admin,
-    check_staff,
-    check_student,
-    get_session,
-    get_user,
-)
+from ..dependencies import check_admin, check_staff, check_student, get_session, get_user
+from ..logger import LoggerRoute
 from ..models import (
+    Allocation,
+    Config,
+    Project,
+    ProjectReadWithAllocations,
+    Shortlist,
     User,
     UserRead,
     UserReadWithAllocation,
-    Project,
-    ProjectReadWithAllocations,
-    Allocation,
-    Shortlist,
-    Config,
 )
-from ..logger import LoggerRoute
-
 
 router = APIRouter(tags=["allocation"], route_class=LoggerRoute)
 

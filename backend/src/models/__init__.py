@@ -1,10 +1,10 @@
-from .user import *
+from .allocation import *
+from .config import *
+from .notification import *
 from .project import *
 from .proposal import *
-from .allocation import *
 from .shortlist import *
-from .notification import *
-from .config import *
+from .user import *
 
 # Rebuild Pydantic models in package root
 # to prevent circular calls to model_rebuild().

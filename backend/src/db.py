@@ -1,15 +1,8 @@
 from sqlmodel import create_engine
 
-from .env import (
-    FASTAPI_ENV,
-    DATABASE_USERNAME,
-    DATABASE_PASSWORD,
-    DATABASE_DOMAIN,
-    DATABASE_SSL,
-)
-
 # Must be imported beforehand to setup SQLModel.metadata
 from . import models
+from .env import DATABASE_DOMAIN, DATABASE_PASSWORD, DATABASE_SSL, DATABASE_USERNAME, FASTAPI_ENV
 
 # Azure PostgreSQL requires the username to be in the format of 'username@domain'
 if FASTAPI_ENV == "production":

@@ -1,8 +1,7 @@
 from fastapi.testclient import TestClient
 from sqlmodel import Session
-
-from src.models import User, Proposal
 from src.factories import ProjectFactory
+from src.models import Proposal, User
 
 
 def test_read_proposed_projects(

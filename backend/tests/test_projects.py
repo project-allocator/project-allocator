@@ -1,8 +1,7 @@
 from fastapi.testclient import TestClient
 from sqlmodel import Session
-
-from src.models import User, Project, ProjectDetailTemplate, Proposal
-from src.factories import ProjectFactory, ProjectDetailTemplateFactory
+from src.factories import ProjectDetailTemplateFactory, ProjectFactory
+from src.models import Project, ProjectDetailTemplate, Proposal, User
 from src.utils.projects import parse_project
 
 
@@ -213,8 +212,10 @@ def test_update_project(
             "template_ids": [detail.template.id for detail in new_project.details],
             "project_data": {
                 **new_project.model_dump(include=["title", "description"]),
-                "details": [{"template_id": detail.template.id, "value": detail.value} for detail in new_project.details],
-            }
+                "details": [
+                    {"template_id": detail.template.id, "value": detail.value} for detail in new_project.details
+                ],
+            },
         },
     )
     data = response.json()

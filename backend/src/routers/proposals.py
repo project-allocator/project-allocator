@@ -1,19 +1,11 @@
 from typing import Annotated
-from fastapi import APIRouter, HTTPException, Depends, Security
+
+from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlmodel import Session
 
-from ..dependencies import (
-    check_staff,
-    get_session,
-    get_user,
-)
-from ..models import (
-    Project,
-    ProjectReadWithProposal,
-    User,
-    UserRead,
-)
+from ..dependencies import check_staff, get_session, get_user
 from ..logger import LoggerRoute
+from ..models import Project, ProjectReadWithProposal, User, UserRead
 
 router = APIRouter(tags=["proposal"], route_class=LoggerRoute)
 

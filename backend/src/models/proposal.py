@@ -31,5 +31,5 @@ class ProposalRead(ProposalBase):
     proposed_project: "ProjectRead"
 
 
-from .user import User, UserRead
 from .project import Project, ProjectRead
+from .user import User, UserRead

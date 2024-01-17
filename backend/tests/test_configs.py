@@ -1,7 +1,7 @@
-from fastapi.testclient import TestClient
-from sqlmodel import Session
 import json
 
+from fastapi.testclient import TestClient
+from sqlmodel import Session
 from src.models import Config
 
 

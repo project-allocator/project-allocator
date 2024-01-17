@@ -1,4 +1,5 @@
 from typing import Optional
+
 from sqlmodel import Field, Relationship, SQLModel
 
 from ..mixins.timestamp import TimestampMixin
@@ -40,5 +41,5 @@ class AllocationRead(AllocationBase):
     pass
 
 
-from .user import User, UserRead
 from .project import Project, ProjectRead
+from .user import User, UserRead

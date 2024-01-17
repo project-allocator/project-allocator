@@ -1,6 +1,7 @@
+import json
+
 import factory
 from faker import Faker
-import json
 
 from ..models import Project, ProjectDetail, ProjectDetailTemplate
 

@@ -1,17 +1,9 @@
-from fastapi.testclient import TestClient
-from sqlmodel import Session, select
 import random
 
-from src.factories import (
-    UserFactory,
-    ProjectFactory,
-)
-from src.models import (
-    User,
-    Proposal,
-    Shortlist,
-    Config,
-)
+from fastapi.testclient import TestClient
+from sqlmodel import Session, select
+from src.factories import ProjectFactory, UserFactory
+from src.models import Config, Proposal, Shortlist, User
 
 
 def test_read_shortlisted_projects(

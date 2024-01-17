@@ -1,9 +1,8 @@
 from fastapi.testclient import TestClient
-from sqlmodel import Session, select
 from requests_mock import Mocker
-
-from src.models import User, Notification
-from src.factories import UserFactory, NotificationFactory
+from sqlmodel import Session, select
+from src.factories import NotificationFactory, UserFactory
+from src.models import Notification, User
 
 
 def test_read_notifications(

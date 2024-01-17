@@ -1,25 +1,15 @@
-from typing import Annotated
-from fastapi import APIRouter, HTTPException, Depends, Security
-from sqlmodel import Session, select
-from os.path import dirname, abspath
-from datetime import datetime
-import requests
 import json
+from datetime import datetime
+from os.path import abspath, dirname
+from typing import Annotated
 
-from ..dependencies import (
-    check_admin,
-    get_env,
-    get_user,
-    get_session,
-    get_token,
-)
-from ..models import (
-    User,
-    Notification,
-    NotificationRead,
-    NotificationCreate,
-)
+import requests
+from fastapi import APIRouter, Depends, HTTPException, Security
+from sqlmodel import Session, select
+
+from ..dependencies import check_admin, get_env, get_session, get_token, get_user
 from ..logger import LoggerRoute
+from ..models import Notification, NotificationCreate, NotificationRead, User
 
 router = APIRouter(tags=["notification"], route_class=LoggerRoute)
 

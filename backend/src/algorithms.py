@@ -1,11 +1,6 @@
 import random
 
-from .models import (
-    User,
-    Project,
-    Allocation,
-    Shortlist,
-)
+from .models import Allocation, Project, Shortlist, User
 
 
 # Randomly allocates students to projects using `max_allocations`.

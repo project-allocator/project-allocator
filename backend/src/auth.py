@@ -1,11 +1,6 @@
 from fastapi_azure_auth import SingleTenantAzureAuthorizationCodeBearer
 
-from .env import (
-    APP_CLIENT_ID,
-    OPENAPI_CLIENT_ID,
-    TENANT_ID,
-)
-
+from .env import APP_CLIENT_ID, OPENAPI_CLIENT_ID, TENANT_ID
 
 azure_scheme = SingleTenantAzureAuthorizationCodeBearer(
     app_client_id=APP_CLIENT_ID,
