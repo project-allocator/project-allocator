@@ -28,7 +28,6 @@ class ProjectFactory(factory.alchemy.SQLAlchemyModelFactory):
 
         self.details = [
             ProjectDetailFactory.build(
-                key=template.key,
                 value__type=template.type,
                 value__options=template.options,
                 project=self,
@@ -56,8 +55,10 @@ class ProjectDetailFactory(factory.alchemy.SQLAlchemyModelFactory):
                 self.value = _fake.sentence()
             case "textarea":
                 self.value = _fake.paragraph()
-            case "number" | "slider":
+            case "number":
                 self.value = str(_fake.random_int(min=0, max=1000000))
+            case "slider":
+                self.value = str(_fake.random_int(min=0, max=100))
             case "date" | "time":
                 self.value = str(_fake.date_time())
             case "switch":
@@ -73,11 +74,6 @@ class ProjectDetailFactory(factory.alchemy.SQLAlchemyModelFactory):
 class ProjectDetailTemplateFactory(factory.alchemy.SQLAlchemyModelFactory):
     class Meta:
         model = ProjectDetailTemplate
-
-    @factory.lazy_attribute
-    def key(self):
-        # Use lazy attribute to respect the unique constraint.
-        return _fake.unique.slug()
 
     type = factory.Faker(
         "random_element",

@@ -55,15 +55,15 @@ async def create_project_detail_template(
 
 
 @router.put(
-    "/projects/details/templates/{key}",
+    "/projects/details/templates/{template_id}",
     response_model=ProjectDetailTemplateRead,
 )
 async def update_project_detail_template(
-    key: str,
+    template_id: str,
     template_data: ProjectDetailTemplateUpdate,
     session: Annotated[Session, Depends(get_session)],
 ):
-    template = session.get(ProjectDetailTemplate, key)
+    template = session.get(ProjectDetailTemplate, template_id)
     if not template:
         raise HTTPException(status_code=404, detail="Project detail template not found")
 
@@ -77,13 +77,13 @@ async def update_project_detail_template(
 
 
 @router.delete(
-    "/projects/details/templates/{key}",
+    "/projects/details/templates/{template_id}",
 )
 async def delete_project_detail_template(
-    key: str,
+    template_id: str,
     session: Annotated[Session, Depends(get_session)],
 ):
-    template = session.get(ProjectDetailTemplate, key)
+    template = session.get(ProjectDetailTemplate, template_id)
     if not template:
         raise HTTPException(status_code=404, detail="Project detail template not found")
 
@@ -158,34 +158,32 @@ async def read_project(
     dependencies=[Security(check_staff), Security(block_on_proposals_shutdown)],
 )
 async def create_project(
+    template_ids: list[str],
     project_data: ProjectCreateWithDetails,
     user: Annotated[User, Depends(get_user)],
     session: Annotated[Session, Depends(get_session)],
 ):
-    # Prevent staff from approving their own projects.
-    project_data.approved = None
-
-    # Set the project to approved if the config is set to auto-approve projects.
-    default_approved = session.get(Config, "default_approved")
-    if default_approved.value:
-        project_data.approved = True
-
     # Remove project details in order to validate the project.
     details_data = project_data.details
     del project_data.details
     project = Project.model_validate(project_data)
+    # Set the project to approved if the config is set to auto-approve projects.
+    default_approved = session.get(Config, "default_approved")
+    if default_approved.value == "true":
+        project.approved = True
     session.add(project)
 
     # Serialize and validate project details.
-    for detail_data in details_data:
-        # Check if the key and type are consistent with the template before commit.
-        template = session.get(ProjectDetailTemplate, detail_data.key)
+    for detail_data, template_id in zip(details_data, template_ids):
+        # Check if template exists.
+        template = session.get(ProjectDetailTemplate, template_id)
         if not template:
-            raise HTTPException(status_code=400, detail="Invalid project detail key")
+            raise HTTPException(status_code=400, detail="Template does not exist")
 
         detail_data = serialize_project_detail(template, detail_data)
         detail = ProjectDetail.model_validate(detail_data)
         detail.project = project
+        detail.template = template
         session.add(detail)
 
     # Create corresponding project proposal.
@@ -203,6 +201,7 @@ async def create_project(
     dependencies=[Security(check_staff), Security(block_on_proposals_shutdown)],
 )
 async def update_project(
+    template_ids: list[str],
     project_id: str,
     project_data: ProjectUpdateWithDetails,
     user: Annotated[User, Depends(get_user)],
@@ -215,9 +214,6 @@ async def update_project(
         # Only project proposer can edit the project.
         raise HTTPException(status_code=401, detail="Project not proposed by user")
 
-    # Prevent staff from approving their own projects.
-    project_data.approved = project.approved
-
     # Exclude unset fields to perform partial update.
     details_data = project_data.details
     del project_data.details
@@ -226,14 +222,14 @@ async def update_project(
     session.add(project)
 
     # Serialize and update the values of corresponding project details.
-    for detail_data in details_data:
-        # Check if the key and type are consistent with the template before commit.
-        template = session.get(ProjectDetailTemplate, detail_data.key)
+    for detail_data, template_id in zip(details_data, template_ids):
+        # Check if template exists.
+        template = session.get(ProjectDetailTemplate, template_id)
         if not template:
-            raise HTTPException(status_code=400, detail="Invalid project detail key")
+            raise HTTPException(status_code=400, detail="Template does not exist")
 
         detail_data = serialize_project_detail(template, detail_data)
-        detail = session.get(ProjectDetail, (detail_data.key, project_id))
+        detail = session.get(ProjectDetail, (project_id, template_id))
         detail.value = detail_data.value
         session.add(detail)
 

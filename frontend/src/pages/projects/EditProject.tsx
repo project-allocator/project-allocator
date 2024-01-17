@@ -14,8 +14,8 @@ export default function EditProject() {
   const initialProject = useProject(projectId!);
   const updateProject = useUpdateProject(projectId!);
 
-  function handleUpdateProject(values: any) {
-    updateProject.mutate(values, {
+  function handleUpdateProject(data: any) {
+    updateProject.mutate(data, {
       onSuccess: () => {
         messageSuccess("Successfully updated project");
         navigate(`/projects/${projectId}`);

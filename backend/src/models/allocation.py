@@ -23,12 +23,13 @@ class Allocation(TimestampMixin, AllocationBase, table=True):
         primary_key=True,
         foreign_key="user.id",
         max_length=26,
+        default=None,
     )
     allocated_project_id: str = Field(
         foreign_key="project.id",
         max_length=26,
+        default=None,
     )
-
     allocatee: "User" = Relationship(back_populates="allocation")
     allocated_project: "Project" = Relationship(back_populates="allocations")
 

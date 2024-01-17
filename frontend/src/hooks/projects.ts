@@ -31,8 +31,8 @@ export function useUpdateProjectDetailTemplate() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ key, template }: { key: string; template: ProjectDetailTemplateRead }) =>
-      ProjectService.updateProjectDetailTemplate(key, template),
+    mutationFn: ({ templateId, template }: { templateId: string; template: ProjectDetailTemplateRead }) =>
+      ProjectService.updateProjectDetailTemplate(templateId, template),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects", "details", "templates"] });
     },
@@ -43,7 +43,7 @@ export function useDeleteProjectDetailTemplate() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (key: string) => ProjectService.deleteProjectDetailTemplate(key),
+    mutationFn: (templateId: string) => ProjectService.deleteProjectDetailTemplate(templateId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects", "details", "templates"] });
     },
@@ -76,7 +76,8 @@ export function useCreateProject() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (project: ProjectCreateWithDetails) => ProjectService.createProject(project),
+    mutationFn: ({ templateIds, project }: { templateIds: string[]; project: ProjectCreateWithDetails }) =>
+      ProjectService.createProject({ template_ids: templateIds, project_data: project }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
     },
@@ -87,7 +88,8 @@ export function useUpdateProject(id: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (project: ProjectUpdateWithDetails) => ProjectService.updateProject(id, project),
+    mutationFn: ({ templateIds, project }: { templateIds: string[]; project: ProjectUpdateWithDetails }) =>
+      ProjectService.updateProject(id, { template_ids: templateIds, project_data: project }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
     },

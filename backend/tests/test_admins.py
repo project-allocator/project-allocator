@@ -22,7 +22,6 @@ from src.factories import (
     ProjectDetailTemplateFactory,
     NotificationFactory,
 )
-from src.utils.projects import parse_project
 
 
 def test_check_missing_users(admin_client: TestClient):
@@ -143,7 +142,7 @@ def test_export_import_json(admin_client: TestClient, session: Session):
     ]
     notifications = [NotificationFactory.build_batch(5, user=user) for user in students + staff]
     notifications = sum(notifications, [])  # flatten list of lists
-    configs = [Config(key="new_key", value="new_value")]
+    configs = [Config(key="min-allocations", type="number", value="1")] # new config
 
     session.add_all(students)
     session.add_all(staff)
@@ -169,7 +168,7 @@ def test_export_import_json(admin_client: TestClient, session: Session):
     assert len(data["allocations"]) == len(allocations)
     assert len(data["shortlists"]) == len(shortlists)
     assert len(data["notifications"]) == len(notifications)
-    assert len(data["configs"]) == len(configs) + 5  # 5 default configs
+    assert len(data["configs"]) == len(configs) + 6  # 6 default configs
 
     session.exec(delete(User))
     session.exec(delete(Project))

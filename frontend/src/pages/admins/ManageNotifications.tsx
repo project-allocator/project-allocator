@@ -40,7 +40,7 @@ function ProjectApprovalNotifications() {
         onClick={() => {
           setIsLoading(true);
           const notification = {
-            notification_data: {
+            notification: {
               title: "Project proposals have been approved.",
               description: "Students will be able to view and shortlist your project proposals from now onwards.",
             },
@@ -78,7 +78,7 @@ function ProjectAllocationNotifications() {
         onClick={() => {
           setIsLoading(true);
           const notification = {
-            notification_data: {
+            notification: {
               title: "Projects have been allocated.",
               description: "Please accept or decline your project allocation on the Project Allocator.",
             },
@@ -119,7 +119,7 @@ function CustomNotifications() {
           setIsLoading(true);
           sendNotifications.mutate(
             {
-              notification_data: {
+              notification: {
                 title: values.title,
                 description: values.description,
               },

@@ -33,17 +33,17 @@ export default function ManageTemplates() {
       <div className="flex flex-wrap place-items-start gap-4">
         {templates.data.map((template) => (
           <TemplateItem
-            key={template.key}
+            key={template.id}
             template={template}
             onFinish={(values) => {
               // prettier-ignore
-              updateProjectDetailTemplate.mutate({ template: values, key: template.key }, {
+              updateProjectDetailTemplate.mutate({ templateId: template.id, template: values }, {
                 onSuccess: () => messageSuccess("Successfully updated project detail template."),
                 onError: () => messageError("Failed to update project detail template."),
               });
             }}
             onDelete={() =>
-              deleteProjectDetailTemplate.mutate(template.key, {
+              deleteProjectDetailTemplate.mutate(template.id, {
                 onSuccess: () => messageSuccess("Successfully deleted project detail template."),
                 onError: () => messageError("Failed to delete project detail template."),
               })
@@ -105,16 +105,6 @@ function TemplateItem({
       className="max-w-md basis-full p-4 bg-gray-50 rounded-md"
     >
       <Form.Item
-        label="Key"
-        name="key"
-        rules={[
-          { required: true, message: "Please enter your project detail template key!" },
-          { pattern: /^[a-z0-9-]+$/, message: "Please enter a valid project detail template key!" },
-        ]}
-      >
-        <Input disabled={!!template} />
-      </Form.Item>
-      <Form.Item
         label="Type"
         name="type"
         rules={[{ required: true, message: "Please enter your project detail template type!" }]}
@@ -134,6 +124,7 @@ function TemplateItem({
             "categories",
           ].map((type) => ({ value: type, label: toCapitalCase(type) }))}
           onChange={(value) => setHasOptions(["select", "checkbox", "radio"].includes(value))}
+          disabled={template !== undefined}
         />
       </Form.Item>
       <Form.Item

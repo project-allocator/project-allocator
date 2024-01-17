@@ -15,8 +15,8 @@ export function useSendNotifications() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (variables: { notification_data: NotificationCreate; roles: string[] }) =>
-      NotificationService.sendNotifications(variables),
+    mutationFn: ({ notification, roles }: { notification: NotificationCreate; roles: string[] }) =>
+      NotificationService.sendNotifications({ notification_data: notification, roles: roles }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["users", "notifications"] });
     },

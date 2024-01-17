@@ -10,10 +10,6 @@ class ProjectBase(SQLModel):
     title: str
     description: str
 
-    # True if admin has approved proposal.
-    # None means admin has not made any response yet.
-    approved: Optional[bool] = None
-
 
 class Project(TimestampMixin, ProjectBase, table=True):
     __tablename__ = "project"
@@ -23,6 +19,10 @@ class Project(TimestampMixin, ProjectBase, table=True):
         max_length=26,
         default_factory=lambda: str(ulid.new()),
     )
+
+    # True if admin has approved proposal.
+    # None means admin has not made any response yet.
+    approved: Optional[bool] = None
 
     # Specify cascade options using 'sa_relationship_kwargs'
     # as these tables should be deleted when user gets deleted.
@@ -46,6 +46,9 @@ class Project(TimestampMixin, ProjectBase, table=True):
 
 class ProjectRead(ProjectBase):
     id: str
+
+    # TODO: Should not be included in create or update model
+    approved: Optional[bool]
 
 
 class ProjectReadWithDetails(ProjectRead):
@@ -73,20 +76,12 @@ class ProjectUpdate(SQLModel):
     description: Optional[str] = None
     details: list["ProjectDetail"] = []
 
-    # True if admin has approved proposal.
-    # None means admin has not made any response yet.
-    approved: Optional[bool] = None
-
 
 class ProjectUpdateWithDetails(ProjectUpdate):
     details: list["ProjectDetailUpdate"] = []
 
 
 class ProjectDetailBase(SQLModel):
-    key: str = Field(
-        primary_key=True,
-        foreign_key="project_detail_template.key",
-    )
     value: Any  # any type to allow input to be parsed
 
 
@@ -101,8 +96,13 @@ class ProjectDetail(TimestampMixin, ProjectDetailBase, table=True):
         max_length=26,
         default=None,
     )
+    template_id: str = Field(
+        primary_key=True,
+        foreign_key="project_detail_template.id",
+        max_length=26,
+        default=None,
+    )
     project: "Project" = Relationship(back_populates="details")
-
     template: "ProjectDetailTemplate" = Relationship()
 
 
@@ -123,7 +123,6 @@ class ProjectDetailUpdate(ProjectDetailBase):
 
 
 class ProjectDetailTemplateBase(SQLModel):
-    key: str = Field(primary_key=True)
     type: str
     required: bool
     options: list[str] = Field(sa_column=Column(JSON), default=[])
@@ -137,17 +136,23 @@ class ProjectDetailTemplateBase(SQLModel):
 class ProjectDetailTemplate(TimestampMixin, ProjectDetailTemplateBase, table=True):
     __tablename__ = "project_detail_template"
 
+    id: Optional[str] = Field(
+        primary_key=True,
+        max_length=26,
+        default_factory=lambda: str(ulid.new()),
+    )
+
 
 class ProjectDetailTemplateRead(ProjectDetailTemplateBase):
-    pass
+    id: str
 
 
 class ProjectDetailTemplateCreate(ProjectDetailTemplateBase):
     pass
 
 
+# Type is excluded as it should not be changed.
 class ProjectDetailTemplateUpdate(ProjectDetailTemplateBase):
-    key: Optional[str] = None
     type: Optional[str] = None
     required: Optional[bool] = None
     options: Optional[list[str]] = None

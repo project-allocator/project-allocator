@@ -1,4 +1,7 @@
-from fastapi import FastAPI, APIRouter, Security
+import logging
+from fastapi import FastAPI, APIRouter, Request, Security
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 from starlette_csrf import CSRFMiddleware
 from contextlib import asynccontextmanager
 
@@ -51,6 +54,17 @@ router.include_router(projects.router)
 router.include_router(users.router)
 router.include_router(notifications.router)
 router.include_router(configs.router)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    # Log more information on 422 unprocessable entity error.
+    # By default FastAPI does not produce detailed error message.
+    logging.error(exc)
+    return JSONResponse(
+        content={"status_code": 422, "message": str(exc), "data": None},
+        status_code=422,
+    )
 
 
 @router.get("/test/alive")

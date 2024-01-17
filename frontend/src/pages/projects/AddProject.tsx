@@ -12,8 +12,8 @@ export default function AddProject() {
 
   const createProject = useCreateProject();
 
-  function handleCreateProject(values: any) {
-    createProject.mutate(values, {
+  function handleCreateProject(data: any) {
+    createProject.mutate(data, {
       onSuccess: () => {
         messageSuccess("Successfully created project");
         navigate("/projects");

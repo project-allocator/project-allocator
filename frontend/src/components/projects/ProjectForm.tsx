@@ -25,21 +25,22 @@ export default function ProjectForm({
   onFinish,
 }: {
   initProject?: ProjectReadWithDetails;
-  onFinish: (values: any) => void;
+  onFinish: (data: any) => void;
 }) {
   const [form] = useForm();
 
-  function handleFinish(values: any) {
-    // Remove the detail- prefix from the form field names
-    // and convert them to an array of details.
-    values.details = [];
-    for (const [key, value] of Object.entries(values)) {
+  function handleFinish(project: any) {
+    // Remove the detail- prefix from the form field names.
+    const templateIds = [];
+    project.details = [];
+    for (const key in project) {
       if (key.startsWith("detail-")) {
-        values.details.push({ key: key.replace("detail-", ""), value });
-        delete values[key];
+        templateIds.push(key.replace("detail-", ""));
+        project.details.push({ value: project[key] });
+        delete project[key];
       }
     }
-    onFinish(values);
+    onFinish({ templateIds, project });
   }
 
   return (
@@ -78,8 +79,8 @@ function ProjectDetailItems({ initProject }: { initProject?: ProjectReadWithDeta
   return templates.data.map((template) => {
     return (
       <ProjectDetailItem
-        key={template.key}
-        detail={initProject?.details.find((detail) => detail.template.key === template.key)}
+        key={template.id}
+        detail={initProject?.details.find((detail) => detail.template.id === template.id)}
         template={template}
       />
     );
@@ -147,8 +148,8 @@ function ProjectDetailItem({
 
   return (
     <Form.Item
-      key={template.key}
-      name={`detail-${template.key}`}
+      key={template.id}
+      name={`detail-${template.id}`}
       label={template.title}
       tooltip={template.description}
       rules={[{ required: template.required, message: template.message }]}
@@ -172,7 +173,7 @@ function CategoriesField({
   // Propagate change up to the parent form component
   const form = useFormInstance();
   function setCategoriesWithForm(categories: string[]) {
-    form.setFieldValue(`detail-${template.key}`, categories);
+    form.setFieldValue(`detail-${template.id}`, categories);
     setCategories(categories);
   }
 

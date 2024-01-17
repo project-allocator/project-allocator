@@ -20,8 +20,8 @@ def test_read_project_detail_templates(
 
     assert len(data) == len(templates)
     # fmt: off
-    assert set([template["key"] for template in data]) \
-        == set([template.key for template in templates])
+    assert set([template["id"] for template in data]) \
+        == set([template.id for template in templates])
 
 
 def test_create_project_detail_template(
@@ -32,18 +32,12 @@ def test_create_project_detail_template(
 
     response = admin_client.post(
         "/api/projects/details/templates",
-        json=template.model_dump(include=["key", "type", "required", "options", "title", "description", "message"]),
+        json=template.model_dump(include=["type", "required", "options", "title", "description", "message"]),
     )
     data = response.json()
     assert response.status_code == 200
 
-    assert data["key"] == template.key
-    assert data["type"] == template.type
-    assert data["required"] == template.required
-
-    template = session.get(ProjectDetailTemplate, data["key"])
-
-    assert template.key == data["key"]
+    template = session.get(ProjectDetailTemplate, data["id"])
     assert template.type == data["type"]
     assert template.required == data["required"]
 
@@ -59,19 +53,13 @@ def test_update_project_detail_template(
     new_template = ProjectDetailTemplateFactory.build()
 
     response = admin_client.put(
-        f"/api/projects/details/templates/{template.key}",
-        json=new_template.model_dump(include=["key", "type", "required", "options", "title", "description", "message"]),
+        f"/api/projects/details/templates/{template.id}",
+        json=new_template.model_dump(include=["type", "required", "options", "title", "description", "message"]),
     )
     data = response.json()
     assert response.status_code == 200
 
-    assert data["key"] == new_template.key
-    assert data["type"] == new_template.type
-    assert data["required"] == new_template.required
-
-    session.refresh(template)
-
-    assert template.key == data["key"]
+    template = session.get(ProjectDetailTemplate, data["id"])
     assert template.type == data["type"]
     assert template.required == data["required"]
 
@@ -120,7 +108,7 @@ def test_read_disapproved_projects(
         == set([disapproved_project.title for disapproved_project in disapproved_projects])
 
 
-def test_read_no_response_projects(
+def test_read_non_approved_projects(
     staff_user: User,
     admin_client: TestClient,
     session: Session,
@@ -130,7 +118,7 @@ def test_read_no_response_projects(
     session.add_all(projects)
     session.add_all(proposals)
     session.commit()
-    response = admin_client.get("/api/projects/no-response")
+    response = admin_client.get("/api/projects/non-approved")
     data = response.json()
     assert response.status_code == 200
 
@@ -179,8 +167,11 @@ def test_create_project(
     response = staff_client.post(
         "/api/projects",
         json={
-            **project.model_dump(include=["title", "description"]),
-            "details": [detail.model_dump(include=["key", "value"]) for detail in project.details],
+            "template_ids": [detail.template.id for detail in project.details],
+            "project_data": {
+                **project.model_dump(include=["title", "description"]),
+                "details": [detail.model_dump(include=["value"]) for detail in project.details],
+            },
         },
     )
     data = response.json()
@@ -188,7 +179,6 @@ def test_create_project(
 
     assert data["title"] == project.title
     assert data["description"] == project.description
-    assert data["approved"] == None  # must be None
     assert len(data["details"]) == len(project.details)
 
     project = session.get(Project, data["id"])
@@ -220,8 +210,11 @@ def test_update_project(
     response = staff_client.put(
         f"/api/projects/{project.id}",
         json={
-            **new_project.model_dump(include=["title", "description"]),
-            "details": [detail.model_dump(include=["key", "value"]) for detail in new_project.details],
+            "template_ids": [detail.template.id for detail in new_project.details],
+            "project_data": {
+                **new_project.model_dump(include=["title", "description"]),
+                "details": [{"template_id": detail.template.id, "value": detail.value} for detail in new_project.details],
+            }
         },
     )
     data = response.json()
@@ -229,7 +222,6 @@ def test_update_project(
 
     assert data["title"] == new_project.title
     assert data["description"] == new_project.description
-    assert data["approved"] == project.approved  # must be unchanged
     assert len(data["details"]) == len(new_project.details)
 
     session.refresh(project)

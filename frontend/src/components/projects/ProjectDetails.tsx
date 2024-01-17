@@ -9,7 +9,7 @@ export default function ProjectDetails({ project }: { project: ProjectReadWithDe
   const templates = useProjectDetailTemplates();
 
   function showDetailValue(template: ProjectDetailTemplateRead) {
-    const detail = project.details.find((detail) => detail.template.key === template.key);
+    const detail = project.details.find((detail) => detail.template.id === template.id);
     if (detail === undefined) return "Not specified";
     switch (template.type) {
       case "slider":
@@ -37,7 +37,7 @@ export default function ProjectDetails({ project }: { project: ProjectReadWithDe
 
   return templates.data.map((template) => {
     return (
-      <div key={template.key}>
+      <div key={template.id}>
         <Title level={4}>{template.title}</Title>
         <Paragraph className="text-slate-500">{template.description}</Paragraph>
         <Paragraph>{showDetailValue(template)}</Paragraph>

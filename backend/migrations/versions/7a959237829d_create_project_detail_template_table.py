@@ -22,14 +22,14 @@ def upgrade() -> None:
         "project_detail_template",
         sa.Column("created_at", sa.DateTime(), nullable=False),
         sa.Column("updated_at", sa.DateTime(), nullable=False),
-        sa.Column("key", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
+        sa.Column("id", sqlmodel.sql.sqltypes.AutoString(length=26), nullable=False),
         sa.Column("type", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("required", sa.Boolean(), nullable=False),
         sa.Column("options", sa.JSON(), nullable=False),
         sa.Column("title", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("description", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
         sa.Column("message", sqlmodel.sql.sqltypes.AutoString(), nullable=False),
-        sa.PrimaryKeyConstraint("key"),
+        sa.PrimaryKeyConstraint("id"),
     )
 
 

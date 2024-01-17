@@ -57,12 +57,12 @@ def session_fixture(admin_user: User, staff_user: User, student_user: User):
         session.add(student_user)
 
         # Set default config values for the Project Allocator.
-        session.add(Config(key="admin_emails", value='["rbc@ic.ac.uk"]'))
-        session.add(Config(key="max_allocations", value="5"))
-        session.add(Config(key="max_shortlists", value="5"))
-        session.add(Config(key="default_approved", value="false"))
-        session.add(Config(key="proposals_shutdown", value="false"))
-        session.add(Config(key="shortlists_shutdown", value="false"))
+        session.add(Config(key="admin_emails", type="json", value='["rbc@ic.ac.uk"]'))
+        session.add(Config(key="max_allocations", type="number", value="5"))
+        session.add(Config(key="max_shortlists", type="number", value="5"))
+        session.add(Config(key="default_approved", type="boolean", value="false"))
+        session.add(Config(key="proposals_shutdown", type="boolean", value="false"))
+        session.add(Config(key="shortlists_shutdown", type="boolean", value="false"))
 
         session.commit()
 
