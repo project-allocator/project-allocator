@@ -30,7 +30,7 @@ export function ProjectTable({ projects }: { projects: ProjectReadWithProposal[]
         <Highlighter
           searchWords={[searchText]}
           textToHighlight={
-            project.description.length < 500 ? project.description : project.description.slice(0, 500) + "..."
+            project.description.length < 300 ? project.description : project.description.slice(0, 300) + "..."
           }
         />
       ),
