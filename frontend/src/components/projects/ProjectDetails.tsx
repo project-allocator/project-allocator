@@ -12,6 +12,8 @@ export default function ProjectDetails({ project }: { project: ProjectReadWithDe
     const detail = project.details.find((detail) => detail.template.key === template.key);
     if (detail === undefined) return "Not specified";
     switch (template.type) {
+      case "slider":
+        return `${detail.value}%`;
       case "date":
         return dayjs(detail.value as string).format("DD/MM/YYYY");
       case "time":

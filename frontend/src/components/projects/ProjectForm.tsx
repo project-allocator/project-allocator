@@ -127,7 +127,7 @@ function ProjectDetailItem({
       case "number":
         return <InputNumber className="w-48" />;
       case "slider":
-        return <Slider />;
+        return <Slider min={0} max={100} />;
       case "date":
         return <DatePicker className="w-48" />;
       case "time":

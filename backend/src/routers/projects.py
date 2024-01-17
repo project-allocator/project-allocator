@@ -183,14 +183,6 @@ async def create_project(
         if not template:
             raise HTTPException(status_code=400, detail="Invalid project detail key")
 
-        match template.type:
-            case "select" | "radio":
-                if detail_data.value not in template.options:
-                    raise HTTPException(status_code=400, detail="Invalid project detail value")
-            case "checkbox":
-                if not all(option in template.options for option in detail_data.value):
-                    raise HTTPException(status_code=400, detail="Invalid project detail value")
-
         detail_data = serialize_project_detail(template, detail_data)
         detail = ProjectDetail.model_validate(detail_data)
         detail.project = project
@@ -239,14 +231,6 @@ async def update_project(
         template = session.get(ProjectDetailTemplate, detail_data.key)
         if not template:
             raise HTTPException(status_code=400, detail="Invalid project detail key")
-
-        match template.type:
-            case "select" | "radio":
-                if detail_data.value not in template.options:
-                    raise HTTPException(status_code=400, detail="Invalid project detail value")
-            case "checkbox":
-                if not all(option in template.options for option in detail_data.value):
-                    raise HTTPException(status_code=400, detail="Invalid project detail value")
 
         detail_data = serialize_project_detail(template, detail_data)
         detail = session.get(ProjectDetail, (detail_data.key, project_id))
