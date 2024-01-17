@@ -119,14 +119,14 @@ export class ProjectService {
     }
 
     /**
-     * Read No Response Projects
+     * Read Non Approved Projects
      * @returns ProjectReadWithProposal Successful Response
      * @throws ApiError
      */
-    public static readNoResponseProjects(): CancelablePromise<Array<ProjectReadWithProposal>> {
+    public static readNonApprovedProjects(): CancelablePromise<Array<ProjectReadWithProposal>> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/projects/no-response',
+            url: '/api/projects/non-approved',
         });
     }
 

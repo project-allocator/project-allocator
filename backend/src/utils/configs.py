@@ -1,11 +1,7 @@
-from typing import Any
 import json
+from typing import Any
 
-
-from ..models import (
-    Config,
-    ConfigRead,
-)
+from ..models import Config, ConfigRead
 
 
 def parse_config(config: Config) -> ConfigRead:
@@ -21,7 +17,7 @@ def parse_config_value(key: str, value: str) -> Any:
             return json.loads(value)
         case "max_shortlists" | "max_allocations":
             return int(value)
-        case "proposals_shutdown" | "shortlists_shutdown":
+        case "default_approved" | "proposals_shutdown" | "shortlists_shutdown":
             return value == "true"
 
 
@@ -31,5 +27,5 @@ def serialize_config_value(key: str, value: Any) -> str:
             return json.dumps(value)
         case "max_shortlists" | "max_allocations":
             return str(value)
-        case "proposals_shutdown" | "shortlists_shutdown":
+        case "default_approved" | "proposals_shutdown" | "shortlists_shutdown":
             return "true" if value else "false"

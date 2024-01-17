@@ -1,12 +1,11 @@
-from fastapi import FastAPI
 import pytest
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
-
-from src.main import app
 from src.auth import azure_scheme
 from src.dependencies import get_env, get_session, get_token, get_user_or_none
+from src.main import app
 from src.models import Config, User
 
 
@@ -61,6 +60,7 @@ def session_fixture(admin_user: User, staff_user: User, student_user: User):
         session.add(Config(key="admin_emails", value='["rbc@ic.ac.uk"]'))
         session.add(Config(key="max_allocations", value="5"))
         session.add(Config(key="max_shortlists", value="5"))
+        session.add(Config(key="default_approved", value="false"))
         session.add(Config(key="proposals_shutdown", value="false"))
         session.add(Config(key="shortlists_shutdown", value="false"))
 

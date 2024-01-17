@@ -1,33 +1,26 @@
 from typing import Annotated
-from fastapi import APIRouter, HTTPException, Depends, Security
+
+from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlmodel import Session, select
 
-from ..dependencies import (
-    block_on_proposals_shutdown,
-    check_admin,
-    check_staff,
-    get_session,
-    get_user,
-)
-from ..utils.projects import (
-    parse_project,
-    serialize_project_detail,
-)
+from ..dependencies import block_on_proposals_shutdown, check_admin, check_staff, get_session, get_user
+from ..logger import LoggerRoute
 from ..models import (
-    User,
+    Config,
     Project,
-    ProjectReadWithProposal,
-    ProjectReadWithDetails,
     ProjectCreateWithDetails,
-    ProjectUpdateWithDetails,
     ProjectDetail,
     ProjectDetailTemplate,
-    ProjectDetailTemplateRead,
     ProjectDetailTemplateCreate,
+    ProjectDetailTemplateRead,
     ProjectDetailTemplateUpdate,
+    ProjectReadWithDetails,
+    ProjectReadWithProposal,
+    ProjectUpdateWithDetails,
     Proposal,
+    User,
 )
-from ..logger import LoggerRoute
+from ..utils.projects import parse_project, serialize_project_detail
 
 router = APIRouter(tags=["project"], route_class=LoggerRoute)
 
@@ -130,11 +123,11 @@ async def read_disapproved_projects(
 
 
 @router.get(
-    "/projects/no-response",
+    "/projects/non-approved",
     response_model=list[ProjectReadWithProposal],
     dependencies=[Security(check_admin)],  # only admins
 )
-async def read_no_response_projects(
+async def read_non_approved_projects(
     session: Annotated[Session, Depends(get_session)],
 ):
     query = select(Project).where(Project.approved == None)
@@ -171,6 +164,11 @@ async def create_project(
 ):
     # Prevent staff from approving their own projects.
     project_data.approved = None
+
+    # Set the project to approved if the config is set to auto-approve projects.
+    default_approved = session.get(Config, "default_approved")
+    if default_approved.value:
+        project_data.approved = True
 
     # Remove project details in order to validate the project.
     details_data = project_data.details

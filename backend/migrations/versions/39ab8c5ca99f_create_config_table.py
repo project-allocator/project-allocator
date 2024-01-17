@@ -5,11 +5,11 @@ Revises: 89adfce2b3a3
 Create Date: 2023-12-21 19:53:10.572582
 
 """
-from alembic import op
-import sqlalchemy as sa
-import sqlmodel
 from datetime import datetime
 
+import sqlalchemy as sa
+import sqlmodel
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = "39ab8c5ca99f"
@@ -45,6 +45,13 @@ def upgrade() -> None:
             {
                 "key": "max_allocations",
                 "value": "5",
+                "created_at": timestamp,
+                "updated_at": timestamp,
+            },
+            # Whether proposals are automatically approved.
+            {
+                "key": "default_approved",
+                "value": False,
                 "created_at": timestamp,
                 "updated_at": timestamp,
             },

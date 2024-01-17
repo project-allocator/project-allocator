@@ -61,10 +61,10 @@ export function useDisapprovedProjects() {
   });
 }
 
-export function useNoResponseProjects() {
+export function useNonApprovedProjects() {
   return useSuspenseQuery({
     queryKey: ["projects", "no-response"],
-    queryFn: () => ProjectService.readNoResponseProjects(),
+    queryFn: () => ProjectService.readNonApprovedProjects(),
   });
 }
 
