@@ -40,7 +40,7 @@ export default function ProjectDetails({ project }: { project: ProjectReadWithDe
       <div key={template.id}>
         <Title level={4}>{template.title}</Title>
         <Paragraph className="text-slate-500">{template.description}</Paragraph>
-        <Paragraph>{showDetailValue(template)}</Paragraph>
+        <Paragraph className="whitespace-pre-line">{showDetailValue(template)}</Paragraph>
       </div>
     );
   });

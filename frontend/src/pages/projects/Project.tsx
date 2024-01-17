@@ -44,7 +44,7 @@ export default function Project() {
       </Space>
       <Divider />
       <Title level={4}>{project.data!.title}</Title>
-      <Paragraph>{project.data!.description}</Paragraph>
+      <Paragraph className="mt-8 whitespace-pre-line">{project.data!.description}</Paragraph>
       <Divider />
       <Suspense fallback={<Skeleton active />}>
         <Proposer />
