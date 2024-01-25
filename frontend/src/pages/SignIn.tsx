@@ -1,3 +1,4 @@
+import { authRequest } from "@/auth";
 import { UserOutlined, WindowsOutlined } from "@ant-design/icons";
 import { useMsal } from "@azure/msal-react";
 import { Avatar, Button, Card, Layout, Space, Typography } from "antd";
@@ -15,7 +16,7 @@ export default function SignIn() {
           <Space direction="vertical" className="text-center">
             <Title level={3}>Project Allocator</Title>
             <Paragraph className="max-w-sm">Project Allocator for Imperial College London</Paragraph>
-            <Button type="primary" onClick={() => msalInstance.loginRedirect()}>
+            <Button type="primary" onClick={() => msalInstance.loginRedirect(authRequest)}>
               <Space>
                 Sign in with Microsoft
                 <WindowsOutlined />
