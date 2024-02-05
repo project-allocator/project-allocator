@@ -230,7 +230,13 @@ async def update_project(
 
         detail_data = serialize_project_detail(template, detail_data)
         detail = session.get(ProjectDetail, (project_id, template_id))
-        detail.value = detail_data.value
+        if not detail:
+            # Detail may not exist if new template is added to the project after proposal.
+            detail = ProjectDetail.model_validate(detail_data)
+            detail.project = project
+            detail.template = template
+        else:
+            detail.value = detail_data.value
         session.add(detail)
 
     session.commit()
