@@ -9,8 +9,9 @@ from typing import Callable
 from fastapi import Request, Response
 from fastapi.routing import APIRoute
 
-base_path = dirname(dirname(abspath(__file__)))
-handler = RotatingFileHandler(f"{base_path}/logs/app.log", maxBytes=16 * 1024**2, backupCount=10)
+LOGGER_DIR = f"{dirname(dirname(abspath(__file__)))}/logs"
+
+handler = RotatingFileHandler(f"{LOGGER_DIR}/app.log", maxBytes=16 * 1024**2, backupCount=10)
 handler.setLevel(DEBUG)
 
 logger = getLogger(__name__)

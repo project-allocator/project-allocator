@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{ include = "src" }]
 
 [tool.poetry.scripts]
-db = "src.cli:app"
+project-allocator-cli = "src.cli:app"
 
 [tool.poetry.dependencies]
 python = "^3.11"
