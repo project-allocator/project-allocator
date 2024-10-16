@@ -8,10 +8,8 @@ RUN yarn install
 COPY frontend/ ./
 RUN yarn build
 
-
-# Stage 2: Set up FastAPI backend
-FROM python:3.11-slim AS backend
-# ENV POETRY_VIRTUALENVS_IN_PROJECT=true
+# Stage 2: Set up FastAPI backend and serve stack via NGINX
+FROM python:3.11-slim 
 WORKDIR /app
 
 # Install system dependencies
