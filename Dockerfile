@@ -30,4 +30,4 @@ COPY backend/.env .
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY --from=build-frontend /app/dist /usr/share/nginx/html
 
-CMD nginx && poetry run uvicorn src.main:app --host 0.0.0.0 --port 8000
+CMD /usr/sbin/nginx && poetry run uvicorn src.main:app --host 0.0.0.0 --port 8000
