@@ -4,6 +4,7 @@ env:
   REGISTRY: ghcr.io
 
 on:
+  workflow_dispatch:
   workflow_run:
     workflows: ["Backend CI", "Frontend CI"]
     types:
