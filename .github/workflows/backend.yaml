@@ -75,6 +75,8 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write
+      attestations: write
     outputs:
       sha-tag: sha-${{ github.sha }}
 
