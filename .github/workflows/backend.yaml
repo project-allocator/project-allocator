@@ -1,4 +1,4 @@
-name: Check Backend
+name: Backend CI
 
 on:
   push:
@@ -13,54 +13,47 @@ defaults:
     working-directory: ./backend
 
 jobs:
-  format:
+  install-dependencies:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v3
+      - uses: actions/checkout@v4
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y libldap2-dev libsasl2-dev
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
-
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-        with:
-          version: 1.6.1
-
+          python-version-file: 'pyproject.toml'
+          cache: 'poetry'
       - name: Install dependencies
-        run: |
-          poetry install
+        run: poetry install
 
-      - name: Run Black formatter
-        run: |
-          poetry run black --check --verbose --line-length=120 src/
+
+  imports-ordering-check:
+    runs-on: ubuntu-latest
+    needs: install-dependencies
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v5
+        with:
+          python-version-file: 'pyproject.toml'
+          cache: 'poetry'
+      - name: Check style
+        run: poetry run ruff check --select I
+
 
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
-
+    needs: install-dependencies
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Set up Python
-        uses: actions/setup-python@v3
+      - uses: actions/checkout@v4
+      - name: Install poetry
+        run: pipx install poetry
+      - uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
-
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-        with:
-          version: 1.6.1
-
-      - name: Install dependencies
-        run: |
-          poetry install
-
-      - name: Run pytest
-        run: |
-          poetry run pytest --verbose tests/
+          python-version-file: 'pyproject.toml'
+          cache: 'poetry'
+      - name: Run tests with coverage
+        run: poetry run pytest --junitxml=report.xml --cov=api/ --cov-report=xml --cov-report=term-missing tests/
