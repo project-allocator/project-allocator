@@ -1,6 +1,4 @@
-FROM node:18
-
-RUN apt-get update && apt-get install -y zsh
+FROM node:18 AS build
 
 WORKDIR /app
 
@@ -8,6 +6,22 @@ COPY package.json yarn.lock ./
 RUN yarn install --frozen-lockfile
 
 COPY . .
+RUN yarn build
 
-EXPOSE 3000
-ENTRYPOINT ./docker-entrypoint.sh
+FROM nginx:1.25 AS deploy
+
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build --chown=app:app /app/dist /var/www/html
+
+RUN groupadd -g 999 app && \
+    useradd -m -d /app -r -u 999 -g app app
+RUN chown -R app:app /app && chmod -R 755 /app && \
+    chown -R app:app /var/cache/nginx && \
+    chown -R app:app /var/log/nginx && \
+    chown -R app:app /etc/nginx/conf.d
+RUN touch /var/run/nginx.pid && \
+    chown -R app:app /var/run/nginx.pid
+
+USER 999
+EXPOSE 8080
+CMD nginx -g "daemon off;"
