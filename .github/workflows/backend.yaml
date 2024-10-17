@@ -117,7 +117,7 @@ jobs:
           python-version-file: ${{ env.PYVERSION_FILE }}
           cache: 'poetry'
       - name: Apply all pending migrations to the database
-        run: alembic upgrade head
+        run: poetry run alembic upgrade head
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
