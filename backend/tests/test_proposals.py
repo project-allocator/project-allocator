@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 from sqlmodel import Session
+
 from src.factories import ProjectFactory
 from src.models import Proposal, User
 

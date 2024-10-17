@@ -2,6 +2,7 @@ import random
 
 from fastapi.testclient import TestClient
 from sqlmodel import Session
+
 from src.factories import ProjectFactory, UserFactory
 from src.models import Allocation, Proposal, User
 

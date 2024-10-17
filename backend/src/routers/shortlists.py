@@ -3,7 +3,13 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlmodel import Session, select
 
-from ..dependencies import block_on_shortlists_shutdown, check_staff, check_student, get_session, get_user
+from ..dependencies import (
+    block_on_shortlists_shutdown,
+    check_staff,
+    check_student,
+    get_session,
+    get_user,
+)
 from ..logger import LoggerRoute
 from ..models import Config, Project, ProjectReadWithProposal, Shortlist, User, UserRead
 
@@ -51,7 +57,7 @@ async def shortlist_project(
     max_shortlists = session.get(Config, "max_shortlists")
     max_shortlists = int(max_shortlists.value)
     if len(shortlists) >= max_shortlists:
-        raise HTTPException(status_code=400, detail=f"Max shortlists reached")
+        raise HTTPException(status_code=400, detail="Max shortlists reached")
 
     shortlist = Shortlist(shortlister=user, shortlisted_project=project, preference=len(shortlists))
     session.add(shortlist)

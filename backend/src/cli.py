@@ -1,6 +1,4 @@
-import glob
 import random
-import re
 from typing import Annotated
 
 import typer

@@ -3,7 +3,13 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlmodel import Session, select
 
-from ..dependencies import block_on_proposals_shutdown, check_admin, check_staff, get_session, get_user
+from ..dependencies import (
+    block_on_proposals_shutdown,
+    check_admin,
+    check_staff,
+    get_session,
+    get_user,
+)
 from ..logger import LoggerRoute
 from ..models import (
     Config,

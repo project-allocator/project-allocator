@@ -1,6 +1,7 @@
 from fastapi.testclient import TestClient
 from requests_mock import Mocker
 from sqlmodel import Session, select
+
 from src.factories import NotificationFactory, UserFactory
 from src.models import Notification, User
 

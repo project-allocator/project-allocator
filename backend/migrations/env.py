@@ -24,7 +24,6 @@ config.set_main_option("sqlalchemy.url", DATABASE_URL)
 # target_metadata = mymodel.Base.metadata
 
 # Must be imported beforehand to setup SQLModel.metadata
-from src import models
 
 target_metadata = SQLModel.metadata
 

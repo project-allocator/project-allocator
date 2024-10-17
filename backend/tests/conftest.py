@@ -3,9 +3,10 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlmodel import Session, SQLModel, create_engine
 from sqlmodel.pool import StaticPool
+
+from src import create_application
 from src.auth import azure_scheme
 from src.dependencies import get_env, get_session, get_token, get_user_or_none
-from src import create_application
 from src.models import Config, User
 
 

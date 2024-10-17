@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 from sqlmodel import Session
+
 from src.factories import ProjectDetailTemplateFactory, ProjectFactory
 from src.models import Project, ProjectDetailTemplate, Proposal, User
 from src.utils.projects import parse_project

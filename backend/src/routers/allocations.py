@@ -5,7 +5,13 @@ from fastapi import APIRouter, Depends, HTTPException, Security
 from sqlmodel import Session, select
 
 from .. import algorithms
-from ..dependencies import check_admin, check_staff, check_student, get_session, get_user
+from ..dependencies import (
+    check_admin,
+    check_staff,
+    check_student,
+    get_session,
+    get_user,
+)
 from ..logger import LoggerRoute
 from ..models import (
     Allocation,

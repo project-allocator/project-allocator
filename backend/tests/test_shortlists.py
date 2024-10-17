@@ -2,6 +2,7 @@ import random
 
 from fastapi.testclient import TestClient
 from sqlmodel import Session, select
+
 from src.factories import ProjectFactory, UserFactory
 from src.models import Config, Proposal, Shortlist, User
 
@@ -47,7 +48,7 @@ def test_shortlist_project(
     session.add_all(proposals)
     session.commit()
 
-    response = student_client.post(f"/api/users/me/shortlisted_projects", params={"project_id": projects[0].id})
+    response = student_client.post("/api/users/me/shortlisted_projects", params={"project_id": projects[0].id})
     data = response.json()
     assert response.status_code == 200
     assert data["ok"] is True
@@ -57,7 +58,7 @@ def test_shortlist_project(
     assert shortlist.preference == 0
 
     # Attempt to make more shortlists than allowed.
-    response = student_client.post(f"/api/users/me/shortlisted_projects", params={"project_id": projects[1].id})
+    response = student_client.post("/api/users/me/shortlisted_projects", params={"project_id": projects[1].id})
     data = response.json()
     assert response.status_code == 400
 

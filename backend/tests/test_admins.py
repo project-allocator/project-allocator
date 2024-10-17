@@ -5,7 +5,13 @@ from io import StringIO
 
 from fastapi.testclient import TestClient
 from sqlmodel import Session, delete, select
-from src.factories import NotificationFactory, ProjectDetailTemplateFactory, ProjectFactory, UserFactory
+
+from src.factories import (
+    NotificationFactory,
+    ProjectDetailTemplateFactory,
+    ProjectFactory,
+    UserFactory,
+)
 from src.models import (
     Allocation,
     Config,

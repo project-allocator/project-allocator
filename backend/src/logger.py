@@ -2,8 +2,6 @@ import datetime
 import json
 import time
 from logging import DEBUG, getLogger
-from logging.handlers import RotatingFileHandler
-from os.path import abspath, dirname
 from typing import Callable
 
 from fastapi import Request, Response
