@@ -11,7 +11,7 @@ on:
 
 jobs:
   docker:
-		if: github.ref == 'refs/heads/main' # Only run on 'main'
+    if: github.ref == 'refs/heads/main' # Only run on 'main'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
