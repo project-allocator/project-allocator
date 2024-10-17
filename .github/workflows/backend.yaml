@@ -2,7 +2,7 @@ name: Backend CD
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ghcr.io/${{ github.repository }}-backend
+  IMAGE_NAME: ${{ github.repository }}-backend
   PYVERSION_FILE: './backend/pyproject.toml'
 
 on:
@@ -90,12 +90,15 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
       - name: Build tags
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         id: meta
         with:
-          images: ${{ env.IMAGE_NAME }} 
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} 
           tags: |
-            type=raw,value=${{ github.sha }},prefix=sha-,enable={{is_default_branch}}
+            type=ref,event=branch
+            type=ref,event=tag
+            type=ref,event=pr
+            type=sha
             type=raw,value=latest,enable={{is_default_branch}}
       - name: Build and push images
         uses: docker/build-push-action@v6
@@ -104,7 +107,7 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: ${{ env.IMAGE_NAME }}:latest
+          cache-from: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
   apply-db-migrations:
     runs-on: ubuntu-latest
@@ -137,5 +140,5 @@ jobs:
       - name: Add impaas target
         run: tsuru target add impaas https://impaas.uk -s
       - name: Deploy app
-        run: tsuru app deploy -i ${{ env.IMAGE_NAME }}:latest -a urop-project-allocator-backend
+        run: tsuru app deploy -i ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest -a urop-project-allocator-backend
 
