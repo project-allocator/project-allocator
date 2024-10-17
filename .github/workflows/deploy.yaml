@@ -23,8 +23,23 @@ jobs:
     strategy:
       matrix:
         component: ["frontend", "backend"]
-
     steps:
+      - name: Check Backend CI Result
+        if: ${{ github.event.workflow_run.workflow_name == 'Backend CI' }}
+        run: |
+          if [[ "${{ github.event.workflow_run.conclusion }}" != "success" ]]
+          then
+            echo "Backend CI failed. Aborting deployment."
+            exit 1
+          fi
+      - name: Check Frontend CI Result
+        if: ${{ github.event.workflow_run.workflow_name == 'Frontend CI' }}
+        run: |
+          if [[ "${{ github.event.workflow_run.conclusion }}" != "success" ]]
+          then
+            echo "Frontend CI failed. Aborting deployment."
+            exit 1
+          fi
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Log in to the Container registry
