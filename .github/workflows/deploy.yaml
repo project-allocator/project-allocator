@@ -1,15 +1,22 @@
 name: Deploy Application
 
+env:
+  REGISTRY: ghcr.io
+
 on:
+  push:
+    branches:
+      - main
+      - 'feat-*'
   pull_request:
-    branches: 
+    branches:
       - main
   workflow_dispatch:
 
 concurrency: production
 
 jobs:
-  push:
+  docker:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     permissions:
@@ -23,119 +30,31 @@ jobs:
         component: ["frontend", "backend"]
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Login to registry
-        uses: docker/login-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
         with:
-          registry: ghcr.io
+					registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ github.token }}
-
       - name: Build tags
         uses: docker/metadata-action@v4
         id: meta
         with:
-          images: ghcr.io/${{ github.repository }}-${{ matrix.component }}
+          images: ${{ env.REGISTRY }}/${{ github.repository }}-${{ matrix.component }}
           tags: |
             type=raw,value=${{ github.sha }},prefix=sha-,enable={{is_default_branch}}
             type=raw,value=latest,enable={{is_default_branch}}
-
+			# This step uses the `docker/build-push-action` action to build the image, based on your repository's `Dockerfile`. If the build succeeds, it pushes the image to GitHub Packages.
+      # It uses the `context` parameter to define the build's context as the set of files located in the specified path. For more information, see "[Usage](https://github.com/docker/build-push-action#usage)" in the README of the `docker/build-push-action` repository.
+      # It uses the `tags` and `labels` parameters to tag and label the image with the output from the "meta" step.
       - name: Build and push images
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         with:
-          context: ./${{ matrix.component }}
-          file: ./${{ matrix.component }}/Dockerfile.production
+          context: "{{ defaultContext  }}:${{ matrix.component }}"
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          cache-from: |
-            ghcr.io/${{ github.repository }}-${{ matrix.component }}:latest
+          cache-from: ${{ env.REGISTRY }}/${{ github.repository }}-${{ matrix.component }}:latest
 
-  deploy:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: read
-    needs:
-      - push
-
-    container:
-      image: quay.io/appvia-wayfinder/wftoolbox:${{ vars.WAYFINDER_VERSION }}
-      env:
-        WAYFINDER_TOKEN: ${{ secrets.WAYFINDER_TOKEN }}
-        WAYFINDER_SERVER: ${{ vars.WAYFINDER_SERVER }}
-        WAYFINDER_WORKSPACE: ${{ vars.WAYFINDER_WORKSPACE }}
-        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-
-      - name: Install dependencies
-        run: |
-          # These are not found in Appvia's wftoolbox image.
-          apk add --no-cache bash sed
-
-      - name: Get Kubernetes access
-        run: |
-          wf access env project-allocator dev
-
-      - name: Clean pods
-        run: |
-          bash .github/scripts/clean_pods.sh '' status.phase!=Running,status.phase!=Pending
-
-      - name: Apply Wayfinder configurations
-        run: |
-          csrf_secret=${{ secrets.CSRF_SECRET }}
-          server_name=${{ secrets.DATABASE_SERVER_NAME }}
-          administrator_login=${{ secrets.DATABASE_ADMINISTRATOR_LOGIN }}
-          administrator_password=${{ secrets.DATABASE_ADMINISTRATOR_PASSWORD }}
-          repository=${{ github.repository }}
-
-          sed -i -e "s/<CSRF_SECRET>/$csrf_secret/g" manifests/backend.yaml
-          sed -i -e "s/<SERVER_NAME>/$server_name/g;s/<ADMINISTRATOR_LOGIN>/$administrator_login/g;s/<ADMINISTRATOR_PASSWORD>/$administrator_password/g" manifests/db.yaml
-          sed -i -e "s%<REPOSITORY>%$repository%g" manifests/frontend.yaml
-          sed -i -e "s%<REPOSITORY>%$repository%g" manifests/backend.yaml
-
-          wf apply -f manifests/app.yaml
-          wf apply -f manifests/env.yaml
-          wf apply -f manifests/db.yaml
-          wf apply -f manifests/frontend.yaml
-          wf apply -f manifests/backend.yaml
-
-      - name: Deploy application
-        run: |
-          wf deploy component project-allocator dev --component frontend --image-tag ${{ needs.push.outputs.sha-tag }} --force
-          wf deploy component project-allocator dev --component backend --image-tag ${{ needs.push.outputs.sha-tag }} --force
-          wf deploy component project-allocator dev --component db --force
-
-      - name: Patch secret
-        run: |
-          namespace=${{ vars.WAYFINDER_WORKSPACE }}-project-allocator-dev
-          kubectl patch deployment frontend -n "$namespace" --patch "$(cat manifests/secret-patch.json)"
-          kubectl patch deployment backend -n "$namespace" --patch "$(cat manifests/secret-patch.json)"
-
-      - name: Patch ingress
-        run: |
-          kubectl patch ingress frontend-ingress --type json --patch "$(cat manifests/ingress-patch.json)"
-
-      - name: Create network policy
-        run: |
-          kubectl apply -f manifests/backend-policy.yaml
-
-      - name: Wait for completion
-        run: |
-          bash .github/scripts/wait_deploy.sh
-
-      - name: Restart pods
-        run: |
-          # Restart previously running frontend and backend pods.
-          bash .github/scripts/clean_pods.sh frontend status.phase=Running
-          bash .github/scripts/clean_pods.sh backend status.phase=Running
-
-      - name: Print application URL
-        run: |
-          url="$(kubectl get ingress --output json | jq -r '.items[0].spec.rules[0].host')"
-          echo "Your application is deployed at: https://$url"
