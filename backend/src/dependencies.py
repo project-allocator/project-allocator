@@ -1,4 +1,5 @@
 import os
+from functools import lru_cache
 from typing import Optional
 
 from fastapi import Depends, Header, HTTPException
@@ -14,8 +15,12 @@ def get_env():
     return os.environ.get("FASTAPI_ENV")
 
 
-def get_session():
-    engine = create_engine(DATABASE_URL)
+@lru_cache()
+def get_engine():
+    return create_engine(DATABASE_URL)
+
+
+def get_session(engine=Depends(get_engine)):
     with Session(engine) as session:
         yield session
 
