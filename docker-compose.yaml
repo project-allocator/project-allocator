@@ -13,6 +13,12 @@ services:
       context: ./backend
       dockerfile: dev.Dockerfile
     command: poetry run fastapi run --reload
+    environment:
+      PGUSER: pa_user
+      PGPASSWORD: pa_pass
+      PGHOST: db
+      PGPORT: 5432
+      PGDATABASE: project-allocator-db-local
     develop:
       watch:
         - action: sync
@@ -31,13 +37,8 @@ services:
     image: postgres:14-alpine
     restart: always
     environment:
-      - POSTGRES_DB=default
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    volumes:
-      - postgresql-data:/var/lib/postgresql/data
+      POSTGRES_DB: project-allocator-db-local
+      POSTGRES_USER: pa_user
+      POSTGRES_PASSWORD: pa_pass
     ports:
       - 5432:5432
-volumes:
-  node_modules:
-  postgresql-data:
