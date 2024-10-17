@@ -6,7 +6,7 @@ from rich import print
 from rich.progress import track
 from sqlmodel import Session
 
-from .db import engine
+from .db import DATABASE_URL
 from .factories import (
     NotificationFactory,
     ProjectDetailTemplateFactory,
@@ -28,6 +28,7 @@ def seed(yes: Annotated[bool, typer.Option(help="Skip confirmation.")] = False):
         if not typer.confirm("Are you sure to continue?"):
             return
 
+    engine = create_engine(DATABASE_URL)
     with Session(engine) as session:
         templates = ProjectDetailTemplateFactory.build_batch(10)
         session.add_all(templates)

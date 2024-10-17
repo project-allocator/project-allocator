@@ -6,7 +6,7 @@ from fastapi_azure_auth.user import User as AzureUser
 from sqlmodel import Session, select
 
 from .auth import azure_scheme
-from .db import engine
+from .db import DATABASE_URL
 from .models import Config, User
 
 
@@ -15,6 +15,7 @@ def get_env():
 
 
 def get_session():
+    engine = create_engine(DATABASE_URL)
     with Session(engine) as session:
         yield session
 
