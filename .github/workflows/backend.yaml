@@ -1,5 +1,8 @@
 name: Backend CI
 
+env:
+  PYVERSION_FILE: './backend/pyproject.toml'
+
 on:
   push:
     paths:
@@ -18,12 +21,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install system dependencies
-        run: sudo apt-get update && sudo apt-get install -y libldap2-dev libsasl2-dev
+        run: sudo apt-get update && sudo apt-get install -y libpq-dev
       - name: Install poetry
         run: pipx install poetry
       - uses: actions/setup-python@v5
         with:
-          python-version-file: 'pyproject.toml'
+          python-version-file: ${{ env.PYVERSION_FILE }}
           cache: 'poetry'
       - name: Install dependencies
         run: poetry install
@@ -38,7 +41,7 @@ jobs:
         run: pipx install poetry
       - uses: actions/setup-python@v5
         with:
-          python-version-file: 'pyproject.toml'
+          python-version-file: ${{ env.PYVERSION_FILE }}
           cache: 'poetry'
       - name: Check style
         run: poetry run ruff check --select I
@@ -53,7 +56,7 @@ jobs:
         run: pipx install poetry
       - uses: actions/setup-python@v5
         with:
-          python-version-file: 'pyproject.toml'
+          python-version-file: ${{ env.PYVERSION_FILE }}
           cache: 'poetry'
       - name: Run tests with coverage
         run: poetry run pytest --junitxml=report.xml --cov=api/ --cov-report=xml --cov-report=term-missing tests/
