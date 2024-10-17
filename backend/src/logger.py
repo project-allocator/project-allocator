@@ -9,13 +9,7 @@ from typing import Callable
 from fastapi import Request, Response
 from fastapi.routing import APIRoute
 
-LOGGER_DIR = f"{dirname(dirname(abspath(__file__)))}/logs"
-
-handler = RotatingFileHandler(f"{LOGGER_DIR}/app.log", maxBytes=16 * 1024**2, backupCount=10)
-handler.setLevel(DEBUG)
-
 logger = getLogger(__name__)
-logger.addHandler(handler)
 logger.setLevel(DEBUG)
 
 
@@ -36,7 +30,9 @@ class LoggerRoute(APIRoute):
             time_local = datetime.datetime.fromtimestamp(before)
             record["time_local"] = time_local.strftime("%Y/%m/%d %H:%M:%S%Z")
             request_body = await request.body()
-            record["request_body"] = request_body.decode("utf-8") if request_body else ""
+            record["request_body"] = (
+                request_body.decode("utf-8") if request_body else ""
+            )
             # Exclude sensitive header information from the log.
             # fmt: off
             record["request_headers"] = {key: value for key, value in request.headers.items() if key not in ["authorization", "x-graph-token"]}

@@ -9,17 +9,18 @@ from rich.progress import track
 from sqlmodel import Session
 
 from .db import engine
-from .factories import NotificationFactory, ProjectDetailTemplateFactory, ProjectFactory, UserFactory
-from .logger import LOGGER_DIR
+from .factories import (
+    NotificationFactory,
+    ProjectDetailTemplateFactory,
+    ProjectFactory,
+    UserFactory,
+)
 from .models import Allocation, Proposal, Shortlist
 
 app = typer.Typer()
 
 db_app = typer.Typer()
 app.add_typer(db_app, name="db")
-
-log_app = typer.Typer()
-app.add_typer(log_app, name="log")
 
 
 @db_app.command()
@@ -59,7 +60,9 @@ def seed(yes: Annotated[bool, typer.Option(help="Skip confirmation.")] = False):
             # Shortlist 5 random projects for each student.
             random_projects = random.sample(projects, 5)
             for i, project in enumerate(random_projects):
-                shortlist = Shortlist(preference=i, shortlister=student, shortlisted_project=project)
+                shortlist = Shortlist(
+                    preference=i, shortlister=student, shortlisted_project=project
+                )
                 session.add(shortlist)
 
             # Allocate 1 random shortlisted project for each student.
@@ -79,15 +82,3 @@ def seed(yes: Annotated[bool, typer.Option(help="Skip confirmation.")] = False):
         session.commit()
 
     print("✨[green]Successfully seeded the database.")
-
-
-@log_app.command()
-def grep(pattern: Annotated[str, typer.Argument(help="Pattern to search for.")]):
-    for path in glob.glob(f"{LOGGER_DIR}/app*.log"):
-        with open(path) as file:
-            for i, line in enumerate(file):
-                if re.search(pattern, line):
-                    print(f"👀[blue] Found a match at line #{i + 1}")
-                    print(line)
-
-    print("🎉[green] Successfully searched the application logs.")
