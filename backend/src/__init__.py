@@ -5,6 +5,7 @@ from contextlib import asynccontextmanager
 from fastapi import APIRouter, FastAPI, Request, Security
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from starlette.middleware.cors import CORSMiddleware
 from starlette_csrf import CSRFMiddleware
 
 from .auth import azure_scheme, swagger_scheme
@@ -43,6 +44,15 @@ def create_application() -> FastAPI:
         ],
     )
     app.add_middleware(CSRFMiddleware, secret=CSRF_SECRET)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[prod_url.replace("backend", "frontend").rstrip("/")]
+        if prod_url
+        else ["*"],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
     # Status router, not subjected to Azure Security
     status_router = APIRouter()
