@@ -1,4 +1,5 @@
 import logging
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import APIRouter, FastAPI, Request, Security
@@ -30,9 +31,16 @@ async def lifespan(app: FastAPI):
 
 def create_application() -> FastAPI:
     # Create FastAPI application with the authentication scheme for OpenAPI documentation.
+    prod_url = os.environ.get("PROD_URL")
     app = FastAPI(
         lifespan=lifespan,
         **swagger_scheme,
+        servers=[
+            {
+                "url": prod_url or "/",
+                "description": "production" if prod_url else "development",
+            }
+        ],
     )
     app.add_middleware(CSRFMiddleware, secret=CSRF_SECRET)
 
