@@ -33,7 +33,7 @@ async def lifespan(app: FastAPI):
 def create_application() -> FastAPI:
     # Create FastAPI application with the authentication scheme for OpenAPI documentation.
     prod_url = f"https://{TSURU_APPNAME}.impaas.uk"
-    server_url = (prod_url if FASTAPI_ENV == "production" else "/",)
+    server_url = prod_url if FASTAPI_ENV == "production" else "/"
     allowed_prod_origin = f"https://{FRONTEND_TSURU_APPNAME}.impaas.uk"
     allowed_origin = allowed_prod_origin if FASTAPI_ENV == "production" else "*"
 
