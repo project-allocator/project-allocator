@@ -140,5 +140,5 @@ jobs:
       - name: Add impaas target
         run: tsuru target add impaas https://impaas.uk -s
       - name: Deploy app
-        run: tsuru app deploy -i ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest -a urop-project-allocator-backend
+        run: tsuru app deploy -i ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest -a ${{ vars.BACKEND_TSURU_APPNAME }}
 

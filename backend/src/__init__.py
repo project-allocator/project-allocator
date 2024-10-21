@@ -9,7 +9,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette_csrf import CSRFMiddleware
 
 from .auth import azure_scheme, swagger_scheme
-from .env import CSRF_SECRET
+from .env import CSRF_SECRET, FASTAPI_ENV, TSURU_APPNAME, FRONTEND_TSURU_APPNAME
 from .logger import LoggerRoute
 from .routers import (
     admins,
@@ -32,23 +32,25 @@ async def lifespan(app: FastAPI):
 
 def create_application() -> FastAPI:
     # Create FastAPI application with the authentication scheme for OpenAPI documentation.
-    prod_url = os.environ.get("PROD_URL")
+    prod_url = f"https://{TSURU_APPNAME}.impaas.uk"
+    server_url = (prod_url if FASTAPI_ENV == "production" else "/",)
+    allowed_prod_origin = f"https://{FRONTEND_TSURU_APPNAME}.impaas.uk"
+    allowed_origin = allowed_prod_origin if FASTAPI_ENV == "production" else "*"
+
     app = FastAPI(
         lifespan=lifespan,
         **swagger_scheme,
         servers=[
             {
-                "url": prod_url or "/",
-                "description": "production" if prod_url else "development",
+                "url": server_url,
+                "description": FASTAPI_ENV,
             }
         ],
     )
     app.add_middleware(CSRFMiddleware, secret=CSRF_SECRET)
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=[prod_url.replace("backend", "frontend").rstrip("/")]
-        if prod_url
-        else ["*"],
+        allow_origins=[allowed_origin],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

@@ -4,7 +4,9 @@ from dotenv import load_dotenv
 
 load_dotenv()  # overridden in production
 
-FASTAPI_ENV = os.environ.get("FASTAPI_ENV")
+FASTAPI_ENV = os.environ.get("FASTAPI_ENV", "development")
+TSURU_APPNAME = os.environ.get("TSURU_APPNAME", "")
+FRONTEND_TSURU_APPNAME = os.environ.get("FRONTEND_TSURU_APPNAME", "")
 
 CSRF_SECRET = os.environ.get("CSRF_SECRET", "secret")
 

@@ -67,7 +67,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: "{{ defaultContext }}:frontend"
-          build-args: BACKEND_URL=https://urop-project-allocator-backend.impaas.uk
+          build-args: BACKEND_URL=https://${{ vars.BACKEND_TSURU_APPNAME }}.impaas.uk
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -87,5 +87,5 @@ jobs:
       - name: Add impaas target
         run: tsuru target add impaas https://impaas.uk -s
       - name: Deploy app
-        run: tsuru app deploy -i ${{ env.IMAGE_NAME }}:latest -a urop-project-allocator-frontend
+        run: tsuru app deploy -i ${{ env.IMAGE_NAME }}:latest -a ${{ vars.FRONTEND_TSURU_APPNAME }}
 
