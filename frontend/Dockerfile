@@ -9,7 +9,7 @@ RUN yarn install --frozen-lockfile
 
 COPY src /app/src
 COPY public /app/public
-COPY .env index.html postcss.config.cjs tailwind.config.cjs tsconfig.json tsconfig.node.json vite.config.ts /app
+COPY index.html postcss.config.cjs tailwind.config.cjs tsconfig.json tsconfig.node.json vite.config.ts /app
 
 RUN yarn run openapi --input ${BACKEND_URL}/openapi.json --output /app/src/api --client axios
 
