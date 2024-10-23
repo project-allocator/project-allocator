@@ -14,7 +14,7 @@ azure_scheme = SingleTenantAzureAuthorizationCodeBearer(
 )
 
 swagger_scheme = {
-    "swagger_ui_oauth2_redirect_url": "/oauth2-redirect",
+    "swagger_ui_oauth2_redirect_url": "/",
     "swagger_ui_init_oauth": {
         "usePkceWithAuthorizationCodeGrant": True,
         "clientId": APP_CLIENT_ID,
