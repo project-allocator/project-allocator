@@ -4,6 +4,7 @@ from typing import Optional
 
 from fastapi import Depends, Header, HTTPException
 from fastapi_azure_auth.user import User as AzureUser
+from sqlalchemy import create_engine
 from sqlmodel import Session, select
 
 from .auth import azure_scheme

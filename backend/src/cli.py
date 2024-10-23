@@ -4,6 +4,7 @@ from typing import Annotated
 import typer
 from rich import print
 from rich.progress import track
+from sqlalchemy import create_engine
 from sqlmodel import Session
 
 from .db import DATABASE_URL
