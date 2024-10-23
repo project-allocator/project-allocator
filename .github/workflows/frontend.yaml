@@ -69,8 +69,9 @@ jobs:
           context: "{{ defaultContext }}:frontend"
           build-args: |
             BACKEND_URL=https://${{ vars.BACKEND_TSURU_APPNAME }}.impaas.uk
-            TENANT_ID=${{ secrets.FRONTEND_TENANT_ID }}
+            TENANT_ID=${{ secrets.TENANT_ID }}
             APP_CLIENT_ID=${{ secrets.FRONTEND_APP_CLIENT_ID }}
+            API_APP_CLIENT_ID=${{ secrets.BACKEND_APP_CLIENT_ID }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

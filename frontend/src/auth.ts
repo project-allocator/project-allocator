@@ -3,12 +3,12 @@ import { QueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import Cookies from "js-cookie";
 
-import { CLIENT_ID, TENANT_ID } from "./env";
+import { API_CLIENT_ID, CLIENT_ID, TENANT_ID } from "./env";
 
 export const queryClient = new QueryClient();
 
 export const authRequest = {
-  scopes: [`api://${CLIENT_ID}/user_impersonation`, "User.Read", "Mail.Send"],
+  scopes: [`api://${API_CLIENT_ID}/user_impersonation`, "User.Read", "Mail.Send"],
 };
 
 export const msalInstance = new PublicClientApplication({

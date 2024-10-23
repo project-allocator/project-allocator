@@ -3,6 +3,7 @@ FROM node:18 AS build
 ARG BACKEND_URL
 ARG TENANT_ID
 ARG APP_CLIENT_ID
+ARG API_APP_CLIENT_ID
 
 WORKDIR /app
 
@@ -15,7 +16,7 @@ COPY index.html postcss.config.cjs tailwind.config.cjs tsconfig.json tsconfig.no
 
 RUN yarn run openapi --input ${BACKEND_URL}/openapi.json --output /app/src/api --client axios
 
-RUN VITE_TENANT_ID=$TENANT_ID VITE_APP_CLIENT_ID=$APP_CLIENT_ID yarn build
+RUN VITE_API_APP_CLIENT_ID=$API_APP_CLIENT_ID VITE_TENANT_ID=$TENANT_ID VITE_APP_CLIENT_ID=$APP_CLIENT_ID yarn build
 RUN yarn global add serve
 
 EXPOSE 3000
