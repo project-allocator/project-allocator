@@ -14,7 +14,7 @@ RUN pip install poetry
 COPY pyproject.toml poetry.lock /api/
 RUN poetry install --no-root --no-interaction --no-ansi
 
-COPY .env main.py /api/
+COPY main.py /api/
 COPY src /api/src
 
 EXPOSE 8000

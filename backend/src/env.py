@@ -12,7 +12,6 @@ CSRF_SECRET = os.environ.get("CSRF_SECRET", "secret")
 
 TENANT_ID = os.environ.get("TENANT_ID")
 APP_CLIENT_ID = os.environ.get("APP_CLIENT_ID")
-OPENAPI_CLIENT_ID = os.environ.get("OPENAPI_CLIENT_ID")
 
 DATABASE_USERNAME = os.environ.get("PGUSER")
 DATABASE_PASSWORD = os.environ.get("PGPASSWORD")
