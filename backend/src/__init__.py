@@ -9,7 +9,7 @@ from starlette.middleware.cors import CORSMiddleware
 from starlette_csrf import CSRFMiddleware
 
 from .auth import azure_scheme, swagger_scheme
-from .env import CSRF_SECRET, FASTAPI_ENV, FRONTEND_TSURU_APPNAME, TSURU_APPNAME
+from .env import FASTAPI_ENV, FRONTEND_TSURU_APPNAME, TSURU_APPNAME
 from .logger import LoggerRoute
 from .routers import (
     admins,
@@ -47,7 +47,6 @@ def create_application() -> FastAPI:
             }
         ],
     )
-    app.add_middleware(CSRFMiddleware, secret=CSRF_SECRET)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[allowed_origin],
